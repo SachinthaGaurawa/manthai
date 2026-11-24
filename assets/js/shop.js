@@ -5,6 +5,7 @@
   'use strict';
   var M = window.MANTHAI, C = M.core, $ = C.$, $$ = C.$$, esc = C.esc;
   var shop = (M.shop = {});
+  var X = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="1.1"/></svg>';
 
   function P(lkr) { return '<span data-price="' + lkr + '">' + C.price(lkr) + '</span>'; }
   function pieceNo(p) { return p.edition ? p.edition - p.remaining + 1 : 0; }
@@ -33,7 +34,7 @@
     var ed = editionLabel(p);
     return '<article class="' + cls + '" data-id="' + p.id + '">' +
       '<button class="card__frame" type="button" data-open="' + p.id + '" tabindex="-1" aria-hidden="true" data-media-slot="' + p.id + '" data-prompt="' + esc(p.prompt) + '">' +
-      '<span class="plate plate--a">' + C.plateHTML(p, 'form') + '</span><span class="plate plate--b">' + C.plateHTML(p, p.kind === 'parfum' || p.kind === 'bag' || p.kind === 'mina' || p.kind === 'shirt' ? 'detail' : 'move') + '</span>' +
+      '<span class="plate plate--a">' + C.plateHTML(p, 'form') + '</span><span class="plate plate--b">' + C.plateHTML(p, 'move') + '</span>' +
       '<span class="card__quick">Quick View</span></button>' +
       '<div class="card__meta">' + (ed ? '<p class="card__edition">' + ed + '</p>' : '') +
       '<h3 class="card__name"><button type="button" data-open="' + p.id + '">' + esc(p.name) + '</button></h3>' +
@@ -72,7 +73,7 @@
 
   /* ======================= product drawer ======================= */
   var pdp = null, loupeApi = null;
-  var VIEWS = [['form', 'Portrait'], ['move', 'In movement'], ['detail', 'Macro detail']];
+  var VIEWS = [['form', 'Front View', 'Front'], ['back', 'Back View', 'Back'], ['detail', 'Bodice & Textile 4x Macro', 'Macro 4x'], ['move', 'Drape in Motion', 'In motion']];
 
   function pdpHTML(p) {
     var ed = editionLabel(p);
@@ -90,6 +91,7 @@
       '<div class="pdp on-light">' +
       '<button class="icon-btn pdp__close" type="button" data-close aria-label="Close product"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="1.1"/></svg></button>' +
       '<div class="pdp__gallery">' +
+        '<div class="viewtabs" role="group" aria-label="Choose an angle">' + VIEWS.map(function (v, i) { return '<button type="button" class="viewtab" data-view="' + v[0] + '" aria-pressed="' + (i === 0) + '">' + v[1] + '</button>'; }).join('') + '</div>' +
         '<div class="stage" id="stage" tabindex="0" role="group" aria-label="' + esc(p.name) + ' images" aria-describedby="stageHint" data-media-slot="' + p.id + '-gallery" data-prompt="' + esc(p.prompt) + '">' +
           VIEWS.map(function (v, i) { return '<div class="plate' + (i === 0 ? ' is-on' : '') + '" data-view="' + v[0] + '">' + C.plateHTML(p, v[0]) + '</div>'; }).join('') +
           '<div class="loupe" id="loupe" aria-hidden="true"><div class="loupe__view"></div><span class="loupe__tag">4×</span></div>' +
@@ -97,7 +99,7 @@
         '</div>' +
         '<p class="sr-only" id="stageHint">Loupe: move the pointer over the image, or focus it and use the arrow keys, to magnify the fabric four times.</p>' +
         '<div class="thumbs" role="group" aria-label="Choose an image">' + VIEWS.map(function (v, i) {
-          return '<button class="thumb" type="button" data-view="' + v[0] + '" aria-pressed="' + (i === 0) + '" aria-label="' + v[1] + '">' + C.plateHTML(p, v[0]) + '<span>' + v[1] + '</span></button>';
+          return '<button class="thumb" type="button" data-view="' + v[0] + '" aria-pressed="' + (i === 0) + '" aria-label="' + v[1] + '">' + C.plateHTML(p, v[0]) + '<span>' + v[2] + '</span></button>';
         }).join('') + '</div>' +
       '</div>' +
       '<div class="pdp__details">' +
@@ -106,8 +108,9 @@
         '<p class="pdp__price">' + P(p.price) + '</p>' +
         '<p class="pdp__summary">' + esc(p.summary) + '</p>' +
         '<div class="provenance"><b>Artisanal provenance</b><span>' + esc(prov) + '</span></div>' +
-        '<div><div class="opt-label"><span id="sizeLabel">' + (p.sizing === 'apparel' ? 'Size' : 'Format') + '</span>' + (p.sizing === 'apparel' ? '<small>Made in the Colombo atelier, true to size</small>' : '') + '</div>' +
+        '<div><div class="opt-label"><span id="sizeLabel">Size</span><button class="link-btn" type="button" data-sizeguide>Size &amp; Fit Guide</button></div>' +
           '<div class="sizes" role="radiogroup" aria-labelledby="sizeLabel" id="sizes">' + sizes + '</div>' +
+          '<p class="model-note">Model is ' + M.MODEL.height + ' and wears Size ' + M.MODEL.size + '.</p>' +
           '<p class="field__error" id="sizeError" role="alert"></p></div>' +
         (p.bespoke ? '<button type="button" class="switch" id="bespokeSwitch" role="switch" aria-checked="false"><span class="switch__text"><b>Bespoke Made-to-Measure</b><span id="bespokeNote">Cut to your own measurements. Your stylist confirms the timeline.</span></span><span class="switch__track" aria-hidden="true"></span></button>' : '') +
         '<p class="scarcity" id="scarcity">' + esc(scarcityText(p)) + '</p>' +
@@ -119,9 +122,8 @@
         '</div>' +
         '<div>' +
           '<details><summary>The craft</summary><p>' + esc(p.story) + '</p></details>' +
-          '<details><summary>Materials</summary><p>' + esc(p.materials) + '</p></details>' +
-          '<details><summary>Care</summary><p>' + esc(p.care) + '</p></details>' +
-          '<details><summary>Digital Product Passport</summary><p>Every piece carries an embedded NFC heritage tag. Tap it with a phone to open the passport: where the piece was made, its edition, and how to care for it. A 32 pt uncoated cotton, gold-gilded Story Card arrives with it.</p></details>' +
+          '<details><summary>Material &amp; garment care</summary><p><b>Materials.</b> ' + esc(p.materials) + '</p><p><b>This piece.</b> ' + esc(p.care) + '</p><ul class="care-list">' + M.CARE.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul></details>' +
+          '<details><summary>Digital Product Passport</summary><p>Every piece carries an embedded NFC heritage tag. Tap it with a phone to open the passport: where the piece was made, its edition, and how to care for it. A 32 pt Gold-Gilded Uncoated Cotton Story Card arrives with it.</p></details>' +
         '</div>' +
       '</div></div>' +
       '<div class="pdp__sticky"><span class="pdp__price">' + P(p.price) + '</span><button class="btn btn--solid" type="button" data-add><span class="btn__label">Add to Private Bag</span></button></div>';
@@ -150,10 +152,11 @@
   function setView(v) {
     pdp.view = v;
     $$('#stage .plate').forEach(function (pl) { pl.classList.toggle('is-on', pl.getAttribute('data-view') === v); });
-    $$('#pdpPanel .thumb').forEach(function (t) { t.setAttribute('aria-pressed', t.getAttribute('data-view') === v); });
+    $$('#pdpPanel .thumb, #pdpPanel .viewtab').forEach(function (t) { t.setAttribute('aria-pressed', t.getAttribute('data-view') === v); });
     if (loupeApi) loupeApi.refresh();
   }
 
+  function fittingBooked() { return !!(C.state.stylist && C.state.stylist.topic === M.FITTING); }
   function addToBag() {
     var p = pdp.p, err = $('#sizeError');
     if (p.sizing === 'apparel' && !pdp.size && !pdp.bespoke) {
@@ -161,7 +164,7 @@
       var first = $('#sizes .size:not([aria-disabled="true"])'); if (first) first.focus();
       return;
     }
-    if (pdp.bespoke && !C.state.measurements) { shop.openMeasure(function () { addToBag(); }); return; }
+    if (pdp.bespoke && !C.state.measurements && !fittingBooked()) { shop.openMeasure(function () { addToBag(); }); return; }
     if (C.available(p) <= 0) { C.toast('Every remaining piece is held in a private bag.'); return; }
     var size = pdp.bespoke ? 'Bespoke' : pdp.size, key = C.lineKey(p.id, size, pdp.bespoke);
     var line = C.state.bag.filter(function (l) { return l.key === key; })[0];
@@ -178,7 +181,8 @@
   $('#pdpPanel').addEventListener('click', function (e) {
     if (!pdp) return;
     var t;
-    if ((t = e.target.closest('.thumb'))) { setView(t.getAttribute('data-view')); return; }
+    if ((t = e.target.closest('.thumb, .viewtab'))) { setView(t.getAttribute('data-view')); return; }
+    if (e.target.closest('[data-sizeguide]')) { shop.openSize(pdp.p.id); return; }
     if ((t = e.target.closest('.size'))) {
       if (t.getAttribute('aria-disabled') === 'true') { C.toast('That size is sold out in this edition.'); return; }
       if (pdp.p.sizing !== 'apparel') return;
@@ -203,8 +207,8 @@
     $$('#sizes .size').forEach(function (s) { s.classList.toggle('is-dim', on); });
     $('#sizeError').textContent = '';
     var note = $('#bespokeNote');
-    if (on && !C.state.measurements) { note.textContent = 'Add your measurements so the atelier can cut to them.'; shop.openMeasure(function () { note.textContent = 'Your measurements are saved. The atelier cuts to them.'; }, function () { /* cancelled */ if (!C.state.measurements) { pdp.bespoke = false; sw.setAttribute('aria-checked', false); note.textContent = 'Cut to your own measurements. Your stylist confirms the timeline.'; } }); }
-    else if (on) note.textContent = 'Your saved measurements will be used. Edit them any time in the Private Salon.';
+    if (on && !C.state.measurements && !fittingBooked()) { note.textContent = 'Add your measurements so the atelier can cut to them.'; shop.openMeasure(function () { note.textContent = 'Your measurements are saved. The atelier cuts to them.'; }, function () { /* cancelled */ if (!C.state.measurements) { pdp.bespoke = false; sw.setAttribute('aria-checked', false); note.textContent = 'Cut to your own measurements. Your stylist confirms the timeline.'; } }); }
+    else if (on) note.textContent = fittingBooked() && !C.state.measurements ? 'Your private fitting request is with the atelier.' : 'Your saved measurements will be used. Edit them any time in the Private Salon.';
     else note.textContent = 'Cut to your own measurements. Your stylist confirms the timeline.';
   }
 
@@ -254,24 +258,57 @@
     refresh();
   }
 
+
+  /* ======================= size and fit guide ======================= */
+  var guideUnit = 'cm';
+  function gv(cm) { return guideUnit === 'in' ? (Math.round(cm / 2.54 * 10) / 10).toFixed(1) : (Math.round(cm * 10) / 10).toString(); }
+  function renderSize(pid) {
+    var p = C.product(pid) || M.PRODUCTS[0], S = M.SIZECHART;
+    var hollow = S.sizes.map(function (_, i) { return p.hollow + (i - 1) * S.hollowStep; });
+    function row(label, arr) { return '<tr><th scope="row">' + label + '</th>' + arr.map(function (v) { return '<td' + '>' + gv(v) + '</td>'; }).join('') + '</tr>'; }
+    $('#sizePanel').setAttribute('data-product', p.id);
+    $('#sizePanel').innerHTML =
+      '<div class="panel-head"><h2 id="sizeTitle">Size &amp; Fit Guide</h2><button class="icon-btn" type="button" data-close aria-label="Close size guide">' + X + '</button></div>' +
+      '<div class="panel-body">' +
+        '<p class="lede lede--dark">' + esc(p.short) + '. Body measurements, not garment measurements. Model is ' + M.MODEL.height + ' and wears Size ' + M.MODEL.size + '.</p>' +
+        '<div class="seg" role="group" aria-label="Units"><button type="button" data-sunit="cm" aria-pressed="' + (guideUnit === 'cm') + '">CM</button><button type="button" data-sunit="in" aria-pressed="' + (guideUnit === 'in') + '">Inches</button></div>' +
+        '<div class="size-table-wrap"><table class="size-table"><caption class="sr-only">Size chart in ' + (guideUnit === 'in' ? 'inches' : 'centimetres') + '</caption>' +
+          '<thead><tr><th scope="col"><span class="sr-only">Measurement</span></th>' + S.sizes.map(function (z) { return '<th scope="col">' + z + '</th>'; }).join('') + '</tr></thead><tbody>' +
+          row('Bust', S.bust) + row('Waist', S.waist) + row('Hip', S.hip) + row('Hollow-to-Hem', hollow) + '</tbody></table></div>' +
+        '<p class="field__hint">Hollow-to-Hem is measured from the hollow at the base of the neck, straight down to the hem. Between sizes, choose the larger, or have the piece cut to your own measurements.</p>' +
+        '<button class="btn btn--gold btn--block" type="button" data-size-bespoke>Bespoke Made-to-Measure</button>' +
+        '<button class="btn btn--ghost btn--block" type="button" data-size-fitting>Book Private Colombo Atelier Fitting</button>' +
+      '</div>';
+  }
+  shop.openSize = function (pid) { renderSize(pid); C.open($('#layerSize')); };
+  $('#sizePanel').addEventListener('click', function (e) {
+    var u = e.target.closest('[data-sunit]'); if (u) { guideUnit = u.getAttribute('data-sunit'); renderSize($('#sizePanel').getAttribute('data-product')); var b = $('#sizePanel [data-sunit="' + guideUnit + '"]'); if (b) b.focus(); return; }
+    if (e.target.closest('[data-size-bespoke]')) {
+      C.close($('#layerSize'));
+      setTimeout(function () { var sw = $('#bespokeSwitch'); if (sw && sw.getAttribute('aria-checked') !== 'true') toggleBespoke(); }, 620);
+      return;
+    }
+    if (e.target.closest('[data-size-fitting]')) { var id = $('#sizePanel').getAttribute('data-product'); C.close($('#layerSize')); setTimeout(function () { M.ui.openStylist(id, M.FITTING); }, 620); }
+  });
+
   /* ======================= bespoke measurements ======================= */
   var FIELDS = [
-    ['height', 'Height', 'Standing, without shoes.', 130, 220],
-    ['chest', 'Bust or chest', 'Around the fullest part.', 60, 170],
+    ['chest', 'Bust', 'Around the fullest part.', 60, 170],
     ['waist', 'Waist', 'Around the natural waist.', 50, 160],
-    ['hips', 'Hips', 'Around the fullest part.', 60, 180],
-    ['shoulder', 'Shoulder', 'Seam to seam across the back.', 30, 70],
-    ['inseam', 'Inseam', 'Crotch to ankle, inside leg.', 50, 110]
+    ['hips', 'Hip', 'Around the fullest part.', 60, 180],
+    ['height', 'Height', 'Standing, without shoes.', 130, 220],
+    ['heel', 'Heel height', 'The heel you will wear with the piece. Enter 0 for flat.', 0, 16]
   ];
-  var meas = { unit: 'cm', cb: null, cancel: null, saved: false };
+  var meas = { unit: 'cm', cb: null, cancel: null, saved: false, fitting: false };
   function toUnit(cm, u) { return u === 'in' ? Math.round(cm / 2.54 * 10) / 10 : Math.round(cm * 10) / 10; }
   shop.openMeasure = function (onSave, onCancel) {
-    var saved = C.state.measurements; meas.unit = (saved && saved.unit) || 'cm'; meas.cb = onSave || null; meas.cancel = onCancel || null; meas.saved = false;
+    var saved = C.state.measurements; meas.unit = (saved && saved.unit) || 'cm'; meas.cb = onSave || null; meas.cancel = onCancel || null; meas.saved = false; meas.fitting = false;
     var vals = saved ? saved.cm : {};
     $('#measurePanel').innerHTML =
       '<div class="panel-head"><h2 id="measureTitle">Bespoke Made-to-Measure</h2><button class="icon-btn" type="button" data-close aria-label="Close measurements"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="1.1"/></svg></button></div>' +
       '<form class="panel-body" id="measureForm" novalidate>' +
         '<p class="lede lede--dark">Measure over light clothing, and ask someone to help. Your stylist reviews every set before cutting begins.</p>' +
+        '<div class="notice"><strong>Prefer to be measured in person?</strong> Request a private fitting in the Colombo atelier instead.<br><button class="link-btn" type="button" data-fitting style="margin-top:10px">Book Private Colombo Atelier Fitting</button></div>' +
         '<div class="seg" role="group" aria-label="Units"><button type="button" data-unit="cm" aria-pressed="' + (meas.unit === 'cm') + '">Centimetres</button><button type="button" data-unit="in" aria-pressed="' + (meas.unit === 'in') + '">Inches</button></div>' +
         '<div class="measure-grid">' + FIELDS.map(function (f) {
           var v = vals[f[0]] != null ? toUnit(vals[f[0]], meas.unit) : '';
@@ -292,7 +329,8 @@
       $$('#measureForm [data-unit]').forEach(function (b) { b.setAttribute('aria-pressed', b === u); });
       return;
     }
-    if (e.target.closest('[data-cancel]')) C.close($('#layerMeasure'));
+    if (e.target.closest('[data-cancel]')) { C.close($('#layerMeasure')); return; }
+    if (e.target.closest('[data-fitting]')) { meas.fitting = true; C.close($('#layerMeasure')); setTimeout(function () { M.ui.openStylist(pdp && pdp.p.id, M.FITTING); }, 620); }
   });
   $('#measurePanel').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -310,13 +348,12 @@
     C.toast(C.state.member ? 'Measurements saved to your Private Salon.' : 'Measurements saved on this device.');
     if (meas.cb) setTimeout(meas.cb, 620);
   });
-  C.on('close', function (dlg) { if (dlg.id === 'layerMeasure' && !meas.saved && meas.cancel) { var f = meas.cancel; meas.cancel = null; f(); } });
+  C.on('close', function (dlg) { if (dlg.id === 'layerMeasure' && !meas.saved && !meas.fitting && meas.cancel) { var f = meas.cancel; meas.cancel = null; f(); } });
 
   /* ======================= bag and checkout ======================= */
   var bagView = 'bag', lastOrder = null;
   var COUNTRIES = ['Sri Lanka', 'United Arab Emirates', 'United Kingdom', 'United States', 'Ireland', 'France', 'Italy', 'Germany', 'Singapore', 'Maldives', 'India', 'Australia', 'Japan'];
   var CUR_COUNTRY = { LKR: 'Sri Lanka', USD: 'United States', EUR: 'France', GBP: 'United Kingdom', AED: 'United Arab Emirates' };
-  var X = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="1.1"/></svg>';
 
   function deliveryLine(country) {
     return country === 'Sri Lanka' ? 'Complimentary White-Glove Insured Delivery across Sri Lanka.' : 'International DHL Express DDP: all duties and taxes are included in your total.';

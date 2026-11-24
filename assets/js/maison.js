@@ -32,6 +32,7 @@
     if (k === 'filter') M.shop.setFilter(v, true);
     else if (k === 'product') M.shop.openProduct(v);
     else if (k === 'stylist') ui.openStylist();
+    else if (k === 'fitting') ui.openStylist(null, M.FITTING);
     else if (k === 'salon') ui.openSalon();
     else if (k === 'film') ui.openFilm();
     else if (k === 'anchor') C.scrollTo(v);
@@ -165,10 +166,10 @@
   C.on('currency', function () { var rn = $('#regionNote'); if (rn) rn.textContent = regionNote(); var mb = $('[data-action="region-from-menu"]'); if (mb) mb.textContent = M.CURRENCIES[C.state.currency].label; });
 
   /* ======================= search ======================= */
-  var KIND_WORDS = { gown: 'dress gown couture evening', lace: 'dress lace midi velvet', blazer: 'jacket suit tailoring blazer', shirt: 'shirt silk evening', bag: 'bag handbag leather handle', mina: 'clutch minaudiere evening bag pearl', parfum: 'perfume fragrance scent extrait parfum' };
+  var KIND_WORDS = { gown: 'dress gown couture evening velvet painted', mullet: 'gown evening rosette train silk', column: 'gown evening strapless bow satin pearl', lace: 'dress lace midi velvet garnet', silkmidi: 'dress midi silk twisted asymmetric', blazer: 'jacket tailoring blazer ruffle peplum', mini: 'dress mini scarf tailored', cape: 'cape lace sheer pearl' };
   function hay(p) { return [p.name, p.short, p.summary, p.materials, p.collection, p.tabs.join(' '), KIND_WORDS[p.kind] || '', p.provenance, p.bespoke ? 'bespoke made-to-measure' : ''].join(' ').toLowerCase(); }
   var index = M.PRODUCTS.map(function (p) { return { p: p, h: hay(p) }; });
-  var SUGGEST = ['gown', 'leather', 'parfum', 'bespoke', 'silk'];
+  var SUGGEST = ['gown', 'velvet', 'lace', 'bespoke', 'silk'];
   function renderSearch(q) {
     var box = $('#searchResults'), terms = q.toLowerCase().split(/\s+/).filter(Boolean);
     if (!terms.length) {
@@ -177,7 +178,7 @@
     }
     var hits = index.filter(function (x) { return terms.every(function (t) { return x.h.indexOf(t) > -1; }); });
     if (!hits.length) {
-      box.innerHTML = '<p class="search-empty">Nothing in the collection matches &ldquo;' + esc(q) + '&rdquo;. Try &ldquo;velvet&rdquo;, &ldquo;leather&rdquo; or &ldquo;parfum&rdquo;, or <button class="link-btn" type="button" data-go="stylist">ask a Maison Stylist</button>.</p>';
+      box.innerHTML = '<p class="search-empty">Nothing in the collection matches &ldquo;' + esc(q) + '&rdquo;. Try &ldquo;velvet&rdquo;, &ldquo;lace&rdquo; or &ldquo;gown&rdquo;, or <button class="link-btn" type="button" data-go="stylist">ask a Maison Stylist</button>.</p>';
       return;
     }
     box.innerHTML = '<p class="search-hint">' + hits.length + (hits.length === 1 ? ' piece' : ' pieces') + '</p>' + hits.map(function (x) {
@@ -333,7 +334,7 @@
     if (id !== 'box' && box.getAttribute('data-open') !== 'true') setBox(true);
   }
   $('#partsList').addEventListener('click', function (e) { var b = e.target.closest('[data-part]'); if (b) pickPart(b.getAttribute('data-part')); });
-  box.addEventListener('click', function (e) { var g = e.target.closest('[data-part]'); if (g && g !== box) pickPart(g.getAttribute('data-part')); });
+  box.addEventListener('click', function (e) { var g = e.target.closest('[data-part]'); if (g && g !== box) pickPart({ ribbon: 'box', crest: 'box' }[g.getAttribute('data-part')] || g.getAttribute('data-part')); });
   boxBtn.addEventListener('click', function () { setBox(box.getAttribute('data-open') !== 'true'); });
 
   /* ======================= info layer ======================= */
@@ -348,7 +349,7 @@
     var f = M.CONFIG.film || {}, real = f.webm || f.mp4;
     var stage = real
       ? '<video controls autoplay playsinline poster="' + esc(f.poster || '') + '" aria-label="MANTHAI Atelier Film">' + (f.webm ? '<source src="' + esc(f.webm) + '" type="video/webm">' : '') + (f.mp4 ? '<source src="' + esc(f.mp4) + '" type="video/mp4">' : '') + '</video>'
-      : '<div class="film" id="modalReel" role="img" aria-label="Atelier film placeholder: four shots of origin, craft, hardware and the eternal reveal">' + M.Art.film() + '</div>';
+      : '<div class="film" id="modalReel" role="img" aria-label="Atelier film placeholder: four shots of origin, craft, brushwork and the woven label reveal">' + M.Art.film() + '</div>';
     $('#filmPanel').innerHTML = '<div class="film-stage" data-media-slot="atelier-film"><button class="icon-btn film-close" type="button" data-close aria-label="Close film">' + X + '</button>' + stage + '</div>' +
       '<div class="film-bar"><p><b>Atelier Film.</b> ' + (real ? 'Press play to watch with sound.' : 'A placeholder reel. The finished film replaces it when the files are added.') + '</p>' +
       (real ? '' : '<button class="btn btn--ghost btn--sm" type="button" id="reelToggle" aria-pressed="false">Pause</button>') +
@@ -363,9 +364,10 @@
   var styView = 'form', styRef = null;
   function waLink(text) { return 'https://wa.me/' + M.CONFIG.whatsapp + '?text=' + encodeURIComponent(text); }
   function tomorrow() { var d = new Date(); d.setDate(d.getDate() + 1); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
-  var SLOTS = ['10:00', '12:00', '15:00', '17:00'], TOPICS = ['Made-to-measure and sizing', 'Choosing a piece', 'A gift or a commission', 'Delivery and duties', 'Care and repair'];
-  function renderStylist(pid) {
+  var SLOTS = ['10:00', '12:00', '15:00', '17:00'], TOPICS = [M.FITTING, 'Made-to-measure and sizing', 'Choosing a piece', 'A gift or a commission', 'Delivery and duties', 'Care and repair'];
+  function renderStylist(pid, topic) {
     var p = pid && C.product(pid), s = C.state.stylist || {}, mem = C.state.member || {};
+    if (topic) s = Object.assign({}, s, { topic: topic });
     var msg = p ? 'Good day, I would like to speak with a Maison Stylist about the ' + p.short + '.' : 'Good day, I would like to speak with a Maison Stylist.';
     var body;
     if (styView === 'done' && s.ref) {
@@ -393,7 +395,7 @@
     $('#stylistPanel').innerHTML = head('stylistTitle', 'The Maison Stylist', 'Close stylist') + body;
     $('#stylistPanel').setAttribute('data-product', pid || '');
   }
-  ui.openStylist = function (pid) { styView = 'form'; renderStylist(pid); C.open($('#layerStylist')); };
+  ui.openStylist = function (pid, topic) { styView = 'form'; renderStylist(pid, topic); C.open($('#layerStylist')); };
   $('#stylistPanel').addEventListener('click', function (e) {
     if (e.target.closest('[data-again]')) { styView = 'form'; renderStylist($('#stylistPanel').getAttribute('data-product')); return; }
     if (e.target.closest('[data-ics]')) {
@@ -464,7 +466,7 @@
   /* ======================= Private Salon ======================= */
   var salonView = 'in', salonEmail = '', pendingCb = null;
   var STEPS = ['Order confirmed', 'In the atelier', 'Dispatched', 'Delivered'];
-  var MLAB = { height: 'Height', chest: 'Bust or chest', waist: 'Waist', hips: 'Hips', shoulder: 'Shoulder', inseam: 'Inseam' };
+  var MLAB = { chest: 'Bust', waist: 'Waist', hips: 'Hip', height: 'Height', heel: 'Heel height' };
   function signIn(m) {
     C.state.member = { email: m.email, name: m.name || nameFromEmail(m.email), since: new Date().toISOString() };
     C.save(); C.emit('member');
@@ -610,6 +612,47 @@
   document.addEventListener('input', function (e) {
     var f = e.target.closest && e.target.closest('.field.has-error');
     if (f && e.target.matches('input, select, textarea')) C.setError(e.target, '');
+  });
+
+  /* ======================= Future Métiers and the Private Registry ======================= */
+  $('#metiersGrid').innerHTML = M.METIERS.map(function (m) {
+    var cta = m.action
+      ? '<button class="btn btn--gold" type="button" data-action="' + m.action + '">' + esc(m.cta) + '</button>'
+      : '<button class="btn btn--ghost" type="button" data-registry="' + esc(m.interest) + '">' + esc(m.cta) + '</button>';
+    return '<li class="metier' + (m.action ? ' is-now' : '') + '"><p class="metier__chapter">' + esc(m.chapter) + '</p><h3 class="metier__title">' + esc(m.title) + '</h3><p class="metier__sub">' + esc(m.sub) + '</p>' +
+      '<p class="metier__text">' + esc(m.text) + '</p><p class="metier__badge">' + esc(m.badge) + '</p>' + cta + '</li>';
+  }).join('');
+  var REG_CHAPTERS = M.METIERS.filter(function (m) { return m.interest; }).map(function (m) { return m.interest; });
+  var regDone = false;
+  function renderRegistry(interest) {
+    var reg = C.state.registry || {}, p;
+    if (regDone) {
+      p = '<div class="confirm"><h3>Thank you, ' + esc(firstName(reg.name)) + '.</h3><p>Your name has been inscribed in the MANTHAI Private Registry.</p>' +
+        '<p class="fine-print">Demonstration storefront: your entry is kept in this browser only and no message is sent.</p>' +
+        '<button class="btn btn--gold btn--block" type="button" data-close>Continue</button></div>';
+    } else {
+      p = '<form class="panel-body" id="registryForm" novalidate>' +
+        '<p class="lede lede--dark">Be among the first to see what the House builds next. Chapters are shown privately, in order, to those on the list.</p>' +
+        fld('rg-name', 'Name', '<input id="rg-name" name="name" type="text" autocomplete="name" value="' + esc(reg.name || (C.state.member && C.state.member.name) || '') + '">') +
+        fld('rg-contact', 'Email or WhatsApp', '<input id="rg-contact" name="contact" type="text" autocomplete="email" inputmode="email" value="' + esc(reg.contact || (C.state.member && C.state.member.email) || '') + '">') +
+        fld('rg-interest', 'Chapter of interest', '<select id="rg-interest" name="interest">' + REG_CHAPTERS.map(function (c) { return '<option' + (c === interest ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') + '</select>') +
+        '<button class="btn btn--gold btn--block" type="submit">Inscribe my name</button></form>';
+    }
+    $('#registryPanel').innerHTML = head('registryTitle', 'The Private Registry', 'Close registry') + p;
+  }
+  ui.openRegistry = function (interest) { regDone = false; renderRegistry(interest || REG_CHAPTERS[0]); C.open($('#layerRegistry')); };
+  $('#registryPanel').addEventListener('submit', function (e) {
+    if (e.target.id !== 'registryForm') return; e.preventDefault();
+    var f = e.target, bad = null;
+    function need(n, ok, msg) { var i = f.elements[n]; if (!ok(i.value)) { C.setError(i, msg); bad = bad || i; } else C.setError(i, ''); }
+    need('name', function (v) { return v.trim().length > 1; }, 'Enter your name.');
+    need('contact', function (v) { return C.validEmail(v) || C.validPhone(v); }, 'Enter an email address or a WhatsApp number.');
+    if (bad) { bad.focus(); return; }
+    C.state.registry = { name: f.elements.name.value.trim(), contact: f.elements.contact.value.trim(), interest: f.elements.interest.value, at: new Date().toISOString() };
+    C.save(); regDone = true; renderRegistry(); $('#registryPanel').scrollTop = 0;
+  });
+  document.addEventListener('click', function (e) {
+    var r = e.target.closest('[data-registry]'); if (r) ui.openRegistry(r.getAttribute('data-registry'));
   });
 
   /* ======================= init ======================= */

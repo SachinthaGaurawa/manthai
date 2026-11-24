@@ -75,7 +75,7 @@ Left-aligned editorial text, centred only in the hero and ceremonial moments. Se
 
 Every media slot carries `data-media-slot`, a `data-prompt` (the director's prompt from the production script), and a drop-in path in `assets/js/catalog.js` (`media` fields) or the `<video>` element's `<source>` tags. Atmospheric CSS and SVG placeholders render until real footage or photography is supplied; supplying a file replaces the placeholder automatically.
 
-Hero film: 12 second seamless loop in four shots (origin and texture, craft and silhouette, hardware and scent, eternal reveal). The placeholder reel runs the same four-beat pacing in CSS so the real film can swap in without changing the timing of surrounding UI.
+Hero film: 12 second seamless loop in four shots (origin and texture, craft and silhouette, brushwork and beadwork shimmer, the woven label reveal). The placeholder reel runs the same four-beat pacing in CSS so the real film can swap in without changing the timing of surrounding UI.
 
 ## 4. Anti-template self-review
 

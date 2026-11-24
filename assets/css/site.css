@@ -236,10 +236,11 @@ body::after {
 .box { width: min(100%, 560px); height: auto; overflow: visible; }
 .box .part { transition: opacity .6s var(--ease); }
 .box[data-part] .part { opacity: .25; }
-.box[data-part='box'] .part--box, .box[data-part='ribbon'] .part--ribbon, .box[data-part='card'] .part--card, .box[data-part='crest'] .part--crest, .box[data-part='label'] .part--label { opacity: 1; filter: drop-shadow(0 0 10px rgba(197, 160, 89, 0.55)); }
+.box[data-part='box'] .part--box, .box[data-part='box'] .part--ribbon, .box[data-part='box'] .part--crest, .box[data-part='garment'] .part--garment, .box[data-part='card'] .part--card, .box[data-part='label'] .part--label { opacity: 1; filter: drop-shadow(0 0 10px rgba(197, 160, 89, 0.55)); }
 .box .lid, .box .lift { transition: transform 1s var(--ease); }
 .box[data-open='true'] .lid { transform: translateY(-96px); }
-.box[data-open='true'] .lift--card { transform: translateY(-46px); }
+.box[data-open='true'] .lift--garment { transform: translateY(-20px); }
+.box[data-open='true'] .lift--card { transform: translateY(-58px); }
 .box[data-open='true'] .lift--label { transform: translate(34px, -26px); }
 .ritual__copy { display: grid; gap: 26px; }
 .parts { display: grid; counter-reset: part; }
@@ -340,7 +341,7 @@ body::after {
 .stage__bar { position: absolute; left: 12px; bottom: 12px; z-index: 4; }
 .stage__bar .btn { min-height: 38px; padding: 0 16px; background: rgba(246, 243, 236, 0.92); color: var(--obsidian-void); border-color: var(--hairline); font-size: 11px; }
 .stage__bar .btn[aria-pressed='true'] { background: var(--obsidian-void); color: var(--alabaster-silk); border-color: var(--obsidian-void); }
-.thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.thumbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 .thumb { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: var(--mannar-pearl); outline-offset: 3px; }
 .thumb svg, .thumb img { width: 100%; height: 100%; object-fit: cover; }
 .thumb[aria-pressed='true']::after { content: ''; position: absolute; inset: 0; border: 1px solid var(--solar-ochre); box-shadow: inset 0 0 0 2px var(--alabaster-silk); }
@@ -601,3 +602,44 @@ dialog[open] ~ .toast { z-index: 2147483647; }
 .search-form input[type='search']::-webkit-search-cancel-button, .search-form input[type='search']::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
 .search-form input:focus-visible { outline: none; }
 .search-form:focus-within { border-bottom-color: var(--sovereign-gold); }
+
+
+/* ======================= Phase 1: product views, size guide, care ======================= */
+.viewtabs { display: grid; grid-template-columns: repeat(4, auto); gap: 6px; }
+.viewtab { padding: 10px 8px; border: 1px solid var(--hairline); font: 400 10px/1.25 var(--sans); letter-spacing: .06em; text-align: center; text-transform: uppercase; color: var(--text-2); transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast); }
+.viewtab:hover { color: var(--text); border-color: var(--solar-ochre); }
+.viewtab[aria-pressed='true'] { background: var(--obsidian-void); color: var(--alabaster-silk); border-color: var(--obsidian-void); }
+.thumb span { font-size: 9px; }
+.model-note { margin-top: 12px; font: 400 .95rem/1.4 var(--serif); color: var(--graphite-ink); }
+.opt-label .link-btn { font-size: 11px; }
+.care-list { display: grid; gap: 8px; padding-left: 1.1em; list-style: disc; }
+.care-list li { color: var(--text-2); }
+.size-table-wrap { overflow-x: auto; }
+.size-table { width: 100%; border-collapse: collapse; font: 400 1rem/1.3 var(--serif); }
+.size-table th, .size-table td { padding: 12px 8px; text-align: center; border-bottom: 1px solid var(--hairline-soft); }
+.size-table thead th { font: 400 var(--fs-ui)/1 var(--sans); letter-spacing: var(--track-ui); color: var(--sovereign-gold); }
+.size-table tbody th { text-align: left; font: 400 var(--fs-ui)/1.3 var(--sans); letter-spacing: .1em; text-transform: uppercase; color: var(--text-2); padding-left: 0; }
+.layer--guide .layer__panel { width: min(94vw, 640px); }
+
+/* ======================= Future Metiers ======================= */
+.metiers { background: var(--obsidian-void); padding: var(--section) 0; border-top: 1px solid var(--hairline-soft); }
+.metiers__head { display: grid; gap: 18px; margin-bottom: clamp(40px, 6vw, 80px); }
+.metiers__sub { display: block; margin-top: .25em; font-size: .52em; letter-spacing: .02em; color: var(--sovereign-gold); }
+.metiers__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(20px, 3vw, 44px); }
+.metier { display: grid; align-content: start; gap: 16px; padding: clamp(24px, 3vw, 40px); border: 1px solid var(--hairline-soft); background: var(--anuradhapura-charcoal); transition: border-color var(--t-mid) var(--ease); }
+.metier:hover { border-color: var(--hairline); }
+.metier.is-now { border-color: var(--hairline); }
+.metier__chapter { font: 400 12px/1 var(--inscription); letter-spacing: .18em; color: var(--sovereign-gold); }
+.metier__title { font: 300 clamp(1.7rem, 1.3rem + 1.2vw, 2.3rem)/1.1 var(--serif); color: var(--alabaster-silk); }
+.metier__sub { font: 400 var(--fs-ui)/1.5 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--muted-stone); }
+.metier__text { color: #d6d1c5; max-width: 38ch; }
+.metier__badge { justify-self: start; padding: 6px 10px; border: 1px solid var(--hairline); font: 400 10px/1 var(--sans); letter-spacing: .16em; color: var(--sovereign-gold); }
+.is-now .metier__badge { background: var(--sovereign-gold); color: var(--obsidian-void); border-color: var(--sovereign-gold); }
+.metier .btn { justify-self: start; margin-top: 8px; }
+@media (max-width: 900px) { .metiers__grid { grid-template-columns: 1fr; } }
+
+/* the wordmark is always one colour: it only takes gold when the cipher is deliberately revealed */
+.wordmark .cipher-accent, .box .cipher-accent, .look .cipher-accent, .film .cipher-accent, .cipher:not(.is-lit) .cipher-accent { fill: currentColor; filter: none; }
+.cipher.is-lit .cipher-accent { fill: var(--sovereign-gold); }
+
+@media (max-width: 560px) { .viewtabs { grid-template-columns: 1fr 1fr; } .size-table th, .size-table td { padding: 10px 4px; } }

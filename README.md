@@ -18,7 +18,7 @@ vercel.json           static deploy config, cache and security headers
 docs/                 Pass 1 design plan (tokens, spatial blueprint, self-review)
 assets/css/tokens.css exact design tokens from the brand directive
 assets/css/site.css   layout, components, motion, responsive rules
-assets/js/catalog.js  products, prices (LKR), navigation, lookbook, ritual, policy text, config
+assets/js/catalog.js  womenswear products, prices (LKR), navigation, size chart, lookbook, apparel ritual, Future Métiers, policy text, config
 assets/js/art.js      atmospheric SVG placeholders for photography and film
 assets/js/core.js     state, currency, dialogs, toast, helpers
 assets/js/shop.js     collection, product drawer, loupe, bespoke, bag, checkout
@@ -35,7 +35,7 @@ Every placeholder is an SVG that real media replaces automatically. Nothing else
 | --- | --- | --- |
 | Hero film | `assets/media/hero/manthai-hero.webm` and `manthai-hero.mp4` | 12 s seamless loop, silent track, WebM under 3.5 MB, MP4 under 4.5 MB |
 | Hero poster | `assets/media/hero/hero-poster.webp` | First frame, 1600 x 900, under 120 KB |
-| Product photography | `media.form`, `media.move`, `media.detail` on each product in `catalog.js` | 4:5 portrait stills. Form is the product, move is the model, detail is the macro |
+| Product photography | `media.form`, `media.back`, `media.detail`, `media.move` on each product in `catalog.js` | 4:5 portrait stills. Form is the front view, back is the back view, detail is the textile macro, move is the drape in motion |
 | Campaign stills | `src` on each `M.LOOKBOOK` item in `catalog.js` | 4:5 or 3:4 |
 | Atelier film modal | `M.CONFIG.film` in `catalog.js` | `webm`, `mp4`, `poster` paths |
 | Ambient sound | `M.CONFIG.ambientSrc` in `catalog.js` | Optional loop. Empty uses a very quiet synthesised drone |
@@ -51,7 +51,7 @@ Each slot carries a `data-media-slot` attribute and the director's prompt in `da
 All in `assets/js/catalog.js` under `M.CONFIG`:
 
 - `whatsapp`: the Maison concierge number, international format, digits only. Set to +94 77 878 7998.
-- `googleClientId`: a Google Identity Services client ID turns the Private Salon sign-in from a demo chooser into real Google sign-in.
+- `googleClientId`: set. The Private Salon uses real Google sign-in on `https://manthai.vercel.app`. Add any other origin (for example a preview domain) in the Google Cloud console under Authorized JavaScript origins.
 - Currency rates in `M.CURRENCIES` are indicative. `FX.refresh()` in `core.js` is the place to connect a live rate feed.
 
 ## What is demonstration only
@@ -64,3 +64,8 @@ This build has no server. Checkout creates an order reference in the browser and
 - `prefers-reduced-motion`: the hero film shows a still, reveals and sweeps are removed.
 - Hero film pauses when less than half of it is visible and has a pause button and an ambient sound toggle.
 - Layout is tested from 320 px phones to 2560 px displays, portrait and landscape.
+
+
+## Phase 1 scope
+
+The launch collection is 100% luxury womenswear: eight pieces across Atelier Couture, Evening & Gowns, Midi & Occasion and Tailoring & Capes. Menswear (Chapter II), leather goods and haute parfumerie (Chapter III) appear only in the "Future Métiers" section, which collects names in a Private Registry. There are no empty shop pages for them. When a chapter launches, add its products and a nav item in `catalog.js`.
