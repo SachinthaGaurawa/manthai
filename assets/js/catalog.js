@@ -9,7 +9,7 @@
   /* ---------- Site configuration (replace values when going live) ---------- */
   M.CONFIG = {
     /* Maison concierge WhatsApp number, international format, digits only. */
-    whatsapp: '94000000000',
+    whatsapp: '94778787998',
     /* Atelier film. Add real files and the film modal plays them instead of the placeholder reel. */
     film: { webm: '', mp4: '', poster: 'assets/media/hero/hero-poster.webp' },
     /* Optional ambient bed. When empty the page synthesises a very quiet drone. */
@@ -248,6 +248,7 @@
     delivery: { title: 'Delivery and duties',
       body: ['Complimentary white-glove insured delivery across Sri Lanka. A Maison courier brings the piece to you and waits while you open it.',
              'International orders travel by DHL Express, delivered duty paid (DDP). All duties and taxes are included in the price you see at checkout, so nothing is collected at your door.',
+             'Delivery is always free. Every order is prepaid; cash on delivery is not offered.',
              'Made-to-measure pieces are dispatched after final fit confirmation. Your stylist confirms the date with you.'] },
     care: { title: 'Care and repair',
       body: ['Every piece comes with care notes on its Story Card. The atelier in Colombo repairs and refreshes MANTHAI pieces for life.',

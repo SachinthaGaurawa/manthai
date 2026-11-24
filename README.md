@@ -40,13 +40,15 @@ Every placeholder is an SVG that real media replaces automatically. Nothing else
 | Atelier film modal | `M.CONFIG.film` in `catalog.js` | `webm`, `mp4`, `poster` paths |
 | Ambient sound | `M.CONFIG.ambientSrc` in `catalog.js` | Optional loop. Empty uses a very quiet synthesised drone |
 
+The full list of slots with a prompt for each is in `docs/MEDIA-BRIEF.md`. `scripts/encode-media.sh master.mov` makes the hero WebM, MP4 and poster. A missing or broken photo falls back to the placeholder.
+
 Each slot carries a `data-media-slot` attribute and the director's prompt in `data-prompt` (or in the `prompt` field of the catalog) so the shoot brief travels with the page.
 
 ## Configuration to finish before launch
 
 All in `assets/js/catalog.js` under `M.CONFIG`:
 
-- `whatsapp`: the Maison concierge number, international format, digits only. It is a placeholder today.
+- `whatsapp`: the Maison concierge number, international format, digits only. Set to +94 77 878 7998.
 - `googleClientId`: a Google Identity Services client ID turns the Private Salon sign-in from a demo chooser into real Google sign-in.
 - Currency rates in `M.CURRENCIES` are indicative. `FX.refresh()` in `core.js` is the place to connect a live rate feed.
 

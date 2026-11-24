@@ -120,9 +120,17 @@
   /* ---------- plate html (real photo wins over placeholder) ---------- */
   C.plateHTML = function (p, view) {
     var src = p.media && p.media[view];
-    if (src) return '<img src="' + C.esc(src) + '" alt="' + C.esc(p.name) + '" loading="lazy" decoding="async">';
+    if (src) return '<img src="' + C.esc(src) + '" alt="' + C.esc(p.name) + '" loading="lazy" decoding="async" data-ph-id="' + C.esc(p.id) + '" data-ph-view="' + C.esc(view) + '">';
     return M.Art.plate(p, view);
   };
+
+  /* a missing or broken photo falls back to the atmospheric plate instead of showing a broken image */
+  document.addEventListener('error', function (e) {
+    var t = e.target; if (!t || t.tagName !== 'IMG') return;
+    var id = t.getAttribute('data-ph-id'), p = id && C.product(id); if (!p) return;
+    var holder = document.createElement('span'); holder.innerHTML = M.Art.plate(p, t.getAttribute('data-ph-view'));
+    if (holder.firstChild) t.replaceWith(holder.firstChild);
+  }, true);
 
   /* ---------- form helpers ---------- */
   C.setError = function (field, msg) {
