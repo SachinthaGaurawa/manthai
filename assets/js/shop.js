@@ -112,7 +112,6 @@
           '<div class="sizes" role="radiogroup" aria-labelledby="sizeLabel" id="sizes">' + sizes + '</div>' +
           '<p class="model-note">Model is ' + M.MODEL.height + ' and wears Size ' + M.MODEL.size + '.</p>' +
           '<p class="field__error" id="sizeError" role="alert"></p></div>' +
-        (p.bespoke ? '<button type="button" class="switch" id="bespokeSwitch" role="switch" aria-checked="false"><span class="switch__text"><b>Bespoke Made-to-Measure</b><span id="bespokeNote">Cut to your own measurements. Your stylist confirms the timeline.</span></span><span class="switch__track" aria-hidden="true"></span></button>' : '') +
         '<p class="scarcity" id="scarcity">' + esc(scarcityText(p)) + '</p>' +
         '<div class="pdp__cta">' +
           '<button class="btn btn--solid" type="button" data-add><span class="btn__label">Add to Private Bag</span></button>' +
@@ -131,7 +130,7 @@
 
   shop.openProduct = function (id) {
     var p = C.product(id); if (!p) return;
-    pdp = { p: p, size: p.sizing === 'apparel' ? null : p.sizeLabel, bespoke: false, view: 'form' };
+    pdp = { p: p, size: p.sizing === 'apparel' ? null : p.sizeLabel, view: 'form' };
     $('#pdpPanel').innerHTML = pdpHTML(p);
     $('#layerPdp').setAttribute('aria-labelledby', 'pdpTitle');
     C.open($('#layerPdp'));
@@ -159,16 +158,15 @@
   function fittingBooked() { return !!(C.state.stylist && C.state.stylist.topic === M.FITTING); }
   function addToBag() {
     var p = pdp.p, err = $('#sizeError');
-    if (p.sizing === 'apparel' && !pdp.size && !pdp.bespoke) {
-      err.textContent = 'Choose a size, or switch on Bespoke Made-to-Measure.';
+    if (p.sizing === 'apparel' && !pdp.size) {
+      err.textContent = 'Please choose a size.';
       var first = $('#sizes .size:not([aria-disabled="true"])'); if (first) first.focus();
       return;
     }
-    if (pdp.bespoke && !C.state.measurements && !fittingBooked()) { shop.openMeasure(function () { addToBag(); }); return; }
     if (C.available(p) <= 0) { C.toast('Every remaining piece is held in a private bag.'); return; }
-    var size = pdp.bespoke ? 'Bespoke' : pdp.size, key = C.lineKey(p.id, size, pdp.bespoke);
+    var size = pdp.size, key = C.lineKey(p.id, size, false);
     var line = C.state.bag.filter(function (l) { return l.key === key; })[0];
-    if (line) line.qty += 1; else C.state.bag.push({ key: key, id: p.id, size: size, bespoke: pdp.bespoke, qty: 1 });
+    if (line) line.qty += 1; else C.state.bag.push({ key: key, id: p.id, size: size, qty: 1 });
     C.save(); C.updateBagUI(); C.emit('bag');
     $$('#pdpPanel [data-add]').forEach(function (b) {
       b.classList.add('is-reserved'); b.querySelector('.btn__label').textContent = 'Reserved in Your Bag';
@@ -188,7 +186,6 @@
       if (pdp.p.sizing !== 'apparel') return;
       pdp.size = t.getAttribute('data-size'); $$('#sizes .size').forEach(function (s) { s.setAttribute('aria-checked', s === t); }); $('#sizeError').textContent = ''; return;
     }
-    if (e.target.closest('#bespokeSwitch')) { toggleBespoke(); return; }
     if (e.target.closest('[data-add]')) { addToBag(); return; }
     if (e.target.closest('[data-stylist]')) { M.ui.openStylist(pdp.p.id); return; }
     if ((t = e.target.closest('[data-passport]'))) { M.ui.openPassport(t.getAttribute('data-passport')); return; }
@@ -201,16 +198,6 @@
     i = (i + all.length) % all.length; all[i].focus(); all[i].click(); e.preventDefault();
   });
 
-  function toggleBespoke() {
-    var sw = $('#bespokeSwitch'), on = sw.getAttribute('aria-checked') !== 'true';
-    pdp.bespoke = on; sw.setAttribute('aria-checked', on);
-    $$('#sizes .size').forEach(function (s) { s.classList.toggle('is-dim', on); });
-    $('#sizeError').textContent = '';
-    var note = $('#bespokeNote');
-    if (on && !C.state.measurements && !fittingBooked()) { note.textContent = 'Add your measurements so the atelier can cut to them.'; shop.openMeasure(function () { note.textContent = 'Your measurements are saved. The atelier cuts to them.'; }, function () { /* cancelled */ if (!C.state.measurements) { pdp.bespoke = false; sw.setAttribute('aria-checked', false); note.textContent = 'Cut to your own measurements. Your stylist confirms the timeline.'; } }); }
-    else if (on) note.textContent = fittingBooked() && !C.state.measurements ? 'Your private fitting request is with the atelier.' : 'Your saved measurements will be used. Edit them any time in the Private Salon.';
-    else note.textContent = 'Cut to your own measurements. Your stylist confirms the timeline.';
-  }
 
   /* ---------- 4x macro loupe ---------- */
   function initLoupe() {
@@ -275,19 +262,13 @@
         '<div class="size-table-wrap"><table class="size-table"><caption class="sr-only">Size chart in ' + (guideUnit === 'in' ? 'inches' : 'centimetres') + '</caption>' +
           '<thead><tr><th scope="col"><span class="sr-only">Measurement</span></th>' + S.sizes.map(function (z) { return '<th scope="col">' + z + '</th>'; }).join('') + '</tr></thead><tbody>' +
           row('Bust', S.bust) + row('Waist', S.waist) + row('Hip', S.hip) + row('Hollow-to-Hem', hollow) + '</tbody></table></div>' +
-        '<p class="field__hint">Hollow-to-Hem is measured from the hollow at the base of the neck, straight down to the hem. Between sizes, choose the larger, or have the piece cut to your own measurements.</p>' +
-        '<button class="btn btn--gold btn--block" type="button" data-size-bespoke>Bespoke Made-to-Measure</button>' +
-        '<button class="btn btn--ghost btn--block" type="button" data-size-fitting>Book Private Colombo Atelier Fitting</button>' +
+        '<p class="field__hint">Hollow-to-Hem is measured from the hollow at the base of the neck, straight down to the hem. Between sizes, choose the larger, or ask the stylist.</p>' +
+        '<button class="btn btn--gold btn--block" type="button" data-size-fitting>Book Private Colombo Atelier Fitting</button>' +
       '</div>';
   }
   shop.openSize = function (pid) { renderSize(pid); C.open($('#layerSize')); };
   $('#sizePanel').addEventListener('click', function (e) {
     var u = e.target.closest('[data-sunit]'); if (u) { guideUnit = u.getAttribute('data-sunit'); renderSize($('#sizePanel').getAttribute('data-product')); var b = $('#sizePanel [data-sunit="' + guideUnit + '"]'); if (b) b.focus(); return; }
-    if (e.target.closest('[data-size-bespoke]')) {
-      C.close($('#layerSize'));
-      setTimeout(function () { var sw = $('#bespokeSwitch'); if (sw && sw.getAttribute('aria-checked') !== 'true') toggleBespoke(); }, 620);
-      return;
-    }
     if (e.target.closest('[data-size-fitting]')) { var id = $('#sizePanel').getAttribute('data-product'); C.close($('#layerSize')); setTimeout(function () { M.ui.openStylist(id, M.FITTING); }, 620); }
   });
 

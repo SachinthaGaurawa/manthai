@@ -21,7 +21,7 @@ assets/css/site.css   layout, components, motion, responsive rules
 assets/js/catalog.js  womenswear products, prices (LKR), navigation, size chart, lookbook, apparel ritual, Future Métiers, policy text, config
 assets/js/art.js      atmospheric SVG placeholders for photography and film
 assets/js/core.js     state, currency, dialogs, toast, helpers
-assets/js/shop.js     collection, product drawer, loupe, bespoke, bag, checkout
+assets/js/shop.js     collection, product drawer, loupe, size guide, bag, checkout
 assets/js/maison.js   navigation, search, hero film, Salon, Stylist, Passport
 assets/brand/         official wordmark, crest, favicon
 assets/media/         drop-in folders for real photography and film

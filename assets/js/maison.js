@@ -167,9 +167,9 @@
 
   /* ======================= search ======================= */
   var KIND_WORDS = { gown: 'dress gown couture evening velvet painted', mullet: 'gown evening rosette train silk', column: 'gown evening strapless bow satin pearl', lace: 'dress lace midi velvet garnet', silkmidi: 'dress midi silk twisted asymmetric', blazer: 'jacket tailoring blazer ruffle peplum', mini: 'dress mini scarf tailored', cape: 'cape lace sheer pearl' };
-  function hay(p) { return [p.name, p.short, p.summary, p.materials, p.collection, p.tabs.join(' '), KIND_WORDS[p.kind] || '', p.provenance, p.bespoke ? 'bespoke made-to-measure' : ''].join(' ').toLowerCase(); }
+  function hay(p) { return [p.name, p.short, p.summary, p.materials, p.collection, p.tabs.join(' '), KIND_WORDS[p.kind] || '', p.provenance, ''].join(' ').toLowerCase(); }
   var index = M.PRODUCTS.map(function (p) { return { p: p, h: hay(p) }; });
-  var SUGGEST = ['gown', 'velvet', 'lace', 'bespoke', 'silk'];
+  var SUGGEST = ['gown', 'velvet', 'lace', 'cape', 'silk'];
   function renderSearch(q) {
     var box = $('#searchResults'), terms = q.toLowerCase().split(/\s+/).filter(Boolean);
     if (!terms.length) {
@@ -364,7 +364,7 @@
   var styView = 'form', styRef = null;
   function waLink(text) { return 'https://wa.me/' + M.CONFIG.whatsapp + '?text=' + encodeURIComponent(text); }
   function tomorrow() { var d = new Date(); d.setDate(d.getDate() + 1); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
-  var SLOTS = ['10:00', '12:00', '15:00', '17:00'], TOPICS = [M.FITTING, 'Made-to-measure and sizing', 'Choosing a piece', 'A gift or a commission', 'Delivery and duties', 'Care and repair'];
+  var SLOTS = ['10:00', '12:00', '15:00', '17:00'], TOPICS = [M.FITTING, 'Sizing and fit', 'Choosing a piece', 'A gift or a commission', 'Delivery and duties', 'Care and repair'];
   function renderStylist(pid, topic) {
     var p = pid && C.product(pid), s = C.state.stylist || {}, mem = C.state.member || {};
     if (topic) s = Object.assign({}, s, { topic: topic });
@@ -517,13 +517,9 @@
     if (!m && salonView === 'google' && M.CONFIG.googleClientId) mountGoogle();
   }
   function salonDash(m) {
-    var meas = C.state.measurements, notify = C.state.notify || {}, orders = C.state.orders;
+    var notify = C.state.notify || {}, orders = C.state.orders;
     var items = []; orders.forEach(function (o) { o.items.forEach(function (it) { items.push(it); }); });
     var low = M.PRODUCTS.filter(function (p) { return p.remaining > 0 && p.remaining <= 4; });
-    var mHtml = meas
-      ? '<ul class="salon-list">' + Object.keys(MLAB).filter(function (k) { return meas.cm[k] != null; }).map(function (k) {
-          var v = meas.unit === 'in' ? Math.round(meas.cm[k] / 2.54 * 10) / 10 : meas.cm[k]; return '<li>' + MLAB[k] + ': ' + v + ' ' + meas.unit + '</li>'; }).join('') + '</ul><button class="link-btn" type="button" data-measure>Edit measurements</button>'
-      : '<p>No measurements yet. Save them once and every made-to-measure piece starts from them.</p><button class="link-btn" type="button" data-measure>Add measurements</button>';
     var oHtml = orders.length ? orders.map(function (o) {
       var st = Math.min(o.step || 0, 3);
       return '<div class="salon-order"><p><strong>' + esc(o.ref) + '</strong> · ' + esc(fmtDate(o.date)) + ' · ' + o.items.length + (o.items.length === 1 ? ' piece' : ' pieces') + ' · ' + esc(o.display) + '</p>' +
@@ -538,7 +534,6 @@
     return head('salonTitle', 'Welcome, ' + esc(firstName(m.name)), 'Close Private Salon') + '<div class="panel-body salon-grid">' +
       '<div class="salon-id">' + (m.picture ? '<img src="' + esc(m.picture) + '" alt="" width="44" height="44" referrerpolicy="no-referrer">' : '<span class="salon-id__mono" aria-hidden="true">' + esc(firstName(m.name).charAt(0).toUpperCase()) + '</span>') +
       '<p class="fine-print"><strong>' + esc(m.name) + '</strong><br>' + esc(m.email) + '<br>Account ' + esc(m.id || '') + ' · signed in with ' + (m.provider === 'google' ? 'Google' : 'a private link') + ' · member since ' + esc(fmtDate(m.since)) + '</p></div>' +
-      '<section class="salon-card"><h3>Measurements</h3>' + mHtml + '</section>' +
       '<section class="salon-card"><h3>Orders and delivery</h3>' + oHtml + '</section>' +
       '<section class="salon-card"><h3>NFC passport vault</h3>' + vHtml + '</section>' +
       '<section class="salon-card"><h3>Archive previews</h3>' + aHtml + '</section>' +
