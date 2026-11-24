@@ -464,7 +464,7 @@
   C.on('close', function (d) { if (d.id === 'layerPassport') clearTimeout(scanT); });
 
   /* ======================= Private Salon ======================= */
-  var salonView = 'in', salonEmail = '', pendingCb = null;
+  var salonView = 'in', salonEmail = '', pendingCb = null, salonMsg = '';
   var STEPS = ['Order confirmed', 'In the atelier', 'Dispatched', 'Delivered'];
   var MLAB = { chest: 'Bust', waist: 'Waist', hips: 'Hip', height: 'Height', heel: 'Heel height' };
   /* An account is created the first time an email signs in (Google or private link) and found again afterwards.
@@ -489,7 +489,16 @@
   function renderSalon() {
     var m = C.state.member, h;
     if (m) h = salonDash(m);
-    else if (salonView === 'sent') {
+    else if (salonView === 'sent' && fbReady()) {
+      h = head('salonTitle', 'Check your inbox', 'Close Private Salon') + '<div class="panel-body"><p>We have sent a private link to <strong>' + esc(salonEmail) + '</strong>. Open it on this device to enter your Private Salon.</p>' +
+        '<p class="fine-print">Nothing yet? Look in your spam or promotions folder. The link works once and expires soon.</p>' +
+        '<button class="link-btn" type="button" data-back>Use a different email</button></div>';
+    } else if (salonView === 'confirm') {
+      h = head('salonTitle', 'Confirm your email', 'Close Private Salon') + '<form class="panel-body" id="confirmForm" novalidate>' +
+        '<p class="lede lede--dark">You opened your private link on a different device. Enter the email address it was sent to.</p>' +
+        fld('c-email', 'Email', '<input id="c-email" name="email" type="email" autocomplete="email" inputmode="email">') +
+        '<button class="btn btn--gold btn--block" type="submit">Open my Private Salon</button></form>';
+    } else if (salonView === 'sent') {
       h = head('salonTitle', 'Check your inbox', 'Close Private Salon') + '<div class="panel-body"><p>A private link would be sent to <strong>' + esc(salonEmail) + '</strong>.</p>' +
         '<p class="notice"><strong>Demonstration.</strong> This storefront has no mail server, so no email is sent. Continue to see your Salon.</p>' +
         '<button class="btn btn--gold btn--block" type="button" data-enter>Open my Private Salon</button><button class="link-btn" type="button" data-back>Use a different email</button></div>';
@@ -506,7 +515,8 @@
           '<button class="btn btn--gold btn--block" type="submit">Continue</button><button class="link-btn" type="button" data-back>Back</button></form>';
     } else {
       h = head('salonTitle', 'The Private Salon', 'Close Private Salon') + '<div class="panel-body">' +
-        '<p class="lede lede--dark">A quiet room for people who have chosen the House. Keep your measurements, follow your deliveries, hear about archive previews first and hold the passports of every piece you own.</p>' +
+        '<p class="lede lede--dark">A quiet room for people who have chosen the House. Follow your deliveries, hear about archive previews first and hold the passports of every piece you own.</p>' +
+        (salonMsg ? '<p class="notice" role="alert">' + esc(salonMsg) + '</p>' : '') +
         '<button class="google-btn" type="button" data-google>' + gIcon() + ' Continue with Google</button>' +
         '<p class="sep">or by email</p>' +
         '<form id="salonForm" novalidate class="salon-form">' + fld('s-email', 'Email', '<input id="s-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="name@example.com">') +
@@ -514,6 +524,7 @@
         '<p class="fine-print">No password. Your details stay in this browser.</p></div>';
     }
     $('#salonPanel').innerHTML = h;
+    salonMsg = '';
     if (!m && salonView === 'google' && M.CONFIG.googleClientId) mountGoogle();
   }
   function salonDash(m) {
@@ -539,14 +550,14 @@
       '<section class="salon-card"><h3>Archive previews</h3>' + aHtml + '</section>' +
       '<button class="btn btn--ghost btn--block" type="button" data-signout>Sign out</button></div>';
   }
-  ui.openSalon = function () { salonView = 'in'; renderSalon(); C.open($('#layerSalon')); };
+  ui.openSalon = function () { salonView = 'in'; renderSalon(); C.open($('#layerSalon')); if (fbReady()) fbLoad().catch(noop); };
   var salonPanel = $('#salonPanel');
   salonPanel.addEventListener('click', function (e) {
     var t;
-    if (e.target.closest('[data-google]')) { ui.googleSignIn(null); return; }
+    if (e.target.closest('[data-google]')) { if (fbReady()) { pendingCb = null; fbGoogle(); } else ui.googleSignIn(null); return; }
     if (e.target.closest('[data-back]')) { salonView = 'in'; renderSalon(); return; }
     if (e.target.closest('[data-enter]')) { var nw = signIn({ email: salonEmail }, 'email'); renderSalon(); welcomeToast(nw); return; }
-    if (e.target.closest('[data-signout]')) { C.state.member = null; C.save(); C.emit('member'); salonView = 'in'; renderSalon(); C.toast('You have left the Private Salon on this device.'); return; }
+    if (e.target.closest('[data-signout]')) { if (FB && C.state.member && C.state.member.fb) FB.A.signOut(FB.auth).catch(noop); C.state.member = null; C.save(); C.emit('member'); salonView = 'in'; renderSalon(); C.toast('You have left the Private Salon on this device.'); return; }
     if (e.target.closest('[data-measure]')) { M.shop.openMeasure(function () { renderSalon(); }); return; }
     if ((t = e.target.closest('[data-pass]'))) { ui.openPassport(null, t.getAttribute('data-pass')); return; }
     if (e.target.closest('[data-pass-sample]')) { ui.openPassport(); return; }
@@ -562,7 +573,13 @@
     if (e.target.id === 'salonForm') {
       var i = e.target.elements.email;
       if (!C.validEmail(i.value)) { C.setError(i, 'Enter a valid email address, such as name@example.com.'); i.focus(); return; }
-      salonEmail = i.value.trim(); salonView = 'sent'; renderSalon();
+      salonEmail = i.value.trim();
+      if (fbReady()) { var sb = e.target.querySelector('button[type=submit]'); if (sb) { sb.disabled = true; sb.textContent = 'Sending\u2026'; } fbSendLink(salonEmail); return; }
+      salonView = 'sent'; renderSalon();
+    } else if (e.target.id === 'confirmForm') {
+      var ci = e.target.elements.email;
+      if (!C.validEmail(ci.value)) { C.setError(ci, 'Enter the email address the link was sent to.'); ci.focus(); return; }
+      fbFinishLink(ci.value.trim());
     } else if (e.target.id === 'googleForm') {
       var f = e.target, em = f.elements.email, nm = f.elements.name;
       if (!C.validEmail(em.value)) { C.setError(em, 'Enter the Google email you would like to use.'); em.focus(); return; }
@@ -574,6 +591,92 @@
   });
   C.on('close', function (d) { if (d.id === 'layerSalon') pendingCb = null; });
   C.on('bag', noop);
+
+  /* ======================= Firebase Authentication ======================= */
+  /* Google and email-link sign-in with real accounts, kept in the Firebase project. The SDK loads on demand from Google's CDN. */
+  var FB = null, fbP = null;
+  function fbReady() { var c = M.CONFIG.firebase; return !!(c && c.apiKey && c.projectId); }
+  function fbLoad() {
+    if (fbP) return fbP;
+    var base = 'https://www.gstatic.com/firebasejs/13.4.0/';
+    fbP = Promise.all([import(base + 'firebase-app.js'), import(base + 'firebase-auth.js')]).then(function (m) {
+      var A = m[1], auth = A.getAuth(m[0].initializeApp(M.CONFIG.firebase));
+      FB = { A: A, auth: auth };
+      A.onAuthStateChanged(auth, fbSync);
+      return FB;
+    }).catch(function (e) { fbP = null; throw e; });
+    return fbP;
+  }
+  function fbSync(u) {
+    var cur = C.state.member;
+    if (u) {
+      var g = (u.providerData || []).some(function (p) { return p.providerId === 'google.com'; });
+      var created = u.metadata && u.metadata.creationTime ? new Date(u.metadata.creationTime).toISOString() : new Date().toISOString();
+      C.state.member = { id: 'MNT-' + String(u.uid).slice(0, 7).toUpperCase(), uid: u.uid, fb: true, email: u.email || '', name: u.displayName || nameFromEmail(u.email || 'guest'), picture: u.photoURL || '', provider: g ? 'google' : 'email', since: created };
+      C.save(); C.emit('member');
+      if ($('#layerSalon').open) renderSalon();
+    } else if (cur && cur.fb) {
+      C.state.member = null; C.save(); C.emit('member');
+      if ($('#layerSalon').open) renderSalon();
+    }
+  }
+  var FB_ERR = {
+    'auth/unauthorized-domain': 'This web address is not authorised for sign-in yet. Add it under Firebase, Authentication, Settings, Authorized domains.',
+    'auth/popup-blocked': 'Your browser blocked the Google window. Allow pop-ups for this site and try again.',
+    'auth/network-request-failed': 'Network problem. Check your connection and try again.',
+    'auth/too-many-requests': 'Too many attempts. Please wait a few minutes and try again.',
+    'auth/invalid-email': 'Enter a valid email address, such as name@example.com.',
+    'auth/operation-not-allowed': 'This sign-in method is not switched on yet.',
+    'auth/expired-action-code': 'That link has expired. Request a new one.',
+    'auth/invalid-action-code': 'That link is no longer valid. Request a new one.',
+    'auth/quota-exceeded': 'We cannot send more sign-in emails right now. Please try again later or use Google.'
+  };
+  function fbFail(e) {
+    var code = (e && e.code) || '';
+    if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') return;
+    salonMsg = FB_ERR[code] || 'Sign-in did not complete. Please try again.';
+    if (window.console) console.warn('[MANTHAI sign-in]', code || e);
+    salonView = 'in'; renderSalon();
+    if (!$('#layerSalon').open) C.open($('#layerSalon'));
+  }
+  function fbDone(res) {
+    var info = FB.A.getAdditionalUserInfo(res), isNew = !!(info && info.isNewUser);
+    fbSync(res.user);
+    var cb = pendingCb; pendingCb = null; salonView = 'in';
+    if (cb) { C.close($('#layerSalon')); later(function () { cb(C.state.member); }); }
+    else { renderSalon(); if (!$('#layerSalon').open) C.open($('#layerSalon')); }
+    welcomeToast(isNew);
+  }
+  function fbGoogle() {
+    function go() { var p = new FB.A.GoogleAuthProvider(); p.setCustomParameters({ prompt: 'select_account' }); return FB.A.signInWithPopup(FB.auth, p).then(fbDone).catch(fbFail); }
+    if (FB) go(); else fbLoad().then(go).catch(fbFail);
+  }
+  function fbSendLink(email) {
+    function go() {
+      return FB.A.sendSignInLinkToEmail(FB.auth, email, { url: location.origin + '/', handleCodeInApp: true }).then(function () {
+        try { window.localStorage.setItem('manthai.emailForSignIn', email); } catch (e) { /* ignore */ }
+        salonEmail = email; salonView = 'sent'; renderSalon();
+      }).catch(fbFail);
+    }
+    if (FB) go(); else fbLoad().then(go).catch(fbFail);
+  }
+  function fbFinishLink(email) {
+    FB.A.signInWithEmailLink(FB.auth, email, location.href).then(function (res) {
+      try { window.localStorage.removeItem('manthai.emailForSignIn'); } catch (e) { /* ignore */ }
+      try { history.replaceState(null, '', location.pathname); } catch (e) { /* ignore */ }
+      fbDone(res);
+    }).catch(fbFail);
+  }
+  function fbInit() {
+    if (!fbReady()) return;
+    if (/[?&]oobCode=/.test(location.search) && /[?&]mode=signIn/.test(location.search)) {
+      fbLoad().then(function () {
+        if (!FB.A.isSignInWithEmailLink(FB.auth, location.href)) return;
+        var email = ''; try { email = window.localStorage.getItem('manthai.emailForSignIn') || ''; } catch (e) { /* ignore */ }
+        if (email) fbFinishLink(email); else { salonView = 'confirm'; renderSalon(); C.open($('#layerSalon')); }
+      }).catch(fbFail);
+    } else if (C.state.member && C.state.member.fb) fbLoad().catch(noop);
+  }
 
   /* Google sign-in: the official Google button (Google Identity Services) rendered inside the Salon panel.
      It opens Google's own account chooser, so it does not depend on One Tap, which browsers often suppress. */
@@ -616,6 +719,7 @@
     setTimeout(function () { if (gsiState === 'loading') { gsiState = 'failed'; gsiFail('Google did not respond. Please check your connection or use the email option instead.'); } }, 8000);
   }
   ui.googleSignIn = function (cb) {
+    if (fbReady()) { pendingCb = cb || null; fbGoogle(); return; }
     pendingCb = cb || null; salonView = 'google'; renderSalon();
     var l = $('#layerSalon'); if (!l.open) C.open(l);
   };
@@ -700,5 +804,6 @@
   $('#year').textContent = new Date().getFullYear();
   C.setCurrency(C.state.currency);
   C.emit('member');
+  fbInit();
   C.updateBagUI();
 })();
