@@ -40,6 +40,8 @@ Every placeholder is an SVG that real media replaces automatically. Nothing else
 | Atelier film modal | `M.CONFIG.film` in `catalog.js` | `webm`, `mp4`, `poster` paths |
 | Ambient sound | `M.CONFIG.ambientSrc` in `catalog.js` | Optional loop. Empty uses a very quiet synthesised drone |
 
+The hero film currently in the repo is a temporary prototype clip supplied by the owner (736 x 414 source, upscaled to 1280 wide). Replace it with licensed, higher resolution footage before launch.
+
 The full list of slots with a prompt for each is in `docs/MEDIA-BRIEF.md`. `scripts/encode-media.sh master.mov` makes the hero WebM, MP4 and poster. A missing or broken photo falls back to the placeholder.
 
 Each slot carries a `data-media-slot` attribute and the director's prompt in `data-prompt` (or in the `prompt` field of the catalog) so the shoot brief travels with the page.
