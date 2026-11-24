@@ -598,7 +598,7 @@
   function fbReady() { var c = M.CONFIG.firebase; return !!(c && c.apiKey && c.projectId); }
   function fbLoad() {
     if (fbP) return fbP;
-    var base = 'https://www.gstatic.com/firebasejs/10.14.1/';
+    var base = 'https://www.gstatic.com/firebasejs/13.4.0/';
     fbP = Promise.all([import(base + 'firebase-app.js'), import(base + 'firebase-auth.js')]).then(function (m) {
       var A = m[1], auth = A.getAuth(m[0].initializeApp(M.CONFIG.firebase));
       FB = { A: A, auth: auth };
