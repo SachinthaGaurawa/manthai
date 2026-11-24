@@ -69,3 +69,7 @@ This build has no server. Checkout creates an order reference in the browser and
 ## Phase 1 scope
 
 The launch collection is 100% luxury womenswear: eight pieces across Atelier Couture, Evening & Gowns, Midi & Occasion and Tailoring & Capes. Menswear (Chapter II), leather goods and haute parfumerie (Chapter III) appear only in the "Future Métiers" section, which collects names in a Private Registry. There are no empty shop pages for them. When a chapter launches, add its products and a nav item in `catalog.js`.
+
+## Accounts and Google sign-in
+
+The Private Salon shows the official Google button (Google Identity Services) and verifies the returned token's issuer, audience, expiry and email. The first sign-in with an email creates a MANTHAI account (id, name, photo, sign-in method, dates); later sign-ins find it again. Accounts are currently stored in the visitor's browser only, so they do not follow a customer to another device. Sharing accounts across devices needs a database and a small server function that verifies the Google token; add that before taking real orders. Google only accepts sign-in on origins listed under Authorized JavaScript origins for the client ID (currently `https://manthai.vercel.app`).

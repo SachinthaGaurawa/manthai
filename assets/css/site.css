@@ -644,3 +644,10 @@ dialog[open] ~ .toast { z-index: 2147483647; }
 .cipher.is-lit .cipher-accent { fill: var(--sovereign-gold); }
 
 @media (max-width: 560px) { .viewtabs { grid-template-columns: 1fr 1fr; } .size-table th, .size-table td { padding: 10px 4px; } }
+
+/* ------------------------------ account and Google sign-in ------------------------------ */
+.gsi-slot { min-height: 54px; display: grid; justify-items: start; align-content: center; }
+.salon-id { display: flex; align-items: center; gap: 14px; }
+.salon-id img, .salon-id__mono { width: 44px; height: 44px; border-radius: 50%; flex: none; object-fit: cover; }
+.salon-id__mono { display: grid; place-items: center; border: 1px solid var(--sovereign-gold); color: var(--sovereign-gold); font: 400 1.2rem/1 var(--serif); }
+.salon-id .fine-print strong { color: var(--alabaster-silk); font-weight: 400; }

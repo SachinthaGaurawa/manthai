@@ -467,10 +467,19 @@
   var salonView = 'in', salonEmail = '', pendingCb = null;
   var STEPS = ['Order confirmed', 'In the atelier', 'Dispatched', 'Delivered'];
   var MLAB = { chest: 'Bust', waist: 'Waist', hips: 'Hip', height: 'Height', heel: 'Heel height' };
-  function signIn(m) {
-    C.state.member = { email: m.email, name: m.name || nameFromEmail(m.email), since: new Date().toISOString() };
+  /* An account is created the first time an email signs in (Google or private link) and found again afterwards.
+     Accounts are kept in this browser; a database is needed to share them across devices (see README). */
+  function signIn(m, provider) {
+    var key = String(m.email).trim().toLowerCase(), now = new Date().toISOString();
+    var accts = C.state.accounts || (C.state.accounts = {}), a = accts[key], isNew = !a;
+    if (isNew) a = accts[key] = { id: 'MNT-' + hash(key + (m.sub || '')), email: key, name: m.name || nameFromEmail(key), picture: m.picture || '', provider: provider || 'email', createdAt: now };
+    else { if (m.name) a.name = m.name; if (m.picture) a.picture = m.picture; if (provider === 'google') a.provider = 'google'; }
+    a.lastLogin = now;
+    C.state.member = { id: a.id, email: a.email, name: a.name, picture: a.picture, provider: a.provider, since: a.createdAt };
     C.save(); C.emit('member');
+    return isNew;
   }
+  function welcomeToast(isNew) { C.toast(isNew ? 'Your MANTHAI account has been created. Welcome to the Private Salon.' : 'Welcome back to the Private Salon.'); }
   C.on('member', function () {
     var b = $('#salonBtn'), m = C.state.member;
     b.classList.toggle('is-member', !!m);
@@ -485,11 +494,16 @@
         '<p class="notice"><strong>Demonstration.</strong> This storefront has no mail server, so no email is sent. Continue to see your Salon.</p>' +
         '<button class="btn btn--gold btn--block" type="button" data-enter>Open my Private Salon</button><button class="link-btn" type="button" data-back>Use a different email</button></div>';
     } else if (salonView === 'google') {
-      h = head('salonTitle', 'Continue with Google', 'Close Private Salon') + '<form class="panel-body" id="googleForm" novalidate>' +
-        '<p class="notice"><strong>Demonstration account chooser.</strong> Add a Google client ID in <code>assets/js/catalog.js</code> to use real Google sign-in.</p>' +
-        fld('g-name', 'Name', '<input id="g-name" name="name" type="text" autocomplete="name">') +
-        fld('g-email', 'Google email', '<input id="g-email" name="email" type="email" autocomplete="email" inputmode="email">') +
-        '<button class="btn btn--gold btn--block" type="submit">Continue</button><button class="link-btn" type="button" data-back>Back</button></form>';
+      h = M.CONFIG.googleClientId
+        ? head('salonTitle', 'Continue with Google', 'Close Private Salon') + '<div class="panel-body">' +
+          '<p class="lede lede--dark">Choose your Google account. If you are new to MANTHAI, your account is created for you.</p>' +
+          '<div id="gsiSlot" class="gsi-slot" aria-live="polite"><p class="fine-print">Loading Google sign-in&hellip;</p></div>' +
+          '<button class="link-btn" type="button" data-back>Use email instead</button></div>'
+        : head('salonTitle', 'Continue with Google', 'Close Private Salon') + '<form class="panel-body" id="googleForm" novalidate>' +
+          '<p class="notice"><strong>Demonstration account chooser.</strong> Add a Google client ID in <code>assets/js/catalog.js</code> to use real Google sign-in.</p>' +
+          fld('g-name', 'Name', '<input id="g-name" name="name" type="text" autocomplete="name">') +
+          fld('g-email', 'Google email', '<input id="g-email" name="email" type="email" autocomplete="email" inputmode="email">') +
+          '<button class="btn btn--gold btn--block" type="submit">Continue</button><button class="link-btn" type="button" data-back>Back</button></form>';
     } else {
       h = head('salonTitle', 'The Private Salon', 'Close Private Salon') + '<div class="panel-body">' +
         '<p class="lede lede--dark">A quiet room for people who have chosen the House. Keep your measurements, follow your deliveries, hear about archive previews first and hold the passports of every piece you own.</p>' +
@@ -500,6 +514,7 @@
         '<p class="fine-print">No password. Your details stay in this browser.</p></div>';
     }
     $('#salonPanel').innerHTML = h;
+    if (!m && salonView === 'google' && M.CONFIG.googleClientId) mountGoogle();
   }
   function salonDash(m) {
     var meas = C.state.measurements, notify = C.state.notify || {}, orders = C.state.orders;
@@ -521,7 +536,8 @@
       '<label class="toggle-row"><span>Tell me about new archive previews</span><input type="checkbox" data-notify="archive"' + (notify.archive ? ' checked' : '') + '></label>' +
       '<label class="toggle-row"><span>Tell me when a sold-out piece returns</span><input type="checkbox" data-notify="restock"' + (notify.restock ? ' checked' : '') + '></label>';
     return head('salonTitle', 'Welcome, ' + esc(firstName(m.name)), 'Close Private Salon') + '<div class="panel-body salon-grid">' +
-      '<p class="fine-print">Member since ' + esc(fmtDate(m.since)) + ' · ' + esc(m.email) + '</p>' +
+      '<div class="salon-id">' + (m.picture ? '<img src="' + esc(m.picture) + '" alt="" width="44" height="44" referrerpolicy="no-referrer">' : '<span class="salon-id__mono" aria-hidden="true">' + esc(firstName(m.name).charAt(0).toUpperCase()) + '</span>') +
+      '<p class="fine-print"><strong>' + esc(m.name) + '</strong><br>' + esc(m.email) + '<br>Account ' + esc(m.id || '') + ' · signed in with ' + (m.provider === 'google' ? 'Google' : 'a private link') + ' · member since ' + esc(fmtDate(m.since)) + '</p></div>' +
       '<section class="salon-card"><h3>Measurements</h3>' + mHtml + '</section>' +
       '<section class="salon-card"><h3>Orders and delivery</h3>' + oHtml + '</section>' +
       '<section class="salon-card"><h3>NFC passport vault</h3>' + vHtml + '</section>' +
@@ -534,7 +550,7 @@
     var t;
     if (e.target.closest('[data-google]')) { ui.googleSignIn(null); return; }
     if (e.target.closest('[data-back]')) { salonView = 'in'; renderSalon(); return; }
-    if (e.target.closest('[data-enter]')) { signIn({ email: salonEmail }); renderSalon(); C.toast('Welcome to the Private Salon.'); return; }
+    if (e.target.closest('[data-enter]')) { var nw = signIn({ email: salonEmail }, 'email'); renderSalon(); welcomeToast(nw); return; }
     if (e.target.closest('[data-signout]')) { C.state.member = null; C.save(); C.emit('member'); salonView = 'in'; renderSalon(); C.toast('You have left the Private Salon on this device.'); return; }
     if (e.target.closest('[data-measure]')) { M.shop.openMeasure(function () { renderSalon(); }); return; }
     if ((t = e.target.closest('[data-pass]'))) { ui.openPassport(null, t.getAttribute('data-pass')); return; }
@@ -556,33 +572,57 @@
       var f = e.target, em = f.elements.email, nm = f.elements.name;
       if (!C.validEmail(em.value)) { C.setError(em, 'Enter the Google email you would like to use.'); em.focus(); return; }
       var mem = { email: em.value.trim(), name: nm.value.trim() || nameFromEmail(em.value) };
-      signIn(mem); var cb = pendingCb; pendingCb = null;
+      var nw2 = signIn(mem, 'google'); var cb = pendingCb; pendingCb = null;
       if (cb) { C.close($('#layerSalon')); later(function () { cb(C.state.member); }); } else renderSalon();
-      C.toast('Signed in to the Private Salon.');
+      welcomeToast(nw2);
     }
   });
   C.on('close', function (d) { if (d.id === 'layerSalon') pendingCb = null; });
   C.on('bag', noop);
 
-  /* Google sign-in: real Google Identity Services when a client id is configured, otherwise a demo chooser */
-  function demoGoogle() { salonView = 'google'; renderSalon(); C.open($('#layerSalon')); }
+  /* Google sign-in: the official Google button (Google Identity Services) rendered inside the Salon panel.
+     It opens Google's own account chooser, so it does not depend on One Tap, which browsers often suppress. */
+  var gsiState = 'idle', gsiInit = false;
+  function decodeJwt(t) {
+    var b = t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'); while (b.length % 4) b += '=';
+    return JSON.parse(decodeURIComponent(Array.prototype.map.call(atob(b), function (c) { return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); }).join('')));
+  }
+  function gsiFail(msg, title) {
+    var slot = $('#gsiSlot'); if (!slot) return;
+    slot.innerHTML = '<p class="notice"><strong>' + (title || 'Google sign-in is unavailable here.') + '</strong> ' + esc(msg) + '</p>';
+  }
+  function onGoogle(r) {
+    var j;
+    try { j = decodeJwt(r.credential); } catch (err) { gsiFail('Google returned a response we could not read. Please try again.', 'Sign-in did not complete.'); return; }
+    var okIss = j.iss === 'https://accounts.google.com' || j.iss === 'accounts.google.com';
+    if (!okIss || j.aud !== M.CONFIG.googleClientId || (j.exp && j.exp * 1000 < Date.now() - 60000) || !j.email || j.email_verified === false) { gsiFail('That Google response could not be verified. Please try again.', 'Sign-in did not complete.'); return; }
+    var isNew = signIn({ email: j.email, name: j.name || j.given_name, picture: j.picture, sub: j.sub }, 'google');
+    var cb = pendingCb; pendingCb = null;
+    if (cb) { C.close($('#layerSalon')); later(function () { cb(C.state.member); }); } else if ($('#layerSalon').open) renderSalon();
+    welcomeToast(isNew);
+  }
+  function drawGoogle() {
+    var slot = $('#gsiSlot'); if (!slot || !(window.google && window.google.accounts && window.google.accounts.id)) return;
+    try {
+      if (!gsiInit) { window.google.accounts.id.initialize({ client_id: M.CONFIG.googleClientId, callback: onGoogle, auto_select: false, cancel_on_tap_outside: true, ux_mode: 'popup' }); gsiInit = true; }
+      slot.innerHTML = '';
+      window.google.accounts.id.renderButton(slot, { type: 'standard', theme: 'filled_black', size: 'large', text: 'continue_with', shape: 'rectangular', logo_alignment: 'left', width: Math.min(340, Math.max(220, (slot.clientWidth || 320))), locale: 'en' });
+    } catch (err) { gsiFail('Please use the email option instead.'); }
+  }
+  function mountGoogle() {
+    if (window.google && window.google.accounts && window.google.accounts.id) { drawGoogle(); return; }
+    if (gsiState === 'loading') return;
+    if (gsiState === 'failed') gsiState = 'idle';
+    gsiState = 'loading';
+    var s = document.createElement('script'); s.src = 'https://accounts.google.com/gsi/client'; s.async = true; s.defer = true;
+    s.onload = function () { gsiState = 'ready'; drawGoogle(); };
+    s.onerror = function () { gsiState = 'failed'; s.remove(); gsiFail('The Google script could not be loaded on this connection. Please use the email option instead.'); };
+    document.head.appendChild(s);
+    setTimeout(function () { if (gsiState === 'loading') { gsiState = 'failed'; gsiFail('Google did not respond. Please check your connection or use the email option instead.'); } }, 8000);
+  }
   ui.googleSignIn = function (cb) {
-    pendingCb = cb || null;
-    var id = M.CONFIG.googleClientId; if (!id) { demoGoogle(); return; }
-    function start() {
-      try {
-        window.google.accounts.id.initialize({ client_id: id, callback: function (r) {
-          try {
-            var b = r.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'), j = JSON.parse(decodeURIComponent(escape(atob(b))));
-            signIn({ email: j.email, name: j.name }); var c2 = pendingCb; pendingCb = null; if (c2) c2(C.state.member); else if ($('#layerSalon').open) renderSalon();
-            C.toast('Signed in to the Private Salon.');
-          } catch (err) { demoGoogle(); }
-        } });
-        window.google.accounts.id.prompt(function (n) { if (n.isNotDisplayed && n.isNotDisplayed()) demoGoogle(); });
-      } catch (err) { demoGoogle(); }
-    }
-    if (window.google && window.google.accounts) { start(); return; }
-    var s = document.createElement('script'); s.src = 'https://accounts.google.com/gsi/client'; s.async = true; s.onload = start; s.onerror = demoGoogle; document.head.appendChild(s);
+    pendingCb = cb || null; salonView = 'google'; renderSalon();
+    var l = $('#layerSalon'); if (!l.open) C.open(l);
   };
   $('#salonBtn').addEventListener('click', ui.openSalon);
 

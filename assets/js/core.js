@@ -18,7 +18,7 @@
   C.emit = function (ev, data) { (handlers[ev] || []).forEach(function (fn) { fn(data); }); };
 
   /* ---------- state (persisted in this browser only) ---------- */
-  var DEFAULTS = { currency: 'LKR', bag: [], member: null, measurements: null, orders: [], notify: {}, stylist: null, registry: null };
+  var DEFAULTS = { currency: 'LKR', bag: [], member: null, accounts: {}, measurements: null, orders: [], notify: {}, stylist: null, registry: null };
   C.state = JSON.parse(JSON.stringify(DEFAULTS));
   try {
     var raw = window.localStorage.getItem(M.CONFIG.storageKey);
