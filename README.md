@@ -70,6 +70,11 @@ This build has no server. Checkout creates an order reference in the browser and
 
 The launch collection is 100% luxury womenswear: eight pieces across Atelier Couture, Evening & Gowns, Midi & Occasion and Tailoring & Capes. Menswear (Chapter II), leather goods and haute parfumerie (Chapter III) appear only in the "Future Métiers" section, which collects names in a Private Registry. There are no empty shop pages for them. When a chapter launches, add its products and a nav item in `catalog.js`.
 
-## Accounts and Google sign-in
+## Accounts and sign-in
 
-The Private Salon shows the official Google button (Google Identity Services) and verifies the returned token's issuer, audience, expiry and email. The first sign-in with an email creates a MANTHAI account (id, name, photo, sign-in method, dates); later sign-ins find it again. Accounts are currently stored in the visitor's browser only, so they do not follow a customer to another device. Sharing accounts across devices needs a database and a small server function that verifies the Google token; add that before taking real orders. Google only accepts sign-in on origins listed under Authorized JavaScript origins for the client ID (currently `https://manthai.vercel.app`).
+The Private Salon supports two modes.
+
+1. **Firebase Authentication (real accounts).** Paste the web app's `firebaseConfig` into `M.CONFIG.firebase` in `assets/js/catalog.js`. Google sign-in and email-link sign-in then run through Firebase, accounts appear in the Firebase console under Authentication, Users, and they follow a customer across devices. In the Firebase console switch on the Google and Email link providers and add `manthai.vercel.app` under Authentication, Settings, Authorized domains. The email wording can be edited under Authentication, Templates.
+2. **No Firebase config (fallback).** Google sign-in uses the Google Identity Services client ID, and accounts are kept in the visitor's browser only. The email-link form is a demonstration and sends nothing.
+
+Orders, measurements and notification choices are still stored in the browser. Move them to a database (for example Firestore) before taking real orders.

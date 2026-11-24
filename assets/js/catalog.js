@@ -16,6 +16,9 @@
     ambientSrc: '',
     /* Google Identity Services client id. Empty means the Salon sign-in runs in demo mode. */
     googleClientId: '487193961323-hlfr6d51tmkjettelvsvubibkabvpqm9.apps.googleusercontent.com',
+    /* Firebase web app config (Firebase console, Project settings, General, Your apps). Public values, safe to commit.
+       When set, the Private Salon uses Firebase Authentication for Google and email-link sign-in and real accounts. */
+    firebase: null,
     storageKey: 'manthai.v1'
   };
 
