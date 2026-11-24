@@ -1,0 +1,69 @@
+/* ==========================================================================
+   MANTHAI  |  design tokens (WCAG 2.1 verified pairs from the Maison directive)
+   ========================================================================== */
+:root {
+  /* Colour */
+  --obsidian-void: #0B0B0C;          /* primary dark editorial canvas, 17.75:1 with ivory */
+  --anuradhapura-charcoal: #151517;  /* elevated dark surfaces, drawers */
+  --alabaster-silk: #F6F3EC;         /* primary light gallery canvas, never #FFFFFF */
+  --mannar-pearl: #EAE4D7;           /* secondary warm surface, product frames */
+  --sovereign-gold: #C5A059;         /* hairlines, dark-mode icons, 8.01:1 on obsidian */
+  --solar-ochre: #7E5F20;            /* gold text on light surfaces only, 5.35:1 */
+  --ceylon-emerald: #0E3B2E;         /* heritage couture and fragrance accent */
+  --garnet-velvet: #4A121C;          /* evening couture accent */
+  --muted-stone: #A39E93;            /* secondary text on dark, 7.37:1 */
+  --graphite-ink: #4A4843;           /* secondary text on light, 8.24:1 */
+
+  /* Semantic roles (dark is the default canvas; .on-light swaps them) */
+  --bg: var(--obsidian-void);
+  --surface: var(--anuradhapura-charcoal);
+  --text: var(--alabaster-silk);
+  --text-2: var(--muted-stone);
+  --accent: var(--sovereign-gold);
+  --accent-text: var(--sovereign-gold);
+  --hairline: rgba(197, 160, 89, 0.38);
+  --hairline-soft: rgba(197, 160, 89, 0.18);
+  --ring: var(--sovereign-gold);
+
+  /* Type */
+  --serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --sans: 'Tenor Sans', 'Gill Sans', 'Helvetica Neue', sans-serif;
+  --inscription: 'Cinzel', 'Trajan Pro', Georgia, serif;
+
+  --fs-hero: clamp(2.6rem, 1.2rem + 6.4vw, 7rem);
+  --fs-display: clamp(2.2rem, 1.4rem + 3.4vw, 4.4rem);
+  --fs-title: clamp(1.45rem, 1.25rem + 0.7vw, 1.85rem);
+  --fs-body: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
+  --fs-ui: clamp(0.72rem, 0.7rem + 0.08vw, 0.8rem);
+  --fs-small: 0.8125rem;
+  --track-ui: 0.16em;
+
+  /* Space and rhythm */
+  --gutter: clamp(20px, 4.4vw, 72px);
+  --section: clamp(88px, 12vw, 168px);
+  --header-h: 72px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --t-fast: 240ms;
+  --t-mid: 480ms;
+  --t-slow: 900ms;
+
+  /* Layer scale */
+  --z-header: 40;
+  --z-panel: 45;
+  --z-toast: 60;
+}
+
+/* Light gallery canvas: swaps semantic roles so text and focus rings stay AA */
+.on-light {
+  --bg: var(--alabaster-silk);
+  --surface: var(--mannar-pearl);
+  --text: var(--obsidian-void);
+  --text-2: var(--graphite-ink);
+  --accent: var(--sovereign-gold);
+  --accent-text: var(--solar-ochre);
+  --hairline: rgba(126, 95, 32, 0.45);
+  --hairline-soft: rgba(126, 95, 32, 0.2);
+  --ring: var(--solar-ochre);
+}
