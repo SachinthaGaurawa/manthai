@@ -15,7 +15,7 @@
     /* Optional ambient bed. When empty the page synthesises a very quiet drone. */
     ambientSrc: '',
     /* Google Identity Services client id. Empty means the Salon sign-in runs in demo mode. */
-    googleClientId: '',
+    googleClientId: '487193961323-hlfr6d51tmkjettelvsvubibkabvpqm9.apps.googleusercontent.com',
     storageKey: 'manthai.v1'
   };
 

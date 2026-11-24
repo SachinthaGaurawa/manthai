@@ -219,6 +219,29 @@
   ftoggle.addEventListener('click', function () { userPaused = !userPaused; applyFilm(); });
   applyFilm();
 
+  /* keep the film alive: some browsers (iOS low-power mode, background tabs, flaky decoders)
+     pause or stall a looping video on their own, so nudge it back whenever it should be playing */
+  function shouldRun() { return inView && !userPaused && !document.hidden; }
+  function revive() {
+    if (!shouldRun() || video.readyState === 0) return;
+    if (video.ended) { try { video.currentTime = 0; } catch (e) {} }
+    var pr = video.play(); if (pr && pr.catch) pr.catch(noop);
+  }
+  ['pause', 'ended', 'stalled', 'suspend', 'emptied', 'abort'].forEach(function (ev) {
+    video.addEventListener(ev, function () { setTimeout(revive, 120); });
+  });
+  video.addEventListener('error', function () { try { video.load(); } catch (e) {} setTimeout(revive, 400); });
+  var lastT = -1, frozen = 0;
+  setInterval(function () {
+    if (!shouldRun() || video.readyState < 2) { frozen = 0; return; }
+    if (video.paused || Math.abs(video.currentTime - lastT) < 0.01) { if (++frozen >= 2) { frozen = 0; revive(); } }
+    else frozen = 0;
+    lastT = video.currentTime;
+  }, 1500);
+  ['touchstart', 'pointerdown', 'keydown'].forEach(function (ev) {
+    window.addEventListener(ev, function once() { if (video.paused && shouldRun()) revive(); }, { passive: true });
+  });
+
   /* ambient sound: a file if configured, otherwise a very quiet synthesised drone */
   var snd = { on: false, ctx: null, master: null, el: null };
   function startAmbient() {
@@ -590,6 +613,12 @@
   });
 
   /* ======================= init ======================= */
+  /* always start at the top on load and when restored from the back/forward cache */
+  try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (e) {}
+  if (!location.hash) window.scrollTo(0, 0);
+  window.addEventListener('pageshow', function (e) { if (e.persisted && !location.hash) window.scrollTo(0, 0); });
+  window.addEventListener('beforeunload', function () { if (!location.hash) window.scrollTo(0, 0); });
+
   $('#year').textContent = new Date().getFullYear();
   C.setCurrency(C.state.currency);
   C.emit('member');

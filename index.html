@@ -18,6 +18,12 @@
 <script>
   (function () {
     document.documentElement.className += ' js';
+    /* a refresh always lands back at the very top of the page */
+    try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (e) {}
+    try {
+      var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+      if (nav && nav.type === 'reload' && location.hash) history.replaceState(null, '', location.pathname + location.search);
+    } catch (e) {}
     if (/\.github\.io$/i.test(location.hostname)) {
       var path = location.pathname.replace(/^\/manthai(\/|$)/i, '/');
       location.replace('https://manthai.vercel.app' + path + location.search + location.hash);
