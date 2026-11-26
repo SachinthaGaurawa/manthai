@@ -164,12 +164,23 @@
     partsBox.innerHTML = M.SEAL_PARTS.map(function (p) {
       return '<button class="decoder__part" type="button" data-seal-part="' + p.key + '" aria-pressed="false" aria-controls="decoderMeaning">' + esc(p.title) + '</button>';
     }).join('');
+    /* every meaning is laid out at once in a single grid cell, so the panel always keeps the height of the
+       longest text: changing part never resizes the column, and the Seal beside it never jumps. */
+    meaning.removeAttribute('aria-live');
+    meaning.innerHTML = '<div class="decoder__panel is-on" data-panel=""><p class="decoder__hint">Hover or select a part of the Seal to read its meaning.</p></div>' +
+      M.SEAL_PARTS.map(function (p) {
+        return '<div class="decoder__panel" data-panel="' + p.key + '" aria-hidden="true"><h3 class="decoder__title">' + esc(p.title) + '</h3><p>' + esc(p.text) + '</p></div>';
+      }).join('') + '<p class="sr-only" aria-live="polite" data-decoder-status></p>';
+    var status = meaning.querySelector('[data-decoder-status]'), shown = '';
     function show(key, sticky) {
+      key = key || '';
       var p = M.SEAL_PARTS.filter(function (x) { return x.key === key; })[0];
-      stage.setAttribute('data-active', key || '');
+      stage.setAttribute('data-active', key);
       $$('.decoder__part', partsBox).forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-seal-part') === key && !!sticky)); });
-      if (!p) { meaning.innerHTML = '<p class="decoder__hint">Hover or select a part of the Seal to read its meaning.</p>'; return; }
-      meaning.innerHTML = '<h3 class="decoder__title">' + esc(p.title) + '</h3><p>' + esc(p.text) + '</p>';
+      if (key === shown) return;
+      shown = key;
+      $$('.decoder__panel', meaning).forEach(function (el) { var on = el.getAttribute('data-panel') === key; el.classList.toggle('is-on', on); el.setAttribute('aria-hidden', String(!on)); });
+      status.textContent = p ? p.title + '. ' + p.text : '';
     }
     show(null);
     partsBox.addEventListener('click', function (e) {
