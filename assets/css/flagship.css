@@ -56,15 +56,18 @@ html.intro .intro__seal .ch-3 { animation-delay: .435s; }
 html.intro .intro__seal .ch-2 { animation-delay: .48s; }
 html.intro .intro__seal .ch-1 { animation-delay: .525s; }
 html.intro .intro__seal .sg-arch { transform-box: view-box; transform-origin: 450px 476px; animation: arch-sweep .4s var(--ease) .7s both; }
-.intro__rule { display: block; width: 96px; height: 1px; background: var(--sovereign-gold); transform: scaleX(0); transform-origin: left center; }
+/* the two chamber groups glide outward into place (140 seal units is about 12 screen px at 84px wide) */
+html.intro .intro__seal .sg-foundation { animation: glide-down .55s var(--ease) .30s both; }
+html.intro .intro__seal .sg-crescendo { animation: glide-left .55s var(--ease) .43s both; }
+.intro__rule { display: block; width: 120px; height: 1px; background: #C9AF7E; order: 3; transform: scaleX(0); transform-origin: left center; }
 html.intro .intro__rule { animation: rule-in 1.1s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-.intro__ethos { font: 300 1.05rem/1.2 var(--serif); font-style: italic; letter-spacing: .04em; color: var(--alabaster-silk); opacity: 0; }
+.intro__ethos { order: 2; font: 300 1.05rem/1.2 var(--serif); font-style: italic; letter-spacing: .04em; color: var(--alabaster-silk); opacity: 0; }
 html.intro .intro__ethos { animation: fade .4s var(--ease) .5s forwards; }
 .intro__skip { position: absolute; right: var(--gutter); bottom: 28px; font: 400 12px/1 var(--sans); letter-spacing: .08em; color: var(--muted-stone); padding: 10px 0; border-bottom: 1px solid transparent; }
 .intro__skip:hover, .intro__skip:focus-visible { color: var(--sovereign-gold); border-color: var(--sovereign-gold); }
 html.intro-out #intro { animation: intro-lift .4s var(--ease-curtain) forwards !important; }
 
-/* hero follows the curtain: it settles from 1.06 as the overlay lifts */
+/* hero follows the curtain: it settles from 1.05 as the overlay lifts */
 html.intro .hero__media { animation: hero-settle 1.2s var(--ease) 1.1s both; }
 html.intro.js [data-seq='1'] { animation-delay: 1.25s; }
 html.intro.js [data-seq='2'] { animation-delay: 1.4s; }
@@ -75,8 +78,10 @@ html.intro.js .hero__controls, html.intro.js .hero__cue { animation-delay: 2s; }
 @keyframes rule-in { to { transform: scaleX(1); } }
 @keyframes core-in { from { opacity: 0; transform: scale(.82); } to { opacity: 1; transform: none; } }
 @keyframes chamber-in { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: none; } }
-@keyframes arch-sweep { from { opacity: 0; transform: rotate(-28deg); } to { opacity: 1; transform: none; } }
-@keyframes hero-settle { from { transform: scale(1.06); } to { transform: none; } }
+@keyframes arch-sweep { from { opacity: 0; transform: translateX(-140px) rotate(-12deg); } to { opacity: 1; transform: none; } }
+@keyframes glide-down { from { transform: translateY(-140px); } to { transform: none; } }
+@keyframes glide-left { from { transform: translateX(140px); } to { transform: none; } }
+@keyframes hero-settle { from { transform: scale(1.05); } to { transform: none; } }
 
 /* ---------------- veil for long jumps ---------------- */
 .veil { position: fixed; inset: 0; z-index: calc(var(--z-intro) - 1); background: var(--obsidian-void); opacity: 0; pointer-events: none; transition: opacity .45s var(--ease); }
@@ -97,7 +102,7 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select { cursor
 /* ---------------- silk-curtain image reveals ---------------- */
 .js .reveal { clip-path: inset(0 0 100% 0); transition: clip-path 1.2s var(--ease-curtain); }
 .js .reveal > *, .js .reveal svg { transition: transform 1.6s var(--ease); }
-.js .reveal:not(.in) > svg, .js .reveal:not(.in) .plate { transform: scale(1.08); }
+.js .reveal:not(.in) > svg, .js .reveal:not(.in) > img, .js .reveal:not(.in) .plate { transform: scale(1.04); }
 .js .reveal.in { clip-path: inset(0 0 0 0); }
 
 /* ---------------- pillars: 60/40 editorial ---------------- */
@@ -117,7 +122,7 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select { cursor
 
 /* ---------------- collection: 3:4 frames, sizes, status ---------------- */
 .card__frame { aspect-ratio: 3 / 4; }
-.card__frame .plate { transition: opacity .6s var(--ease), transform 1.2s var(--ease); }
+.card__frame .plate { transition: opacity .55s var(--ease), transform 1.2s var(--ease); }
 .card__edition { font: 400 12px/1.3 var(--sans); letter-spacing: .1em; }
 .card__sizes { display: flex; flex-wrap: wrap; gap: 4px 12px; font: 400 12px/1.2 var(--sans); letter-spacing: .08em; color: var(--text-2); }
 .card__sizes .is-out { text-decoration: line-through; opacity: .55; }
@@ -129,12 +134,12 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select { cursor
 .maison__statement { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: clamp(36px, 7vw, 128px); align-items: center; }
 .maison__plate { position: relative; display: grid; gap: 14px; margin: 0; }
 .maison__plate-inner { display: block; aspect-ratio: 5 / 4; overflow: hidden; background: #1c1c1f; }
-.maison__plate-inner svg { width: 100%; height: 118%; display: block; }
+.maison__plate-inner > svg, .maison__plate-inner > img { width: 100%; height: 110%; display: block; object-fit: cover; will-change: transform; }
 .maison__plate figcaption { font: 400 12px/1.3 var(--sans); letter-spacing: .08em; color: var(--muted-stone); }
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .maison__plate-inner > svg { animation: plx linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
-    @keyframes plx { from { transform: translateY(-9%); } to { transform: translateY(0); } }
+    .maison__plate-inner > svg, .maison__plate-inner > img { animation: plx linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
+    @keyframes plx { from { transform: translateY(-9.09%); } to { transform: translateY(0); } }
   }
 }
 .maison__copy { gap: 30px; }
@@ -343,3 +348,29 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select { cursor
 /* checkout country: Phase 1 ships within Sri Lanka only, shown as a fixed value */
 .field__label-static { display: block; font: 400 var(--fs-ui)/1.2 var(--sans); letter-spacing: .06em; color: var(--text-2); }
 .field__static { margin-top: 8px; padding: 12px 0; border-bottom: 1px solid var(--hairline-soft); font: 400 1.05rem/1.3 var(--serif); }
+
+/* ---------------- motion pass: headline lines, card glass, grid-to-PDP handoff ---------------- */
+/* masked line reveals on serif headlines: each line rises 24px out of its own mask, once */
+.ln { display: block; overflow: hidden; padding-bottom: .12em; margin-bottom: -.12em; }
+.ln__i { display: block; transform: translateY(24px); opacity: 0; transition: transform .85s var(--ease), opacity .85s var(--ease); transition-delay: var(--ld, 0s); }
+.is-lined .ln__i { transform: none; opacity: 1; }
+
+/* quick view: a quiet glass bar */
+.card__quick { background: rgba(11, 11, 12, 0.52); -webkit-backdrop-filter: blur(12px) saturate(1.2); backdrop-filter: blur(12px) saturate(1.2); border-top: 1px solid rgba(197, 160, 89, 0.28); transition: transform .5s var(--ease), background-color .15s var(--ease); }
+.card__quick:hover { background: rgba(11, 11, 12, 0.7); }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .card__quick { background: rgba(11, 11, 12, 0.86); } }
+@media (prefers-reduced-transparency: reduce) { .card__quick { background: rgba(11, 11, 12, 0.9); -webkit-backdrop-filter: none; backdrop-filter: none; } }
+
+/* grid to PDP: the scrim falls as a vertical veil, the drawer fades in place, the card image flies to the stage */
+.layer--pdp.is-handoff .layer__scrim { opacity: 1; clip-path: inset(0 0 100% 0); transition: clip-path .42s var(--ease-curtain); }
+.layer--pdp.is-handoff.is-in .layer__scrim { clip-path: inset(0 0 0 0); }
+.layer--pdp.is-handoff .layer__panel { transform: none; opacity: 0; transition: opacity .42s var(--ease) .1s; }
+.layer--pdp.is-handoff.is-in .layer__panel { opacity: 1; }
+.layer--pdp.is-awaiting #stage .plate, .layer--pdp.is-awaiting #stage .stage__bar { opacity: 0 !important; transition: none; }
+.handoff { position: fixed; left: 0; top: 0; z-index: 5; overflow: hidden; background: var(--mannar-pearl); pointer-events: none; transform-origin: 0 0; will-change: transform, clip-path; }
+.handoff > .plate, .handoff svg, .handoff img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; opacity: 1 !important; transform: none !important; }
+.handoff.is-done { opacity: 0; transition: opacity .22s var(--ease); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ln__i { transform: none; opacity: 1; transition: none; }
+}

@@ -56,6 +56,105 @@
   $$('.look__frame').forEach(function (f) { f.classList.add('reveal'); f.setAttribute('data-cursor', 'View'); });
   observeReveals();
 
+  /* ---------------- masked line reveals on serif headlines (once) ---------------- */
+  function splitLines(el) {
+    el.innerHTML = el._orig;
+    var words = [];
+    Array.prototype.slice.call(el.childNodes).forEach(function (n) {
+      if (n.nodeType !== 3) return;
+      var frag = document.createDocumentFragment();
+      n.textContent.split(/(\s+)/).forEach(function (t) {
+        if (!t) return;
+        if (/^\s+$/.test(t)) { frag.appendChild(document.createTextNode(t)); return; }
+        var w = document.createElement('span'); w.textContent = t; frag.appendChild(w); words.push(w);
+      });
+      n.parentNode.replaceChild(frag, n);
+    });
+    var lines = [], top = null;
+    words.forEach(function (w) {
+      if (top === null || Math.abs(w.offsetTop - top) > 4) { lines.push([]); top = w.offsetTop; }
+      lines[lines.length - 1].push(w.textContent);
+    });
+    el.innerHTML = lines.map(function (l, i) {
+      return '<span class="ln"><span class="ln__i" style="--ld:' + (i * 0.09).toFixed(2) + 's">' + esc(l.join(' ')) + '</span></span>';
+    }).join('');
+    el._lines = lines.length; el._w = el.clientWidth;
+  }
+  function initHeadlines() {
+    var heads = $$('#main .display, #main .pillar__title').filter(function (h) {
+      return !h._orig && Array.prototype.every.call(h.children, function (c) { return c.tagName === 'BR'; });
+    });
+    if (!heads.length || C.reduced() || !('IntersectionObserver' in window)) return;
+    heads.forEach(function (h) { h._orig = h.innerHTML; h.setAttribute('aria-label', h.textContent.replace(/\s+/g, ' ').trim()); splitLines(h); });
+    var hio = new IntersectionObserver(function (en) {
+      en.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        var h = e.target; hio.unobserve(h); h._shown = true;
+        requestAnimationFrame(function () { h.classList.add('is-lined'); });
+        /* once settled, the original markup returns so the heading wraps freely on resize */
+        setTimeout(function () { h.innerHTML = h._orig; h.classList.remove('is-lined'); h.removeAttribute('aria-label'); }, 950 + h._lines * 90);
+      });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    heads.forEach(function (h) { hio.observe(h); });
+    var rt = 0;
+    window.addEventListener('resize', function () {
+      clearTimeout(rt);
+      rt = setTimeout(function () { heads.forEach(function (h) { if (!h._shown && h.clientWidth !== h._w) splitLines(h); }); }, 180);
+    }, { passive: true });
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(initHeadlines, initHeadlines); else initHeadlines();
+
+  /* ---------------- Maison plate parallax, about 5% either way (scroll-timeline where supported) ---------------- */
+  var plx = $('.maison__plate-inner');
+  var plxNative = window.CSS && CSS.supports && CSS.supports('animation-timeline: view()');
+  if (plx && !plxNative && !C.reduced() && 'IntersectionObserver' in window) {
+    var plxOn = false, plxRaf = 0;
+    var plxFrame = function () {
+      plxRaf = 0; var img = plx.firstElementChild; if (!img) return;
+      var r = plx.getBoundingClientRect(), vh = window.innerHeight;
+      var k = Math.min(1, Math.max(0, (vh - r.top) / (vh + r.height)));
+      img.style.transform = 'translate3d(0,' + (-9.09 + 9.09 * k).toFixed(2) + '%,0)';
+    };
+    new IntersectionObserver(function (en) { plxOn = en[0].isIntersecting; if (plxOn) plxFrame(); }).observe(plx);
+    window.addEventListener('scroll', function () { if (plxOn && !plxRaf) plxRaf = requestAnimationFrame(plxFrame); }, { passive: true });
+  }
+
+  /* ---------------- grid to PDP: the card image travels to the stage ---------------- */
+  var openProduct = M.shop && M.shop.openProduct, pdpLayer = $('#layerPdp');
+  if (openProduct && pdpLayer) {
+    M.shop.openProduct = function (id, from) {
+      var card = from && from.closest ? from.closest('.card') : null;
+      var frame = card && $('.card__frame', card), src = frame && $('.plate--a', frame);
+      var r = frame && frame.getBoundingClientRect();
+      if (!src || C.reduced() || pdpLayer.open || !r.width || r.bottom < 0 || r.top > window.innerHeight) return openProduct.apply(this, arguments);
+      pdpLayer.classList.add('is-handoff', 'is-awaiting');
+      openProduct.apply(this, arguments);
+      var ghost = document.createElement('div');
+      ghost.className = 'handoff'; ghost.setAttribute('aria-hidden', 'true');
+      ghost.appendChild(src.cloneNode(true));
+      ghost.style.width = r.width + 'px'; ghost.style.height = r.height + 'px';
+      ghost.style.transform = 'translate(' + r.left + 'px,' + r.top + 'px)';
+      ghost.style.clipPath = 'inset(0px 0px 0px 0px)';
+      pdpLayer.appendChild(ghost);
+      var land = function () {
+        if (!ghost.isConnected) return;
+        pdpLayer.classList.remove('is-awaiting'); ghost.classList.add('is-done');
+        setTimeout(function () { ghost.remove(); }, 260);
+      };
+      requestAnimationFrame(function () { requestAnimationFrame(function () {
+        var st = $('#stage'), t = st && st.getBoundingClientRect();
+        if (!t || !t.width) { land(); return; }
+        var s = Math.max(t.width / r.width, t.height / r.height);
+        var cx = Math.max(0, (r.width - t.width / s) / 2), cy = Math.max(0, (r.height - t.height / s) / 2);
+        ghost.style.transition = 'transform .62s cubic-bezier(0.22, 1, 0.36, 1), clip-path .62s cubic-bezier(0.22, 1, 0.36, 1)';
+        ghost.style.transform = 'translate(' + (t.left - cx * s).toFixed(1) + 'px,' + (t.top - cy * s).toFixed(1) + 'px) scale(' + s.toFixed(4) + ')';
+        ghost.style.clipPath = 'inset(' + cy.toFixed(1) + 'px ' + cx.toFixed(1) + 'px ' + cy.toFixed(1) + 'px ' + cx.toFixed(1) + 'px)';
+        setTimeout(land, 660);
+      }); });
+    };
+    C.on('close', function (d) { if (d === pdpLayer) pdpLayer.classList.remove('is-handoff', 'is-awaiting'); });
+  }
+
   /* ---------------- Unbounded Spiral Seal decoder ---------------- */
   var stage = $('#decoderStage'), partsBox = $('#decoderParts'), meaning = $('#decoderMeaning');
   if (stage && partsBox) {
