@@ -37,12 +37,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Tenor+Sans&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/tokens.css?v=20261127e">
-<link rel="stylesheet" href="assets/css/site.css?v=20261127e">
-<link rel="stylesheet" href="assets/css/flagship.css?v=20261127e">
-<link rel="stylesheet" href="assets/css/gallery.css?v=20261127e">
-<link rel="stylesheet" href="assets/css/unbox.css?v=20261127e">
-<link rel="stylesheet" href="assets/css/cipher.css?v=20261127e">
+<link rel="stylesheet" href="assets/css/tokens.css?v=20261127f">
+<link rel="stylesheet" href="assets/css/site.css?v=20261127f">
+<link rel="stylesheet" href="assets/css/flagship.css?v=20261127f">
+<link rel="stylesheet" href="assets/css/gallery.css?v=20261127f">
+<link rel="stylesheet" href="assets/css/unbox.css?v=20261127f">
+<link rel="stylesheet" href="assets/css/cipher.css?v=20261127f">
 </head>
 <body>
 
@@ -287,17 +287,88 @@
             <div class="ub ub-wall ub-wall--right" aria-hidden="true"></div>
             <div class="ub ub-divider" aria-hidden="true"></div>
             <!-- garment folded in silk, with the woven neck label -->
+            <!-- garment: a champagne silk blouse folded in the house manner, sleeves pressed behind, hem rolled under, on crinkled acid-free tissue -->
             <div class="ub ub-garment" data-hit="garment">
               <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
                 <defs>
-                  <linearGradient id="ubSilk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F4EEE3"/><stop offset=".45" stop-color="#E7DDCC"/><stop offset=".62" stop-color="#F7F2E8"/><stop offset="1" stop-color="#DCD0BC"/></linearGradient>
+                  <!-- liquid champagne silk: a long diagonal sheen with a cooler fall-off -->
+                  <linearGradient id="ubSilk" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#E9DFCD"/><stop offset=".22" stop-color="#F6F0E5"/><stop offset=".38" stop-color="#E3D7C2"/>
+                    <stop offset=".55" stop-color="#FBF7EF"/><stop offset=".7" stop-color="#E6DAC6"/><stop offset="1" stop-color="#D6C8B0"/>
+                  </linearGradient>
+                  <linearGradient id="ubSleeveL" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#CDBFA6"/><stop offset=".7" stop-color="#E2D6C1"/><stop offset="1" stop-color="#D2C4AC"/></linearGradient>
+                  <linearGradient id="ubSleeveR" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#C8B9A0"/><stop offset=".7" stop-color="#DFD2BC"/><stop offset="1" stop-color="#CFC1A8"/></linearGradient>
+                  <linearGradient id="ubHem" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBF7F0"/><stop offset=".35" stop-color="#E7DCC8"/><stop offset="1" stop-color="#CDBEA4"/></linearGradient>
+                  <linearGradient id="ubFacing" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#CFC1A9"/><stop offset="1" stop-color="#E4D9C6"/></linearGradient>
+                  <radialGradient id="ubBedLight" cx=".45" cy=".35" r=".8"><stop offset="0" stop-color="#FBF8F2"/><stop offset=".7" stop-color="#EFE9DE"/><stop offset="1" stop-color="#DCD3C4"/></radialGradient>
+                  <radialGradient id="ubPearl" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#EEE6DA"/><stop offset="1" stop-color="#B9AD9A"/></radialGradient>
+                  <!-- fine woven grain and the crinkle of tissue -->
+                  <filter id="ubGrain" x="0" y="0" width="100%" height="100%">
+                    <feTurbulence type="fractalNoise" baseFrequency=".9 .6" numOctaves="2" seed="4" result="n"/>
+                    <feColorMatrix in="n" type="matrix" values="0 0 0 0 .35  0 0 0 0 .3  0 0 0 0 .24  0 0 0 .09 0"/>
+                    <feComposite in2="SourceGraphic" operator="in"/>
+                  </filter>
+                  <filter id="ubCrinkle" x="-5%" y="-5%" width="110%" height="110%">
+                    <feTurbulence type="fractalNoise" baseFrequency=".09" numOctaves="3" seed="11" result="t"/>
+                    <feDisplacementMap in="SourceGraphic" in2="t" scale="1.2" xChannelSelector="R" yChannelSelector="G"/>
+                  </filter>
+                  <filter id="ubSoft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.1"/></filter>
+                  <filter id="ubSofter" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.4"/></filter>
+                  <clipPath id="ubBodyClip"><path d="M 21 16 L 39 11.5 Q 50 27 61 11.5 L 79 16 Q 82 17 82 20 L 82 85 Q 82 88.5 78.5 88.5 L 21.5 88.5 Q 18 88.5 18 85 L 18 20 Q 18 17 21 16 Z"/></clipPath>
                 </defs>
-                <rect x="6" y="6" width="88" height="90" fill="url(#ubSilk)"/>
-                <path d="M36 6 Q50 30 64 6" fill="#E2D7C4" stroke="#CFC2AB" stroke-width=".6"/>
-                <path d="M30 6 L36 6 Q50 34 64 6 L70 6" fill="none" stroke="#C9BBA2" stroke-width=".5"/>
-                <path d="M24 10 L24 96 M76 10 L76 96" stroke="#D3C6B0" stroke-width=".5" opacity=".8"/>
-                <path d="M6 60 L94 60" stroke="#D3C6B0" stroke-width=".45" opacity=".7"/>
-                <path d="M30 70 Q50 64 70 70" stroke="#E9E0D1" stroke-width="1.2" fill="none" opacity=".7"/>
+
+                <!-- acid-free tissue bed, crinkled, slightly larger than the garment -->
+                <path d="M 3 4 Q 26 2.8 50 3.6 T 97 3.4 Q 97.8 30 97.3 52 T 97.4 96.8 Q 72 97.8 50 97 T 2.8 97.2 Q 2.2 70 2.9 48 T 3 4 Z" fill="url(#ubBedLight)"/>
+                <path d="M 3 4 Q 26 2.8 50 3.6 T 97 3.4 Q 97.8 30 97.3 52 T 97.4 96.8 Q 72 97.8 50 97 T 2.8 97.2 Q 2.2 70 2.9 48 T 3 4 Z" fill="none" stroke="#CFC5B4" stroke-width=".4" opacity=".7"/>
+                <g fill="none" stroke="#D9D0C1" stroke-width=".35" opacity=".8" filter="url(#ubCrinkle)">
+                  <path d="M 4 12 L 15 20 L 9 31"/><path d="M 95 9 L 86 18 L 93 26"/><path d="M 5 90 L 14 82"/><path d="M 96 92 L 87 84 L 94 76"/><path d="M 40 96 L 48 90 L 58 96"/>
+                </g>
+
+                <!-- soft contact shadow of the folded piece on the tissue -->
+                <rect x="17" y="13" width="67" height="79" rx="4" fill="#5A4A33" opacity=".28" filter="url(#ubSofter)"/>
+
+                <!-- sleeves folded behind: their edges show along both sides -->
+                <path d="M 14.6 19.5 Q 13.6 21 13.8 24 L 15.4 86 Q 15.8 89 18.6 89.2 L 21 89.2 L 21 18 Z" fill="url(#ubSleeveL)"/>
+                <path d="M 85.4 19.5 Q 86.4 21 86.2 24 L 84.6 86 Q 84.2 89 81.4 89.2 L 79 89.2 L 79 18 Z" fill="url(#ubSleeveR)"/>
+
+                <!-- the body of the piece -->
+                <path d="M 21 16 L 39 11.5 Q 50 27 61 11.5 L 79 16 Q 82 17 82 20 L 82 85 Q 82 88.5 78.5 88.5 L 21.5 88.5 Q 18 88.5 18 85 L 18 20 Q 18 17 21 16 Z" fill="url(#ubSilk)"/>
+                <g clip-path="url(#ubBodyClip)">
+                  <!-- woven grain -->
+                  <rect x="0" y="0" width="100" height="100" fill="#fff" filter="url(#ubGrain)"/>
+                  <!-- the long fold of the sleeves pressed behind the body -->
+                  <path d="M 18 18 L 25 18 L 24 88 L 18 88 Z" fill="#B9A989" opacity=".22" filter="url(#ubSoft)"/>
+                  <path d="M 82 18 L 75 18 L 76 88 L 82 88 Z" fill="#A99878" opacity=".26" filter="url(#ubSoft)"/>
+                  <path d="M 24.4 19 Q 23.6 54 24.6 88" fill="none" stroke="#FFFDF8" stroke-width=".7" opacity=".75"/>
+                  <path d="M 75.6 19 Q 76.4 54 75.4 88" fill="none" stroke="#FFFDF8" stroke-width=".55" opacity=".55"/>
+                  <!-- drape: light and shadow running across the silk -->
+                  <path d="M 30 34 Q 44 41 56 37 T 74 42" fill="none" stroke="#B8A888" stroke-width="2.2" opacity=".22" filter="url(#ubSoft)"/>
+                  <path d="M 30 32.6 Q 44 39.6 56 35.6 T 74 40.6" fill="none" stroke="#FFFFFF" stroke-width="1.2" opacity=".7" filter="url(#ubSoft)"/>
+                  <path d="M 27 56 Q 40 51 52 55 T 76 53" fill="none" stroke="#B3A282" stroke-width="2.6" opacity=".18" filter="url(#ubSoft)"/>
+                  <path d="M 27 54.4 Q 40 49.4 52 53.4 T 76 51.4" fill="none" stroke="#FFFFFF" stroke-width="1.4" opacity=".6" filter="url(#ubSoft)"/>
+                  <path d="M 58 24 Q 64 46 61 70" fill="none" stroke="#FFFFFF" stroke-width="3" opacity=".35" filter="url(#ubSofter)"/>
+                  <!-- the hem folded under: a rounded roll of cloth -->
+                  <rect x="18" y="78" width="64" height="11" fill="url(#ubHem)" opacity=".85"/>
+                  <path d="M 18 78.2 Q 50 76.8 82 78.2" fill="none" stroke="#FFFDF8" stroke-width=".8" opacity=".85"/>
+                  <path d="M 18 79.6 Q 50 78.2 82 79.6" fill="none" stroke="#A89676" stroke-width="1.4" opacity=".28" filter="url(#ubSoft)"/>
+                </g>
+
+                <!-- the back neck facing seen through the neckline -->
+                <path d="M 39 11.5 Q 50 9.4 61 11.5 Q 50 27 39 11.5 Z" fill="url(#ubFacing)"/>
+                <path d="M 39 11.5 Q 50 9.4 61 11.5" fill="none" stroke="#BFAF94" stroke-width=".5"/>
+                <path d="M 40.4 12.4 Q 50 25.2 59.6 12.4" fill="none" stroke="#B9A98D" stroke-width=".45" opacity=".8" stroke-dasharray=".9 .7"/>
+                <!-- bias-bound neckline edge -->
+                <path d="M 39 11.5 Q 50 27 61 11.5" fill="none" stroke="#FFFCF6" stroke-width="1.1"/>
+                <path d="M 39.6 12.6 Q 50 28.4 60.4 12.6" fill="none" stroke="#A99878" stroke-width=".8" opacity=".35" filter="url(#ubSoft)"/>
+                <!-- shoulder seams -->
+                <path d="M 21 16 L 39 11.5 M 61 11.5 L 79 16" fill="none" stroke="#BCAC90" stroke-width=".45" opacity=".9"/>
+
+                <!-- concealed placket with silk-covered pearl buttons -->
+                <path d="M 50 27 L 50 78" fill="none" stroke="#C4B496" stroke-width=".45" opacity=".85"/>
+                <path d="M 52.6 27.6 L 52.6 78" fill="none" stroke="#FFFFFF" stroke-width=".5" opacity=".7"/>
+                <g fill="url(#ubPearl)" stroke="#B3A68F" stroke-width=".2">
+                  <circle cx="51.3" cy="33" r="1.05"/><circle cx="51.3" cy="43" r="1.05"/><circle cx="51.3" cy="53" r="1.05"/><circle cx="51.3" cy="63" r="1.05"/>
+                </g>
               </svg>
               <span class="ub-label" data-hit="label" aria-hidden="true"><svg viewBox="120 30 796 120"><use href="#wm-paths"/></svg></span>
             </div>
@@ -493,12 +564,12 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="assets/js/catalog.js?v=20261127e"></script>
-<script src="assets/js/art.js?v=20261127e"></script>
-<script src="assets/js/core.js?v=20261127e"></script>
-<script src="assets/js/shop.js?v=20261127e"></script>
-<script src="assets/js/maison.js?v=20261127e"></script>
-<script src="assets/vendor/lenis.min.js?v=20261127e" defer></script>
-<script src="assets/js/flagship.js?v=20261127e" defer></script>
+<script src="assets/js/catalog.js?v=20261127f"></script>
+<script src="assets/js/art.js?v=20261127f"></script>
+<script src="assets/js/core.js?v=20261127f"></script>
+<script src="assets/js/shop.js?v=20261127f"></script>
+<script src="assets/js/maison.js?v=20261127f"></script>
+<script src="assets/vendor/lenis.min.js?v=20261127f" defer></script>
+<script src="assets/js/flagship.js?v=20261127f" defer></script>
 </body>
 </html>
