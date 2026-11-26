@@ -53,5 +53,11 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/the-maison",
+      "destination": "/index.html"
+    }
   ]
 }

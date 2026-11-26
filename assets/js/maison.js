@@ -38,6 +38,7 @@
     else if (k === 'salon') ui.openSalon();
     else if (k === 'film') ui.openFilm();
     else if (k === 'anchor') C.scrollTo(v);
+    else if (k === 'route') ui.route(v);
     else if (k === 'passport') ui.openPassport();
     else if (k === 'info') ui.openInfo(v);
     else if (k === 'search') ui.openSearch();
@@ -413,7 +414,8 @@
   C.on('close', function (d) { if (d.id === 'layerPassport') clearTimeout(scanT); });
 
   /* ======================= Private Circle ======================= */
-  var salonView = 'in', salonEmail = '', pendingCb = null, salonMsg = '';
+  var salonView = 'in', salonEmail = '', pendingCb = null, salonMsg = '', salonTab = 'vault';
+  var CIRCLE_TABS = [['vault', 'Wardrobe &amp; Vault'], ['saved', 'Saved Silhouettes'], ['addresses', 'Addresses'], ['concierge', 'Stylist Concierge']];
   var STEPS = ['Order confirmed', 'In the atelier', 'Dispatched', 'Delivered'];
   var MLAB = { chest: 'Bust', waist: 'Waist', hips: 'Hip', height: 'Height', heel: 'Heel height' };
   /* An account is created the first time an email signs in (Google or private link) and found again afterwards.
@@ -503,13 +505,16 @@
     return head('salonTitle', 'Welcome, ' + esc(firstName(m.name)), 'Close Private Circle') + '<div class="panel-body salon-grid">' +
       '<div class="salon-id">' + (m.picture ? '<img src="' + esc(m.picture) + '" alt="" width="44" height="44" referrerpolicy="no-referrer">' : '<span class="salon-id__mono" aria-hidden="true">' + esc(firstName(m.name).charAt(0).toUpperCase()) + '</span>') +
       '<p class="fine-print"><strong>' + esc(m.name) + '</strong><br>' + esc(m.email) + '<br>Private Circle ' + esc(m.id || '') + ' · signed in with ' + (m.provider === 'google' ? 'Google' : 'a private link') + ' · client since ' + esc(fmtDate(m.since)) + '</p></div>' +
-      '<section class="salon-card salon-card--wide"><h3>My wardrobe &amp; authenticity vault</h3>' + wardrobe + '</section>' +
-      '<section class="salon-card"><h3>Acquisitions and delivery</h3>' + oHtml + '</section>' +
-      '<section class="salon-card"><h3>Saved silhouettes</h3>' + wHtml + '</section>' +
-      '<section class="salon-card"><h3>Fit profile</h3>' + fHtml + '</section>' +
-      '<section class="salon-card"><h3>Your Maison Stylist</h3>' + sHtml + '</section>' +
-      '<section class="salon-card"><h3>Delivery addresses</h3>' + aHtml + '</section>' +
-      '<section class="salon-card"><h3>Preferences</h3>' + pHtml + '</section>' +
+      '<div class="circle-tabs" role="tablist" aria-label="Private Circle">' + CIRCLE_TABS.map(function (t) {
+        var on = t[0] === salonTab;
+        return '<button class="circle-tab" type="button" role="tab" id="ctab-' + t[0] + '" aria-controls="cpanel" aria-selected="' + on + '" tabindex="' + (on ? 0 : -1) + '" data-ctab="' + t[0] + '">' + t[1] + '</button>';
+      }).join('') + '</div>' +
+      '<div class="circle-panel" id="cpanel" role="tabpanel" aria-labelledby="ctab-' + salonTab + '" tabindex="0">' +
+      (salonTab === 'vault' ? '<section class="salon-card salon-card--wide"><h3>Wardrobe &amp; Verification Vault</h3>' + wardrobe + '</section><section class="salon-card"><h3>Acquisitions and delivery</h3>' + oHtml + '</section>'
+        : salonTab === 'saved' ? '<section class="salon-card"><h3>Saved Silhouettes</h3>' + wHtml + '</section><section class="salon-card"><h3>Fit profile</h3>' + fHtml + '</section>'
+        : salonTab === 'addresses' ? '<section class="salon-card"><h3>Delivery addresses</h3>' + aHtml + '</section><section class="salon-card"><h3>Preferences</h3>' + pHtml + '</section>'
+        : '<section class="salon-card"><h3>Colombo Stylist Concierge</h3>' + sHtml + '</section>') +
+      '</div>' +
       '<button class="btn btn--ghost btn--block" type="button" data-signout>Sign out</button></div>';
   }
   /* one-click activation from the order confirmation: a private sign-in link to the order email */
@@ -521,9 +526,15 @@
   };
   ui.openSalon = function () { salonView = 'in'; renderSalon(); C.open($('#layerSalon')); if (fbReady()) fbLoad().catch(noop); };
   var salonPanel = $('#salonPanel');
+  salonPanel.addEventListener('keydown', function (e) {
+    var t = e.target.closest && e.target.closest('[data-ctab]'); if (!t || (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft')) return;
+    var i = CIRCLE_TABS.map(function (x) { return x[0]; }).indexOf(t.getAttribute('data-ctab')) + (e.key === 'ArrowRight' ? 1 : -1);
+    i = (i + CIRCLE_TABS.length) % CIRCLE_TABS.length; salonTab = CIRCLE_TABS[i][0]; renderSalon(); var nt = $('#ctab-' + salonTab); if (nt) nt.focus(); e.preventDefault();
+  });
   salonPanel.addEventListener('click', function (e) {
     var t;
     if (e.target.closest('[data-google]')) { if (fbReady()) { pendingCb = null; fbGoogle(); } else ui.googleSignIn(null); return; }
+    if ((t = e.target.closest('[data-ctab]'))) { salonTab = t.getAttribute('data-ctab'); renderSalon(); var nt = $('#ctab-' + salonTab); if (nt) nt.focus(); return; }
     if (e.target.closest('[data-back]')) { salonView = 'in'; renderSalon(); return; }
     if (e.target.closest('[data-enter]')) { var nw = signIn({ email: salonEmail }, 'email'); renderSalon(); welcomeToast(nw); return; }
     if (e.target.closest('[data-signout]')) { if (FB && C.state.member && C.state.member.fb) FB.A.signOut(FB.auth).catch(noop); C.state.member = null; C.save(); C.emit('member'); salonView = 'in'; renderSalon(); C.toast('You have left the Private Circle on this device.'); return; }
@@ -697,6 +708,67 @@
   };
   $('#salonBtn').addEventListener('click', ui.openSalon);
 
+  /* ======================= routes: the home shell and /the-maison ======================= */
+  /* One document, two views. Sections carry data-view; html[data-route] hides the other view.
+     Vercel rewrites /the-maison to this file, so the address is shareable and survives a reload. */
+  var ROUTES = { home: { path: '/', title: document.title },
+                 maison: { path: '/the-maison', title: 'The Maison | House of MANTHAI, Colombo' } };
+  var canon = document.querySelector('link[rel="canonical"]');
+  function routeFromPath(p) { return /\/the-maison\/?$/.test(p || location.pathname) ? 'maison' : 'home'; }
+  function curRoute() { return document.documentElement.getAttribute('data-route') || 'home'; }
+  function applyRoute(name) {
+    var r = ROUTES[name] || ROUTES.home;
+    document.documentElement.setAttribute('data-route', name);
+    document.title = r.title;
+    if (canon) canon.href = 'https://manthai.vercel.app' + r.path;
+    C.emit('route', name);
+  }
+  function scrollTopNow() { if (C.lenis) C.lenis.scrollTo(0, { immediate: true }); window.scrollTo(0, 0); }
+  ui.route = function (name, target, push) {
+    if (!ROUTES[name]) name = 'home';
+    var same = name === curRoute();
+    var finish = function () {
+      if (target && document.getElementById(target)) C.scrollTo(target); else if (!same) scrollTopNow();
+    };
+    if (same) { if (target) C.scrollTo(target); else window.scrollTo({ top: 0, behavior: C.reduced() ? 'auto' : 'smooth' }); return; }
+    if (push !== false) { try { history.pushState({ route: name }, '', ROUTES[name].path + (target ? '#' + target : '')); } catch (e) { /* file:// */ } }
+    var veil = $('#veil');
+    var swap = function () {
+      applyRoute(name); scrollTopNow();
+      requestAnimationFrame(function () { requestAnimationFrame(function () { finish(); if (veil) veil.classList.remove('is-on'); }); });
+      var h = name === 'maison' ? $('#maisonPageTitle') : $('#hero h1');
+      if (h) { h.setAttribute('tabindex', '-1'); try { h.focus({ preventScroll: true }); } catch (e) { h.focus(); } }
+    };
+    if (veil && !C.reduced()) { veil.classList.add('is-on'); setTimeout(swap, 280); } else swap();
+  };
+  /* a scroll target inside the other view switches route first */
+  var baseScrollTo = C.scrollTo;
+  C.scrollTo = function (id) {
+    var el = document.getElementById(id), v = el && el.closest('[data-view]');
+    var want = v ? v.getAttribute('data-view') : null;
+    if (want && want !== curRoute()) { ui.route(want, id); return; }
+    baseScrollTo(id);
+  };
+  window.addEventListener('popstate', function () {
+    var name = routeFromPath();
+    if (name !== curRoute()) { applyRoute(name); scrollTopNow(); }
+    var id = location.hash.slice(1);
+    if (id && document.getElementById(id)) requestAnimationFrame(function () { baseScrollTo(id); });
+  });
+  applyRoute(routeFromPath());
+  if (location.hash && document.getElementById(location.hash.slice(1))) {
+    var hashId = location.hash.slice(1);
+    window.addEventListener('load', function () { setTimeout(function () { baseScrollTo(hashId); }, 60); });
+  }
+
+  /* the dark Seal teaser draws its emblem once it enters the viewport */
+  (function () {
+    var t = $('#teaser'); if (!t) return;
+    if (!('IntersectionObserver' in window) || C.reduced()) { t.classList.add('in'); return; }
+    var io = new IntersectionObserver(function (en) { if (en[0].isIntersecting) { t.classList.add('in'); io.disconnect(); } }, { threshold: 0.3 });
+    io.observe(t);
+  })();
+
   /* ======================= global handlers ======================= */
   document.addEventListener('click', function (e) {
     var t;
@@ -711,10 +783,17 @@
       else if (a === 'passport') ui.openPassport();
       return;
     }
+    if ((t = e.target.closest('a[data-route]'))) {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+      e.preventDefault(); closePanel(true);
+      var md = $('#layerMenu'); if (md && md.open) { C.close(md); later(function () { ui.route(t.getAttribute('data-route')); }); } else ui.route(t.getAttribute('data-route'));
+      return;
+    }
     var link = e.target.closest('a[href^="#"]');
     if (link) {
       var id = link.getAttribute('href').slice(1);
-      if (id === 'top') { e.preventDefault(); window.scrollTo({ top: 0, behavior: C.reduced() ? 'auto' : 'smooth' }); }
+      if (id === 'top' && curRoute() !== 'home') { e.preventDefault(); ui.route('home'); }
+      else if (id === 'top') { e.preventDefault(); window.scrollTo({ top: 0, behavior: C.reduced() ? 'auto' : 'smooth' }); }
       else if (document.getElementById(id)) { e.preventDefault(); C.scrollTo(id); }
     }
   });

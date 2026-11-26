@@ -31,15 +31,15 @@
   };
 
   /* ---------- Collection filters (Phase 1: ladies luxury apparel only) ---------- */
-  M.TABS = ['All', 'Evening Gowns', 'Midi & Cocktail', 'Tailoring', 'Silk Separates', 'Limited Atelier'];
+  M.TABS = ['All', 'Evening Gowns', 'Midi & Cocktail', 'Tailoring', 'Silk Separates', 'Limited Editions'];
   /* Occasion-led discovery. Each product lists the occasions it is cut for. */
-  M.OCCASIONS = ['Gala & Black Tie', 'Private Cocktail', 'Modern Bridal & Reception', 'Day-to-Evening Statement'];
+  M.OCCASIONS = ['Evening & Gala', 'Cocktail & Private Dinner', 'Modern Reception', 'Elevated Day-to-Evening'];
   /* Fit consensus, from atelier fittings: 0 runs small, 1 true to size, 2 runs large (decimals sit between). */
   M.FIT_LABELS = ['Runs small', 'True to size', 'Runs large'];
 
   /* ---------- Fit information ---------- */
   M.FITTING = 'Private Colombo Atelier Fitting';
-  M.MODEL = { height: '175 cm / 5′9″', size: 'S' };
+  M.MODEL = { height: '173 cm / 5′8″', size: 'S' };
   /* International size conversion for women's apparel */
   M.SIZE_INTL = { UK: [6, 8, 10, 12, 14], EU: [34, 36, 38, 40, 42], US: [2, 4, 6, 8, 10] };
   /* Body measurements in cm. Hollow-to-hem is per piece (product.hollow, size S) and moves 1.5 cm per size. */
@@ -69,197 +69,158 @@
      prompt fields are the director's prompts for generating each asset. */
   M.PRODUCTS = [
     {
-      id: 'alstroemeria-gown',
-      name: 'Alstroemeria Hand-Painted Velvet Couture Gown',
-      short: 'Alstroemeria Velvet Couture Gown',
-      tabs: ['Evening Gowns', 'Limited Atelier'], collection: 'Atelier Limited Edition',
-      price: 295000, edition: 12, remaining: 10, kind: 'gown', sizing: 'apparel', soldOut: ['XL'], hollow: 146,
-      summary: 'Hand-painted Alstroemeria silk-velvet bodice, sculptural asymmetric drape, 48 artisan hours of hand beadwork.',
-      provenance: '48 artisan hours, hand-painted and beaded in the Colombo atelier',
-      story: 'Every Alstroemeria petal is painted by hand onto the silk-velvet before the bodice is cut, so no two gowns carry the same bloom. Glass beads are then set one at a time along the asymmetric drape.',
-      materials: 'Silk-velvet bodice hand-painted with metallic gold and mineral pigment. Silk crepe drape. Hand-set glass beadwork. Concealed corsetry.',
-      care: 'Painted pigment and beadwork are fragile. Steam only on the reverse and never press. Store hanging in the supplied cotton garment bag.',
-      palette: ['#4A121C', '#1b0508', '#C5A059'],
-      occasions: ['Gala & Black Tie'], fit: 1, pairs: ['sovereign-wave-blazer', 'mannar-pearl-cape'],
+      id: 'aurelia-gown',
+      name: 'Aurelia Liquid Silk-Velvet Evening Gown',
+      short: 'Aurelia Silk-Velvet Gown',
+      tabs: ['Evening Gowns', 'Limited Editions'], collection: 'Evening & Gala Gowns',
+      price: 185000, edition: 15, stock: { XS: 2, S: 3, M: 4, L: 2, XL: 0 }, kind: 'gown', sizing: 'apparel', hollow: 146,
+      summary: '22-momme silk-velvet, a sculpted asymmetric neckline and a full silk crepe lining.',
+      provenance: 'Cut on the stand and hand-finished in the Colombo atelier',
+      story: 'The silk-velvet is cut on the stand so the asymmetric neckline sits exactly where the body turns, then the gown falls in one unbroken line to the floor. Under light the pile moves from deep shadow to a warm, liquid sheen.',
+      materials: '22-momme silk-velvet shell. Silk crepe de chine lining. Concealed side closure and inner waist stay.',
+      feel: { fabric: '22-Momme Silk-Velvet', hand: 'Dense, liquid drape that warms in the hand, with a full breathable silk crepe de chine lining', gsm: 280 },
+      weight: 'Heavy evening weight, 280 GSM. Falls straight and holds the floor without lifting in a breeze.',
+      drape: 'Cut on the stand with an asymmetric neckline. Fully lined in silk crepe de chine, so it never clings.',
+      care: 'Silk-velvet crushes under pressure: never iron or press the pile. Steam from the reverse at a distance and store hanging in the supplied garment bag.',
+      palette: ['#3a2618', '#100b08', '#C9AF7E'],
+      occasions: ['Evening & Gala'], fit: 1, pairs: ['nocturne-cape-top', 'meridian-blazer'],
       media: { form: '', back: '', detail: '', move: '' },
-      prompt: 'Hand-painted Alstroemeria silk-velvet sculpted evening gown, fluid fabric motion, brushwork and beadwork shimmer, 35mm anamorphic film grain, chiaroscuro golden light'
+      prompt: 'Liquid silk-velvet evening gown with a sculpted asymmetric neckline, deep warm sheen, chiaroscuro golden light, 35mm editorial photography'
     },
     {
-      id: 'ceylon-rosette-mullet',
-      name: 'Ceylon Rosette 3D Sculpted Mullet Gown',
-      short: 'Ceylon Rosette Mullet Gown',
-      tabs: ['Evening Gowns'], collection: 'Evening & Gala Gowns',
-      price: 245000, edition: 15, remaining: 11, kind: 'mullet', sizing: 'apparel', soldOut: [], hollow: 150,
-      summary: 'Alabaster Silk, three-dimensional hand-sculpted silk rosettes and a cathedral train, short at the front and long behind.',
-      provenance: 'Rosettes folded and stitched by hand in the Colombo atelier',
-      story: 'Each rosette is folded from a single length of Alabaster Silk and stitched petal by petal, then set along the bodice and down the train. The hem lifts at the front and falls behind in a sweeping train.',
-      materials: 'Alabaster Silk, hand-sculpted three-dimensional silk rosettes, boned bodice, silk-lined train.',
-      care: 'Keep rosettes uncrushed: store the gown hanging with the train supported in tissue. Steam on the reverse only.',
-      palette: ['#2a2018', '#0b0b0c', '#C5A059'],
-      occasions: ['Gala & Black Tie', 'Modern Bridal & Reception'], fit: 1, pairs: ['mannar-pearl-cape', 'meridian-silk-shirt'],
-      media: { form: '', back: '', detail: '', move: '' },
-      prompt: 'Alabaster Silk mullet evening gown with three-dimensional sculpted silk rosettes and a sweeping train, chiaroscuro golden light, 35mm anamorphic film grain'
-    },
-    {
-      id: 'serendib-column',
-      name: 'Serendib Strapless Bow-Sculpted Column Gown',
-      short: 'Serendib Bow Column Gown',
-      tabs: ['Evening Gowns'], collection: 'Evening & Gala Gowns',
-      price: 215000, edition: 15, remaining: 12, kind: 'column', sizing: 'apparel', soldOut: [], hollow: 144,
-      summary: 'Mannar Pearl duchesse satin, strapless sculpted column, with an architectural origami bow across the back.',
-      provenance: 'Cut, boned and folded by hand in the Colombo atelier',
-      story: 'A single clean line from neckline to floor, held by internal boning, with the one flourish saved for the back: an origami bow folded from the same duchesse satin.',
-      materials: 'Mannar Pearl duchesse satin, internal boning, silk lining, hand-folded origami bow.',
-      care: 'Duchesse satin marks easily: blot, never rub. Steam on the reverse. Store hanging in the supplied garment bag.',
-      palette: ['#2a2018', '#0b0b0c', '#C5A059'],
-      occasions: ['Gala & Black Tie', 'Modern Bridal & Reception'], fit: 0.7, pairs: ['mannar-pearl-cape', 'sovereign-wave-blazer'],
-      media: { form: '', back: '', detail: '', move: '' },
-      prompt: 'Strapless Mannar Pearl duchesse satin column gown with a sculpted origami back bow, museum-quality fashion photography, warm chiaroscuro'
-    },
-    {
-      id: 'mahatittha-lace-midi',
-      name: 'Mahatittha Draped Garnet Lace Midi Dress',
-      short: 'Mahatittha Garnet Lace Midi',
-      tabs: ['Midi & Cocktail'], collection: 'Sculpted Dresses',
-      price: 148000, edition: 20, remaining: 14, kind: 'lace', sizing: 'apparel', soldOut: [], hollow: 118,
-      summary: 'Deep Garnet Velvet draped lace, architectural twisted waist, concealed silk lining.',
+      id: 'solstice-midi',
+      name: 'Solstice Draped Garnet Midi Dress',
+      short: 'Solstice Garnet Midi',
+      tabs: ['Midi & Cocktail'], collection: 'Sculpted Midi & Cocktail',
+      price: 98000, edition: 20, stock: { XS: 3, S: 4, M: 5, L: 4, XL: 2 }, kind: 'lace', sizing: 'apparel', hollow: 118,
+      summary: 'Velvet-garnet satin twill, a single sculpted twist at the waist and a fluid midi hem.',
       provenance: 'Draped and finished by hand in the Colombo atelier',
-      story: 'Named for the Great Emporium, the dress twists once at the waist and falls in a single sculpted line, lace over velvet the colour of Mantai garnet.',
-      materials: 'Garnet velvet, corded lace, concealed silk lining, hand-finished seams.',
-      care: 'Steam lace on the reverse, never press. Rest the dress for a day between wears.',
-      palette: ['#4A121C', '#240709', '#8a2a3a'],
-      occasions: ['Private Cocktail'], fit: 1, pairs: ['mannar-pearl-cape', 'sovereign-wave-blazer'],
+      story: 'One length of garnet satin twill is twisted once at the waist and released into a fluid midi hem, so the dress moves a beat after you do. The colour is the house signature: deep, quiet and unmistakable.',
+      materials: 'Velvet-garnet silk satin twill. Silk crepe lining. Hand-finished seams and an invisible back zip.',
+      feel: { fabric: '19-Momme Silk Satin Twill', hand: 'Smooth, cool and weighted, with a soft diagonal sheen and a full silk lining', gsm: 165 },
+      weight: 'Mid weight, 165 GSM. Enough body to hold the waist twist, light enough to move.',
+      drape: 'Bias-released skirt from a single twisted waist. Lined in silk crepe to the hem.',
+      care: 'Satin twill waterspots: keep dry and blot at once. Steam on the reverse.',
+      palette: ['#4C1722', '#1d070c', '#8a2a3a'],
+      occasions: ['Cocktail & Private Dinner', 'Modern Reception'], fit: 1, pairs: ['meridian-blazer', 'nocturne-cape-top'],
       media: { form: '', back: '', detail: '', move: '' },
-      prompt: 'Deep garnet velvet draped lace midi dress with an architectural twisted waist, warm chiaroscuro'
+      prompt: 'Velvet-garnet satin twill midi dress with a sculpted waist twist and fluid hem, soft window light on ivory, editorial womenswear'
     },
     {
-      id: 'anuradhapura-silk-midi',
-      name: 'Anuradhapura Asymmetric Twisted Silk Midi',
-      short: 'Anuradhapura Twisted Silk Midi',
-      tabs: ['Midi & Cocktail'], collection: 'Sculpted Dresses',
-      price: 128000, edition: 18, remaining: 13, kind: 'silkmidi', sizing: 'apparel', soldOut: [], hollow: 112,
-      summary: 'Liquid Obsidian mulberry silk crepe, a single twisted drape at the hip and an asymmetric hem.',
-      provenance: 'Draped on the stand and hand-finished in the Colombo atelier',
-      story: 'The silk is draped directly on the stand and twisted once at the hip, so the hem rises on one side and falls on the other. It moves like dark water.',
-      materials: 'Liquid Obsidian heavy mulberry silk crepe, silk lining, hand-rolled hem.',
-      care: 'Mulberry silk waterspots: keep dry and blot at once. Steam on the reverse.',
-      palette: ['#26262a', '#0b0b0c', '#C5A059'],
-      occasions: ['Private Cocktail', 'Day-to-Evening Statement'], fit: 1.3, pairs: ['sovereign-wave-blazer', 'meridian-silk-shirt'],
-      media: { form: '', back: '', detail: '', move: '' },
-      prompt: 'Liquid obsidian mulberry silk crepe asymmetric twisted midi dress in fluid motion, golden rim light on black'
-    },
-    {
-      id: 'sovereign-wave-blazer',
-      name: 'Sovereign Wave-Ruffle Tailored Blazer',
-      short: 'Sovereign Wave-Ruffle Blazer',
+      id: 'meridian-blazer',
+      name: 'Meridian Structured Ivory Tailored Blazer',
+      short: 'Meridian Ivory Blazer',
       tabs: ['Tailoring'], collection: 'Architectural Tailoring',
-      price: 135000, edition: 20, remaining: 12, kind: 'blazer', sizing: 'apparel', soldOut: [], hollow: 64,
-      summary: 'Alabaster Silk, a wave-ruffle peplum hem, satin peak lapels and an interior woven damask wordmark label.',
+      price: 115000, edition: 20, stock: { XS: 3, S: 4, M: 4, L: 3, XL: 2 }, kind: 'blazer', sizing: 'apparel', hollow: 64,
+      summary: 'Tropical virgin wool-silk, a sharp sculpted shoulder and a concealed horn clasp.',
       provenance: 'Cut, canvassed and pressed by hand in the Colombo atelier',
-      story: 'Architectural tailoring with a soft edge: a nipped waist, satin peak lapels, and a peplum that breaks into a hand-shaped wave. Inside the collar sits the woven damask label that bears only the MANTHAI wordmark.',
-      materials: 'Alabaster Silk, horsehair canvas, satin peak lapels, wave-ruffle peplum, woven damask neck label.',
-      care: 'Brush gently with a soft garment brush. Steam the peplum on the reverse to keep its wave.',
-      palette: ['#2a2018', '#0b0b0c', '#C5A059'],
-      occasions: ['Day-to-Evening Statement'], fit: 1, pairs: ['mantai-silk-trouser', 'meridian-silk-shirt'],
+      story: 'A sharp shoulder, a nipped waist and nothing on the front but a concealed horn clasp. The tropical wool-silk breathes in Colombo heat and still holds an architectural line through a long evening.',
+      materials: 'Tropical virgin wool-silk. Half horsehair canvas. Silk twill lining. Concealed natural horn clasp. Woven damask neck label.',
+      feel: { fabric: 'Tropical Virgin Wool-Silk', hand: 'Crisp and dry to the touch, cool against the skin, with a silk twill lining that slides on', gsm: 210 },
+      weight: 'Tropical weight, 210 GSM. Structured enough for a sharp shoulder, light enough for Colombo heat.',
+      drape: 'Half-canvassed for shape, lined in silk twill. Single concealed horn clasp at the waist.',
+      care: 'Brush gently with a soft garment brush after wearing. Steam, never press the lapel roll flat.',
+      palette: ['#2a2018', '#0E0D0C', '#C9AF7E'],
+      occasions: ['Elevated Day-to-Evening', 'Cocktail & Private Dinner'], fit: 1, pairs: ['meridian-trousers', 'alabaster-slip'],
       media: { form: '', back: '', detail: '', move: '' },
-      prompt: 'Alabaster Silk tailored blazer with a wave-ruffle peplum hem and satin peak lapels, soft window light, editorial womenswear'
+      prompt: 'Structured ivory tailored blazer in tropical wool-silk with a sharp shoulder and concealed horn clasp, soft window light, editorial womenswear'
     },
     {
-      id: 'kotiya-noir-mini',
-      name: 'Kotiya Noir Scarf-Neck Tailored Mini Dress',
-      short: 'Kotiya Noir Scarf-Neck Mini',
-      tabs: ['Midi & Cocktail'], collection: 'Sculpted Dresses',
-      price: 112000, edition: 25, remaining: 15, kind: 'mini', sizing: 'apparel', soldOut: [], hollow: 84,
-      summary: 'Obsidian wool-silk crepe tailored mini with a detachable silk scarf at the neck.',
-      provenance: 'Tailored and hand-finished in the Colombo atelier',
-      story: 'A sharply cut mini in obsidian wool-silk crepe, finished at the neck with a detachable silk scarf that can be tied, draped or worn loose.',
-      materials: 'Obsidian wool-silk crepe, silk lining, detachable Alabaster silk scarf.',
-      care: 'Steam on the reverse. Dry clean the dress and scarf separately.',
-      palette: ['#151517', '#0b0b0c', '#C5A059'],
-      occasions: ['Private Cocktail', 'Day-to-Evening Statement'], fit: 0.8, pairs: ['sovereign-wave-blazer', 'mannar-pearl-cape'],
-      media: { form: '', back: '', detail: '', move: '' },
-      prompt: 'Obsidian wool-silk crepe tailored mini dress with an ivory silk scarf at the neck, dramatic chiaroscuro'
-    },
-    {
-      id: 'mannar-pearl-cape',
-      name: 'Mannar Pearl Sheer Lace Atelier Cape',
-      short: 'Mannar Pearl Lace Cape',
-      tabs: ['Tailoring', 'Limited Atelier'], collection: 'Atelier Limited Edition',
-      price: 74000, edition: 10, remaining: 9, kind: 'cape', sizing: 'apparel', soldOut: [], hollow: 112,
-      summary: 'Champagne-ivory sheer lace, a scalloped hem and a single hand-set gold hook closure at the neck.',
-      provenance: 'Cut and scalloped by hand in the Colombo atelier',
-      story: 'Light as breath and long enough to move with the walk. The lace is cut so its scalloped edge falls along the hem, and one gold hook closes the neck.',
-      materials: 'Champagne-ivory sheer lace, silk organza facing, gold-plated hook closure.',
-      care: 'Lace snags easily: remove rings and jewellery when wearing. Steam on the reverse at a distance.',
-      palette: ['#16110a', '#0b0b0c', '#C5A059'],
-      occasions: ['Modern Bridal & Reception', 'Gala & Black Tie'], fit: 1, pairs: ['serendib-column', 'ceylon-rosette-mullet'],
-      media: { form: '', back: '', detail: '', move: '' },
-      prompt: 'Champagne-ivory sheer lace atelier cape with a scalloped hem and a gold hook closure, soft backlight'
-    },
-    {
-      id: 'meridian-silk-shirt',
-      name: 'Meridian Silk Charmeuse Column Shirt',
-      short: 'Meridian Silk Charmeuse Shirt',
-      tabs: ['Silk Separates'], collection: 'Silk Separates',
-      price: 86000, edition: 0, remaining: 24, kind: 'shirt', sizing: 'apparel', soldOut: [], hollow: 72,
-      summary: 'Champagne silk charmeuse, an elongated column shirt with a hidden placket and hand-rolled cuffs.',
-      provenance: 'Cut on the grain and hand-finished in the Colombo atelier',
-      story: 'A shirt cut long and clean, so it can be worn loose over the silk trouser or tucked into tailoring. The placket is hidden, the cuffs are rolled by hand, and the silk falls straight from the shoulder.',
-      materials: 'Champagne mulberry silk charmeuse, hidden mother-of-pearl buttons, hand-rolled cuffs and hem.',
-      care: 'Silk charmeuse waterspots: keep dry and blot at once. Steam on the reverse at a distance.',
-      palette: ['#2a2018', '#0b0b0c', '#C5A059'],
-      occasions: ['Day-to-Evening Statement', 'Private Cocktail'], fit: 1.2, pairs: ['mantai-silk-trouser', 'sovereign-wave-blazer'],
-      media: { form: '', back: '', detail: '', move: '' },
-      prompt: 'Champagne silk charmeuse elongated column shirt with a hidden placket, liquid sheen, soft window light, editorial womenswear'
-    },
-    {
-      id: 'mantai-silk-trouser',
-      name: 'Mantai Wide-Leg Liquid Silk Trouser',
-      short: 'Mantai Wide-Leg Silk Trouser',
-      tabs: ['Silk Separates'], collection: 'Silk Separates',
-      price: 92000, edition: 0, remaining: 24, kind: 'trouser', sizing: 'apparel', soldOut: [], hollow: 128,
-      summary: 'Obsidian heavy silk crepe, a high sculpted waist and a wide leg that moves like a long skirt.',
+      id: 'meridian-trousers',
+      name: 'Meridian High-Waist Wide Silk Trousers',
+      short: 'Meridian Wide Silk Trousers',
+      tabs: ['Tailoring', 'Silk Separates'], collection: 'Architectural Tailoring',
+      price: 62000, edition: 0, batch: 24, stock: { XS: 4, S: 6, M: 6, L: 5, XL: 3 }, kind: 'trouser', sizing: 'apparel', hollow: 128,
+      summary: 'Double-faced crepe, a high waist with a tailored pleat and silk-lined pockets.',
       provenance: 'Pleated and hand-finished in the Colombo atelier',
-      story: 'Two soft pleats at a high, sculpted waistband release into a wide leg that falls to the floor. In movement it reads as a long skirt; standing still it is pure line.',
-      materials: 'Obsidian heavy silk crepe, silk-lined waistband, concealed side closure, hand-finished hem.',
-      care: 'Hang by the waistband on a padded clip hanger. Steam on the reverse; never press the pleats flat.',
-      palette: ['#26262a', '#0b0b0c', '#C5A059'],
-      occasions: ['Day-to-Evening Statement', 'Private Cocktail'], fit: 0.9, pairs: ['meridian-silk-shirt', 'sovereign-wave-blazer'],
+      story: 'A single tailored pleat at a high waist releases into a wide leg that falls straight to the floor. The double-faced crepe needs no lining, so the trouser moves like a long skirt and stays cool.',
+      materials: 'Double-faced silk-blend crepe. Silk pocket lining. Concealed side closure. Hand-finished hem.',
+      feel: { fabric: 'Double-Faced Crepe', hand: 'Fine, matte grain on both faces with a weighted, swinging fall; pockets lined in silk', gsm: 240 },
+      weight: 'Weighted crepe, 240 GSM. The wide leg swings and settles without creasing.',
+      drape: 'Unlined double-faced crepe, finished clean inside. Silk-lined pockets and a silk waistband facing.',
+      care: 'Hang by the waistband on a padded clip hanger. Steam on the reverse; never press the pleat flat.',
+      palette: ['#26262a', '#0E0D0C', '#C9AF7E'],
+      occasions: ['Elevated Day-to-Evening'], fit: 0.9, pairs: ['meridian-blazer', 'alabaster-slip'],
       media: { form: '', back: '', detail: '', move: '' },
-      prompt: 'Obsidian heavy silk crepe wide-leg trouser with a high sculpted waist, fluid motion, golden rim light on black'
+      prompt: 'High-waist wide-leg double-faced crepe trousers with a tailored pleat, fluid motion, soft light on an ivory wall'
+    },
+    {
+      id: 'alabaster-slip',
+      name: 'Alabaster Bias-Cut Mulberry Silk Slip Dress',
+      short: 'Alabaster Silk Slip Dress',
+      tabs: ['Silk Separates'], collection: 'Silk Separates',
+      price: 76000, edition: 0, batch: 18, stock: { XS: 2, S: 3, M: 4, L: 3, XL: 2 }, kind: 'column', sizing: 'apparel', hollow: 120,
+      summary: '19-momme mulberry silk, cut on the bias and finished with hand-rolled French seams.',
+      provenance: 'Cut on the bias and hand-finished in the Colombo atelier',
+      story: 'Cut on the bias so the silk follows the body without a single dart, then finished inside with hand-rolled French seams. Worn alone for evening, or under the Meridian blazer by day.',
+      materials: '19-momme mulberry silk charmeuse. Hand-rolled French seams. Adjustable silk rouleau straps.',
+      feel: { fabric: '19-Momme Mulberry Silk', hand: 'Cool, liquid and weightless, with a soft pearl lustre that moves with the body', gsm: 82 },
+      weight: 'Light weight, 82 GSM. Floats on the body and layers without bulk.',
+      drape: 'Bias-cut, so it drapes and skims without darts. Unlined, with hand-rolled French seams throughout.',
+      care: 'Mulberry silk waterspots: keep dry and blot at once. Steam on the reverse at a distance.',
+      palette: ['#2a2018', '#0E0D0C', '#C9AF7E'],
+      occasions: ['Modern Reception', 'Cocktail & Private Dinner'], fit: 1.1, pairs: ['meridian-blazer', 'nocturne-cape-top'],
+      media: { form: '', back: '', detail: '', move: '' },
+      prompt: 'Ivory bias-cut mulberry silk slip dress, liquid pearl sheen, hand-rolled seams, soft window light, editorial womenswear'
+    },
+    {
+      id: 'nocturne-cape-top',
+      name: 'Nocturne Hand-Beaded Sheer Organza Cape Top',
+      short: 'Nocturne Beaded Cape Top',
+      tabs: ['Limited Editions'], collection: 'Atelier Limited Editions',
+      price: 128000, edition: 12, stock: { XS: 1, S: 2, M: 3, L: 2, XL: 1 }, kind: 'cape', sizing: 'apparel', hollow: 64,
+      summary: 'Sheer silk organza, a fluid cape line and tonal hand-beading set one bead at a time.',
+      provenance: '36 artisan hours of tonal hand-beading in the Colombo atelier',
+      story: 'Silk organza is cut into a cape that floats from the shoulder, then beaded by hand in tones so close to the cloth that the work only shows when light crosses it. Twelve are made, each numbered.',
+      materials: 'Silk organza. Tonal glass bead and bugle embroidery. Silk crepe bandeau underlayer. Single hook closure.',
+      feel: { fabric: 'Sheer Silk Organza', hand: 'Crisp, airy and translucent, with the cool weight of hand-set beads along the hem', gsm: 45 },
+      weight: 'Featherweight organza, 45 GSM, with a weighted beaded hem that keeps the cape line.',
+      drape: 'Floats from the shoulder over a silk crepe bandeau. Closes with a single hook at the neck.',
+      care: 'Beadwork snags easily: remove rings when dressing. Steam at a distance, never press, and store flat in tissue.',
+      palette: ['#16110a', '#0E0D0C', '#C9AF7E'],
+      occasions: ['Evening & Gala', 'Modern Reception'], fit: 1, pairs: ['aurelia-gown', 'meridian-trousers'],
+      media: { form: '', back: '', detail: '', move: '' },
+      prompt: 'Sheer silk organza cape top with tonal hand-beading catching the light, numbered atelier edition, dark warm chiaroscuro'
     }
   ];
+  /* per-size stock drives sold-out sizes, the low-stock cue and the remaining count */
+  M.PRODUCTS.forEach(function (p) {
+    var st = p.stock || {}, sizes = M.SIZECHART.sizes;
+    p.soldOut = sizes.filter(function (z) { return !(st[z] > 0); });
+    p.remaining = sizes.reduce(function (n, z) { return n + (st[z] || 0); }, 0);
+    p.crafted = p.edition || p.batch || p.remaining;
+  });
 
   /* ---------- Navigation: four items. Only Collections opens the Atelier Panel. ----------
-     actions: filter:<tab>  occasion:<name>  product:<id>  stylist  fitting  salon  film  anchor:<id>  info:<key>  seal */
+     actions: filter:<tab>  occasion:<name>  product:<id>  stylist  fitting  salon  film  anchor:<id>  route:<home|maison>  info:<key>  seal */
   M.NAV = [
     { key: 'new', label: 'New Arrivals', action: 'filter:All' },
-    { key: 'collections', label: 'Collections', title: 'Ladies apparel, cut in the Colombo atelier.',
-      product: 'ceylon-rosette-mullet', image: 'Ceylon Rosette Mullet Gown',
+    { key: 'collections', label: 'Collections', title: 'Ladies ready-to-wear, cut in the Colombo atelier.',
+      product: 'aurelia-gown', image: 'Aurelia Silk-Velvet Gown',
       groups: [
         { title: 'Categories', links: [
           { label: 'Evening & Gala Gowns', action: 'filter:Evening Gowns' },
-          { label: 'Sculpted Dresses', action: 'filter:Midi & Cocktail' },
+          { label: 'Sculpted Midi & Cocktail', action: 'filter:Midi & Cocktail' },
           { label: 'Architectural Tailoring', action: 'filter:Tailoring' },
           { label: 'Silk Separates', action: 'filter:Silk Separates' },
-          { label: 'Atelier Limited Editions', action: 'filter:Limited Atelier' }
+          { label: 'Atelier Limited Editions', action: 'filter:Limited Editions' }
         ] },
         { title: 'By occasion', links: [
-          { label: 'Gala & Black Tie', action: 'occasion:Gala & Black Tie' },
-          { label: 'Private Cocktail', action: 'occasion:Private Cocktail' },
-          { label: 'Modern Bridal & Reception', action: 'occasion:Modern Bridal & Reception' },
-          { label: 'Day-to-Evening Statement', action: 'occasion:Day-to-Evening Statement' }
+          { label: 'Evening & Gala', action: 'occasion:Evening & Gala' },
+          { label: 'Cocktail & Private Dinner', action: 'occasion:Cocktail & Private Dinner' },
+          { label: 'Modern Reception', action: 'occasion:Modern Reception' },
+          { label: 'Elevated Day-to-Evening', action: 'occasion:Elevated Day-to-Evening' }
         ] }
       ] },
     { key: 'lookbook', label: 'Lookbook', action: 'anchor:campaign' },
-    { key: 'maison', label: 'The Maison', action: 'anchor:maison' }
+    { key: 'maison', label: 'The Maison', action: 'route:maison' }
   ];
 
   /* ---------- Editorial pillars (60/40 category showcase) ---------- */
   M.PILLARS = [
-    { title: 'Sculpted Evening Silhouettes', text: 'Gowns built on the stand for the grandest rooms: boned, folded and hand-set.', product: 'ceylon-rosette-mullet', action: 'filter:Evening Gowns', link: 'Explore evening gowns' },
-    { title: 'Architectural Tailoring & Co-ords', text: 'Nipped waists, peaked lapels and silk separates that answer each other.', product: 'sovereign-wave-blazer', action: 'filter:Tailoring', link: 'Explore tailoring' },
-    { title: 'Hand-Finished Wearable Art', text: 'Painted, beaded and scalloped by hand in numbered atelier editions.', product: 'alstroemeria-gown', action: 'filter:Limited Atelier', link: 'Explore limited editions' }
+    { title: 'Evening Sculpture', text: 'Silk-velvet and organza cut on the stand for the evenings that are remembered.', product: 'aurelia-gown', action: 'filter:Evening Gowns', link: 'Explore evening gowns' },
+    { title: 'Modern Tailoring', text: 'A sharp shoulder, a high waist and a wide silk leg that answer each other.', product: 'meridian-blazer', action: 'filter:Tailoring', link: 'Explore tailoring' },
+    { title: 'Fluid Silk Editions', text: 'Bias-cut mulberry silk and garnet satin that move a beat after you do.', product: 'alabaster-slip', action: 'filter:Silk Separates', link: 'Explore silk separates' }
   ];
 
   /* ---------- The Unbounded Spiral Seal: the four meanings shown in the decoder (group ids in index.html) ---------- */
@@ -277,14 +238,14 @@
   /* ---------- Lookbook stills (campaign media slots) ---------- */
   M.LOOKBOOK = [
     { id: 'emporium', title: 'The Great Emporium', filter: 'Evening Gowns', kind: 'courtyard',
-      caption: 'Two gowns in a sandstone courtyard at sunset.',
-      prompt: 'Ultra-luxury Parisian-Ceylonese haute couture campaign film still, dramatic chiaroscuro warm golden sunset beam inside a minimalist dark architectural travertine pavilion, two poised South Asian and international high-fashion women wearing a hand-painted floral silk-velvet sculpted evening gown and a black silk column gown, fluid fabric motion, 35mm anamorphic film grain, Vogue Italia editorial aesthetic, obsidian black, alabaster ivory, burnished antique gold, deep garnet' },
+      caption: 'The Aurelia gown and the Nocturne cape in a sandstone courtyard at dusk.',
+      prompt: 'Ultra-luxury Parisian-Ceylonese haute couture campaign film still, dramatic chiaroscuro warm golden sunset beam inside a minimalist dark architectural travertine pavilion, two poised South Asian and international high-fashion women wearing a liquid silk-velvet evening gown with an asymmetric neckline and a sheer hand-beaded organza cape top, fluid fabric motion, 35mm anamorphic film grain, Vogue Italia editorial aesthetic, obsidian black, alabaster ivory, burnished antique gold, deep garnet' },
     { id: 'studio', title: 'Sculpted Tailoring', filter: 'Tailoring', kind: 'studio',
-      caption: 'The wave-ruffle blazer on the stand, with a lace cape laid over the arm.',
-      prompt: 'Museum-grade luxury womenswear photography, an Alabaster Silk wave-ruffle peplum blazer with satin peak lapels on a dress form, a champagne-ivory sheer lace cape draped over the arm, dark wet basalt floor, subtle golden rim lighting, razor-sharp macro focus' },
-    { id: 'atelier', title: 'The Atelier', filter: 'Limited Atelier', kind: 'table',
-      caption: 'A couturier’s hands painting gold Alstroemeria onto ivory velvet.',
-      prompt: 'Intimate editorial close-up of a master couturier’s hands delicately painting metallic gold and soft Alstroemeria petals onto ivory silk velvet with a fine sable brush on a sunlit wooden atelier table, antique brass scissors and tiny glass beads beside the fabric, warm chiaroscuro shadows' },
+      caption: 'The Meridian blazer on the stand, the wide silk trousers falling beside it.',
+      prompt: 'Museum-grade luxury womenswear photography, a structured ivory wool-silk blazer with a sharp shoulder on a dress form, high-waist wide silk trousers beside it, dark wet basalt floor, subtle golden rim lighting, razor-sharp macro focus' },
+    { id: 'atelier', title: 'The Atelier', filter: 'Limited Editions', kind: 'table',
+      caption: 'A couturier’s hands setting tonal beads onto silk organza.',
+      prompt: 'Intimate editorial close-up of a master couturier’s hands setting tonal glass beads one at a time onto sheer silk organza with a fine needle on a sunlit wooden atelier table, antique brass scissors and tiny glass beads beside the fabric, warm chiaroscuro shadows' },
     { id: 'label', title: 'The Label', filter: 'Tailoring', kind: 'damask',
       caption: 'The woven damask neck label, bearing only the MANTHAI wordmark.',
       prompt: 'Extreme macro light sweep across a black woven damask label revealing the gold MANTHAI wordmark, deep obsidian silk folds' }

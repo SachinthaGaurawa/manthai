@@ -24,22 +24,25 @@ Gold is never decoration. It shows up only as hairlines, the emblem and the acti
 
 ## 2. Color Palette & Roles
 
+The Parisian Gallery palette (blueprint, Phase 1 ladies flagship). Roughly 75% warm gallery light for browsing and buying, 25% cinematic dark chapters. Contrast ratios are WCAG 2.1.
+
 | Name | Hex | Role |
 | --- | --- | --- |
-| Obsidian | #0B0B0C | Dark canvas: hero, preloader, ritual, footer. Never pure black. |
-| Charcoal | #141416 | Elevated dark surfaces: drawers, Maison, panels. |
-| Alabaster | #F6F3EC | Light gallery canvas. Never #FFFFFF. |
-| Pearl | #EAE4D7 | Quiet secondary light surface: image wells, size guide. |
-| Sovereign Gold | #C5A059 | The single accent: 1px hairlines, emblem, active and focus states on dark (8.0:1 on obsidian). |
-| Champagne Gold | #C9AF7E | Lit state of the Seal only: decoder highlight, preloader. |
-| Solar Ochre | #7A5C20 | Gold for text and links on light backgrounds (5.6:1 on alabaster). |
-| Ink | #141415 | Primary text on light. |
-| Stone | #68645D | Secondary text on light (5.3:1). |
-| Mist | #A39E93 | Secondary text on dark (7.4:1). |
-| Gold Hairline | rgba(197,160,89,0.18) to 0.38 | Dividers, borders and the solid header edge. |
+| Atelier Ivory | #F7F4EE | Primary light canvas: collection, product page, bag, checkout, The Maison page, frosted header. Never #FFFFFF. |
+| Silk Limestone | #EFEAE0 | Quiet light panels: lookbook mat, image wells, size charts, phone prefix. |
+| Warm Cashmere | #E5DDD0 | Hover elevation and inactive pills on light. |
+| Alabaster Rule | #DBD3C5 | 1px gridlines and hairlines on light, and the header edge once scrolled. |
+| Obsidian Velvet | #0E0D0C | Dark chapters only: preloader, hero frame, Seal teaser, Seal decoder, ritual, footer. Never pure black. |
+| Espresso Noir | #171514 | Elevated cards and drawers inside dark chapters. |
+| Ink Noir | #141210 | Text on light (17.0:1 on ivory). |
+| Warm Umber | #59534B | Secondary text on light (6.9:1 on ivory). |
+| Muted Stone | #ACA498 | Secondary text on dark (7.9:1 on obsidian). |
+| Champagne Gold | #C9AF7E | Emblem, hairlines and accents on dark only (9.2:1 on obsidian). |
+| Antique Bronze | #755A2A | Labels, links and focus rings on light (5.9:1 on ivory). |
+| Velvet Garnet | #4C1722 | The couture signature, used with extreme restraint: the Maison slogan, the low-stock cue and the Seal on the Digital Acquisition Record (13.2:1 with ivory). |
 
 Rules:
-- Use one accent family (gold) and nothing else: no blue links, no green success states, no purple.
+- One metal family (champagne gold on dark, antique bronze on light) plus velvet garnet as a rare signature. No blue links, no green success states, no purple.
 - Errors use a muted brick tone only inside forms.
 - Gradients appear only as image scrims and the verification-card sheen, never on text.
 
@@ -73,7 +76,7 @@ Rules:
 
 - **Master file:** `assets/brand/manthai-unbounded-spiral-seal.svg` (viewBox 0 0 1000 860, `fill="currentColor"`, transparent background).
 - **Groups:** `#spiral-core`, `#chambers-foundation` (chambers 6 to 4), `#chambers-crescendo` (chambers 3 to 1), `#unbounded-arch`.
-- **Colour:** gold on obsidian, or foil and emboss on packaging. Never place it in a white box, never outline it, never rotate it.
+- **Colour:** champagne gold on obsidian, velvet garnet on the ivory Acquisition Record, or foil and emboss on packaging. Never place it in a white box, never outline it, never rotate it.
 - **Neck labels:** carry the wordmark only.
 - **Copy:** must never claim the Golden Ratio. Use the logarithmic Spira Mirabilis story.
 
@@ -106,11 +109,12 @@ Rules:
 - No neon, glows or drop-shadow stacks.
 - No rounded pill buttons or 2rem-radius cards; MANTHAI is square-cut.
 - No all-caps UI labels.
-- No discount banners, countdown timers, star ratings, "Only 2 left!" pressure or "Coming Soon" shop pages.
+- No discount banners, countdown timers, star ratings, markdowns, buy-now-pay-later or "Coming Soon" shop pages.
+- Scarcity is stated only when true: a quiet "Only 2 remaining in Size S" appears when a size has 3 or fewer pieces, never otherwise.
 - No cash on delivery.
 - No AI copy clichés ("Elevate", "Seamless", "Unleash").
 - No invented statistics.
 - No menswear, leather or parfumerie products in Phase 1. They appear only as one Future Chapters line in the footer.
-- No second accent colour.
+- No accent beyond gold, bronze and the rare velvet garnet.
 - No gradient text.
 - No layout overlaps, except text set over the hero film's scrim.

@@ -101,6 +101,8 @@
       clearTimeout(rt);
       rt = setTimeout(function () { heads.forEach(function (h) { if (!h._shown && h.clientWidth !== h._w) splitLines(h); }); }, 180);
     }, { passive: true });
+    /* headings in the hidden view measure as one line, so they are split again once their view shows */
+    C.on('route', function () { requestAnimationFrame(function () { heads.forEach(function (h) { if (!h._shown && h.offsetParent) splitLines(h); }); }); });
   }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(initHeadlines, initHeadlines); else initHeadlines();
 

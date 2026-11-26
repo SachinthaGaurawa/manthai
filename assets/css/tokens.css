@@ -2,16 +2,33 @@
    MANTHAI  |  design tokens (WCAG 2.1 verified pairs from the Maison directive)
    ========================================================================== */
 :root {
-  /* Colour: the Sovereign palette (Phase 1 directive) */
-  --obsidian: #0B0B0C;    /* deep editorial dark scenes, preloader, ritual; 17.75:1 with alabaster */
-  --charcoal: #141416;    /* elevated dark drawers and panels */
-  --alabaster: #F6F3EC;   /* primary light gallery canvas, never #FFFFFF */
-  --pearl: #EAE4D7;       /* quiet secondary surface: editorial cards, size guide */
-  --gold: #C5A059;        /* 1px hairlines, emblem on dark, active states; 8.0:1 on obsidian */
-  --ochre: #7A5C20;       /* accessible gold for text and links on light; 5.6:1 on alabaster, 4.9:1 on pearl */
-  --ink: #141415;         /* primary text on light; 16.6:1 on alabaster */
-  --stone: #68645D;       /* secondary text on light; 5.3:1 on alabaster, 4.6:1 on pearl */
-  --mist: #A39E93;        /* secondary text on dark; 7.4:1 on obsidian */
+  /* Colour: the Parisian Gallery palette (blueprint, 2026-11-27).
+     75% warm gallery light for browsing and buying, 25% cinematic dark chapters.
+     Contrast ratios are WCAG 2.1 and were recomputed for this file. */
+  --atelier-ivory: #F7F4EE;    /* primary light canvas: collection, PDP, bag, checkout. Never #FFFFFF */
+  --silk-limestone: #EFEAE0;   /* quiet panels, lookbook mats, size charts */
+  --warm-cashmere: #E5DDD0;    /* hover elevation and inactive pills on light */
+  --alabaster-rule: #DBD3C5;   /* 1px gridlines and hairlines on light */
+  --obsidian-velvet: #0E0D0C;  /* dark chapters only: preloader, hero frame, Seal teaser, ritual, footer */
+  --espresso-noir: #171514;    /* elevated cards and drawers inside dark chapters */
+  --ink-noir: #141210;         /* text on light: 17.02:1 on ivory */
+  --warm-umber: #59534B;       /* secondary text on light: 6.92:1 ivory, 6.34:1 limestone */
+  --muted-stone-dk: #ACA498;   /* secondary text on dark: 7.88:1 on obsidian */
+  --champagne-gold: #C9AF7E;   /* emblem, hairlines and accents on dark only: 9.17:1 on obsidian */
+  --antique-bronze: #755A2A;   /* labels and links on light: 5.88:1 ivory, 5.39:1 limestone */
+  --velvet-garnet: #4C1722;    /* couture signature, used with extreme restraint: 13.17:1 with ivory */
+
+  /* short names used across the stylesheets */
+  --obsidian: var(--obsidian-velvet);
+  --charcoal: var(--espresso-noir);
+  --alabaster: var(--atelier-ivory);
+  --pearl: var(--silk-limestone);
+  --gold: var(--champagne-gold);
+  --ochre: var(--antique-bronze);
+  --ink: var(--ink-noir);
+  --stone: var(--warm-umber);
+  --mist: var(--muted-stone-dk);
+  --garnet: var(--velvet-garnet);
 
   /* legacy names kept as aliases so older rules resolve to the same palette */
   --obsidian-void: var(--obsidian);
@@ -31,8 +48,8 @@
   --text-2: var(--muted-stone);
   --accent: var(--sovereign-gold);
   --accent-text: var(--sovereign-gold);
-  --hairline: rgba(197, 160, 89, 0.38);
-  --hairline-soft: rgba(197, 160, 89, 0.18);
+  --hairline: rgba(201, 175, 126, 0.38);
+  --hairline-soft: rgba(201, 175, 126, 0.18);
   --ring: var(--sovereign-gold);
 
   /* Type */
@@ -76,7 +93,8 @@
   --text-2: var(--stone);
   --accent: var(--sovereign-gold);
   --accent-text: var(--solar-ochre);
-  --hairline: rgba(122, 92, 32, 0.45);
-  --hairline-soft: rgba(122, 92, 32, 0.2);
+  --hairline: var(--alabaster-rule);
+  --hairline-soft: rgba(219, 211, 197, 0.7);
+  --hairline-strong: rgba(117, 90, 42, 0.45);
   --ring: var(--solar-ochre);
 }
