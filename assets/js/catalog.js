@@ -254,12 +254,12 @@
   /* ---------- Unboxing and authenticity ritual: four objects ----------
      parts = which drawn objects light up in the exploded view */
   M.RITUAL = [
-    { id: 'box',     name: 'Rigid Linen Gatefold Box', spec: 'Matte black linen, 2.5 mm board, magnetic doors', parts: ['box', 'seal'],
-      text: 'A rigid apparel box wrapped in matte black linen. Two doors close on hidden magnets and open from the centre: the left carries the MANTHAI wordmark, the right the Unbounded Spiral Seal, both in burnished gold foil, and both are lined in velvet garnet. It is made to be kept.' },
+    { id: 'box',     name: 'Rigid Linen Gatefold Box', spec: 'Matte black linen, magnetic doors, gold foil', parts: ['box', 'seal'],
+      text: 'A rigid apparel box wrapped in matte black linen. Two doors close on hidden magnets and open from the centre: the left carries the MANTHAI wordmark, the right the Unbounded Spiral Seal, both in burnished gold foil, and both are lined in velvet garnet. Each box is made in proportion to the piece it holds, and it is made to be kept.' },
     { id: 'garment', name: 'Couture Garment Bag and Tissue', spec: 'Breathable cotton, acid-free tissue', parts: ['garment'],
       text: 'Your piece rests inside a breathable cotton garment bag, folded in acid-free Alabaster tissue and sealed with a small gold wafer bearing the Seal. Keep the bag: it is how the piece should always be stored.' },
-    { id: 'label',   name: 'Woven Silk-Damask Neck Label', spec: '65 mm × 24 mm', parts: ['label'],
-      text: 'Every garment carries a woven silk-damask neck label, tack-stitched at all four corners. It bears only the MANTHAI wordmark, with no emblem and no other text.' },
+    { id: 'label',   name: 'Woven Silk-Damask Neck Label', spec: 'Tack-stitched, wordmark only', parts: ['label'],
+      text: 'Every garment carries a woven silk-damask neck label, tack-stitched at all four corners and woven in proportion to the garment it belongs to. It bears only the MANTHAI wordmark, with no emblem and no other text.' },
     { id: 'card',    name: 'Story Card and Verification Card', spec: 'Thick cotton, micro-foil seal', parts: ['card'],
       text: 'A thick cotton Story Card tells the provenance of your piece. Beside it, a micro-foil Verification Card carries the embossed Seal, your unique edition number and an NFC and QR link to the authenticity record.' }
   ];
