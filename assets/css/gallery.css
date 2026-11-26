@@ -1,0 +1,178 @@
+/* ==========================================================================
+   MANTHAI  |  Parisian Gallery layer (blueprint, Phase 1 ladies flagship)
+   75% warm gallery light, 25% cinematic dark chapters, velvet-garnet with restraint.
+   Loaded after flagship.css so it wins on equal specificity.
+   ========================================================================== */
+
+/* ---------------- routes: one shell, two views ---------------- */
+html:not([data-route='maison']) [data-view='maison'] { display: none !important; }
+html[data-route='maison'] [data-view='home'] { display: none !important; }
+
+/* ---------------- light canvas: every .on-light section paints ivory ---------------- */
+.on-light { background: var(--atelier-ivory); color: var(--ink); }
+.eyebrow { font: 400 var(--fs-ui)/1.3 var(--sans); letter-spacing: .16em; text-transform: none; color: var(--antique-bronze); }
+.eyebrow--dark { color: var(--champagne-gold); }
+
+/* ---------------- header: transparent over the hero, frosted Atelier Ivory once scrolled ---------------- */
+.site-header.is-solid, .site-header.is-open, html[data-route='maison'] .site-header {
+  background: rgba(247, 244, 238, 0.94);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1); backdrop-filter: blur(14px) saturate(1.1);
+  border-bottom: 1px solid var(--alabaster-rule);
+  color: var(--ink);
+}
+.site-header.is-solid .brand, .site-header.is-open .brand, html[data-route='maison'] .site-header .brand,
+.site-header.is-solid .nav-item, .site-header.is-open .nav-item, html[data-route='maison'] .site-header .nav-item,
+.site-header.is-solid .icon-btn, .site-header.is-open .icon-btn, html[data-route='maison'] .site-header .icon-btn { color: var(--ink); }
+.site-header.is-solid .icon-btn:hover, .site-header.is-open .icon-btn:hover { color: var(--antique-bronze); }
+.site-header.is-solid .nav-item::after, .site-header.is-open .nav-item::after, html[data-route='maison'] .nav-item::after { background: var(--antique-bronze); }
+.site-header.is-solid .bag-count, .site-header.is-open .bag-count, html[data-route='maison'] .bag-count { background: var(--ink); color: var(--atelier-ivory); }
+.site-header.is-solid :focus-visible, .site-header.is-open :focus-visible { outline-color: var(--antique-bronze); }
+
+/* the Collections panel opens on the same ivory gallery wall */
+.atelier-panel { background: rgba(247, 244, 238, 0.985); border-bottom: 1px solid var(--alabaster-rule); color: var(--ink); }
+.atelier-panel__title { color: var(--warm-umber); }
+.atelier-panel__links button { color: var(--ink); }
+.atelier-panel__links button:hover { color: var(--antique-bronze); }
+.atelier-panel__links .ap-group h3, .atelier-panel__links .ap-group > p { color: var(--antique-bronze); }
+.atelier-panel__figure { background: var(--silk-limestone); }
+
+/* ---------------- hero: one bottom scrim only, so the film reads as light ---------------- */
+.hero__scrim { background: linear-gradient(to top, rgba(14, 13, 12, 0.72) 0%, rgba(14, 13, 12, 0.28) 30%, transparent 52%), linear-gradient(to bottom, rgba(14, 13, 12, 0.38), transparent 22%); }
+.hero__title { text-wrap: balance; }
+
+/* ---------------- lookbook on the gallery wall ---------------- */
+.campaign.on-light { background: var(--silk-limestone); }
+.campaign.on-light .look__frame { background: var(--warm-cashmere); }
+.campaign.on-light .look__cap h3 { color: var(--ink); }
+.campaign.on-light .look__cap p { color: var(--warm-umber); }
+.campaign.on-light .look__cap .link-btn { color: var(--antique-bronze); border-color: var(--hairline-strong); }
+.campaign.on-light .rail { scrollbar-color: var(--antique-bronze) transparent; }
+
+/* ---------------- Seal teaser: the one dark chapter on the home page ---------------- */
+.teaser { background: var(--obsidian-velvet); color: var(--alabaster-silk); padding: clamp(96px, 13vw, 176px) 0; position: relative; overflow: hidden; }
+.teaser::before { content: ''; position: absolute; inset: 0; background: radial-gradient(60% 70% at 50% 40%, rgba(201, 175, 126, 0.09), transparent 70%); pointer-events: none; }
+.teaser__inner { position: relative; display: grid; justify-items: center; text-align: center; gap: clamp(28px, 4vw, 44px); }
+.teaser__seal { width: clamp(96px, 12vw, 148px); height: auto; color: var(--champagne-gold); }
+.teaser__lines { display: grid; gap: 10px; max-width: 34em; }
+.teaser__lines p { font: 300 clamp(1.35rem, 1rem + 1.3vw, 2rem)/1.35 var(--serif); font-style: italic; color: var(--alabaster-silk); }
+.teaser__lines p + p { color: #d6d1c5; }
+.teaser__cta { color: var(--champagne-gold); border-bottom-color: rgba(201, 175, 126, 0.5); }
+.teaser__cta:hover { color: var(--alabaster-silk); border-color: var(--alabaster-silk); }
+.js .teaser__seal { opacity: 0; transform: rotate(-14deg) scale(.9); transition: opacity 1.4s var(--ease), transform 1.8s var(--ease); }
+.js .teaser.in .teaser__seal { opacity: 1; transform: none; }
+
+/* ---------------- The Maison page ---------------- */
+.maison-intro { padding: calc(var(--header-h) + clamp(72px, 10vw, 140px)) 0 clamp(56px, 7vw, 96px); border-bottom: 1px solid var(--alabaster-rule); }
+.maison-intro__inner { display: grid; justify-items: center; text-align: center; gap: 22px; }
+.maison-intro__title { font-size: clamp(3rem, 2rem + 5vw, 6.2rem); color: var(--ink); }
+.chapters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: min(100%, 980px); margin-top: clamp(20px, 3vw, 40px); border-top: 1px solid var(--alabaster-rule); }
+.chapters a { display: grid; gap: 8px; padding: 22px 18px 4px; font: 300 clamp(1.1rem, 1rem + .5vw, 1.4rem)/1.25 var(--serif); color: var(--ink); text-align: center; transition: color var(--t-fast); }
+.chapters a + a { border-left: 1px solid var(--alabaster-rule); }
+.chapters a span { font: 400 11px/1 var(--sans); letter-spacing: .16em; text-transform: none; color: var(--antique-bronze); }
+.chapters a:hover { color: var(--antique-bronze); }
+
+.maison.on-light { background: var(--atelier-ivory); color: var(--ink); }
+.maison.on-light .maison__copy p { color: var(--warm-umber); }
+.maison.on-light .maison__copy .eyebrow { color: var(--antique-bronze); }
+.maison.on-light .maison__title { color: var(--ink); }
+.maison.on-light .maison__plate-inner { background: var(--silk-limestone); }
+.maison.on-light .maison__plate figcaption { color: var(--warm-umber); }
+.maison__slogan { font: 300 clamp(1.3rem, 1rem + 1vw, 1.75rem)/1.3 var(--serif) !important; font-style: italic !important; color: var(--velvet-garnet) !important; padding-top: 18px; border-top: 1px solid var(--alabaster-rule); }
+
+.seal-chapter { background: var(--obsidian-velvet); color: var(--alabaster-silk); padding: var(--section) 0; }
+
+/* ---------------- footer links that route ---------------- */
+.site-footer a[data-route] { cursor: pointer; }
+
+@media (max-width: 760px) {
+  .chapters { grid-template-columns: minmax(0, 1fr); }
+  .chapters a + a { border-left: 0; border-top: 1px solid var(--alabaster-rule); }
+  .chapters a { padding: 18px 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js .teaser__seal { opacity: 1; transform: none; transition: none; }
+}
+
+/* ---------------- product page: conversion details ---------------- */
+.stock-cue { margin-top: 10px; font: 400 1.02rem/1.3 var(--serif); font-style: italic; color: var(--velvet-garnet); }
+.stock-cue:empty { display: none; }
+.feel { display: grid; gap: 6px; padding: 18px 0; border-bottom: 1px solid var(--hairline-soft); }
+.feel__k { font: 400 11px/1.2 var(--sans); letter-spacing: .16em; text-transform: none; color: var(--antique-bronze); }
+.feel__v { font: 300 1.12rem/1.5 var(--serif); color: var(--ink); }
+.pdp .btn--ghost[data-wa] { text-align: center; }
+.card__edition { color: var(--antique-bronze); }
+
+/* ---------------- Private Bag and checkout on the ivory gallery wall ---------------- */
+/* the dark-theme tokens are re-pointed inside the bag, so every existing rule lands on light */
+.layer--bag .layer__panel {
+  --anuradhapura-charcoal: var(--atelier-ivory);
+  --alabaster-silk: var(--ink-noir);
+  --muted-stone: var(--warm-umber);
+  --sovereign-gold: var(--antique-bronze);
+  --mannar-pearl: var(--silk-limestone);
+  --text: var(--ink-noir); --text-2: var(--warm-umber);
+  --accent-text: var(--antique-bronze);
+  --hairline: var(--alabaster-rule); --hairline-soft: rgba(219, 211, 197, 0.75);
+  --err: #8A2B1C; --ring: var(--antique-bronze);
+  background: var(--atelier-ivory); color: var(--ink-noir);
+}
+.layer--bag .btn--solid { background: var(--ink-noir); border-color: var(--ink-noir); color: var(--atelier-ivory); }
+.layer--bag .btn--gold { color: var(--ink-noir); border-color: var(--antique-bronze); }
+.layer--bag .btn--gold:hover, .layer--bag .btn--gold:focus-visible { color: var(--atelier-ivory); }
+.layer--bag .btn--ghost { color: var(--ink-noir); border-color: var(--alabaster-rule); background: transparent; }
+.layer--bag .circle-invite { background: var(--silk-limestone); border-color: var(--alabaster-rule); }
+.layer--bag .circle-invite h4 { color: var(--ink-noir); }
+.layer--bag .co-step.is-done .co-n { color: var(--atelier-ivory); }
+
+/* Zeigarnik progress: an unfinished bar the eye wants to complete */
+.co-progress { display: grid; gap: 10px; margin-top: 18px; }
+.co-progress__label { font: 400 11px/1.2 var(--sans); letter-spacing: .16em; text-transform: none; color: var(--antique-bronze); }
+.co-progress__label span { color: var(--warm-umber); margin-left: 8px; }
+.co-progress__track { height: 2px; background: var(--alabaster-rule); overflow: hidden; }
+.co-progress__track span { display: block; height: 100%; background: var(--antique-bronze); transition: width .8s var(--ease); }
+
+/* +94 mobile */
+.phone-wrap { display: flex; align-items: stretch; border: 1px solid var(--hairline); }
+.phone-wrap:focus-within { border-color: var(--sovereign-gold); }
+.phone-cc { display: grid; place-items: center; padding: 0 14px; font: 400 1.05rem/1 var(--serif); color: var(--warm-umber); border-right: 1px solid var(--hairline); background: var(--silk-limestone); }
+.field .phone-wrap input { border: 0; }
+.field.has-error .phone-wrap { border-color: var(--err); }
+.co-area[hidden] { display: none; }
+
+/* Digital Acquisition Record */
+.record { gap: 22px; }
+.record__head { display: grid; gap: 8px; padding-bottom: 22px; border-bottom: 1px solid var(--alabaster-rule); }
+.record .seal-mark--record { width: 56px; height: 48px; color: var(--velvet-garnet); margin: 0 0 6px; }
+.record__kicker { font: 400 11px/1.2 var(--sans); letter-spacing: .18em; text-transform: none; color: var(--velvet-garnet); }
+.record__ref { font: 400 var(--fs-ui)/1.4 var(--sans); letter-spacing: .1em; text-transform: none; color: var(--warm-umber); }
+.record__ref .order-ref { margin-left: 6px; color: var(--ink-noir); }
+.record__meta { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.record__meta dt { font: 400 11px/1.3 var(--sans); letter-spacing: .14em; text-transform: none; color: var(--antique-bronze); margin-bottom: 4px; }
+.record__meta dd { font: 400 1.08rem/1.35 var(--serif); }
+.record__pieces { display: grid; border-top: 1px solid var(--alabaster-rule); }
+.record__pieces li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; padding: 16px 0; border-bottom: 1px solid var(--alabaster-rule); }
+.record__piece { font: 400 1.15rem/1.3 var(--serif); }
+.record__piece small, .record__serial small { display: block; font: 400 11px/1.4 var(--sans); letter-spacing: .1em; text-transform: none; color: var(--warm-umber); margin-top: 4px; }
+.record__serial { font: 400 .95rem/1.2 var(--sans); letter-spacing: .14em; color: var(--velvet-garnet); text-align: right; }
+.record__pieces .link-btn { grid-column: 1 / -1; justify-self: start; }
+.record__timeline { display: grid; gap: 0; padding-left: 0; }
+.record__timeline li { position: relative; display: flex; justify-content: space-between; gap: 16px; padding: 10px 0 10px 22px; font: 400 1rem/1.35 var(--serif); }
+.record__timeline li::before { content: ''; position: absolute; left: 3px; top: 16px; width: 7px; height: 7px; border: 1px solid var(--antique-bronze); border-radius: 50%; background: var(--atelier-ivory); }
+.record__timeline li::after { content: ''; position: absolute; left: 6.5px; top: 25px; bottom: -8px; width: 1px; background: var(--alabaster-rule); }
+.record__timeline li:last-child::after { display: none; }
+.record__timeline li.is-done::before { background: var(--velvet-garnet); border-color: var(--velvet-garnet); }
+.record__timeline time { font: 400 12px/1.6 var(--sans); letter-spacing: .06em; color: var(--warm-umber); white-space: nowrap; }
+@media (max-width: 420px) { .record__meta { grid-template-columns: 1fr; } .record__timeline li { flex-direction: column; gap: 2px; } }
+.layer--bag .notice { color: var(--warm-umber); background: var(--silk-limestone); }
+.record__meta dd { margin: 0; }
+.layer--bag .co-sum { color: var(--warm-umber); }
+
+/* ---------------- Private Circle dashboard tabs ---------------- */
+.circle-tabs { display: flex; flex-wrap: wrap; gap: 4px 20px; padding: 14px 0 0; border-bottom: 1px solid var(--hairline-soft); }
+.circle-tab { position: relative; padding: 12px 0; font: 400 11px/1.2 var(--sans); letter-spacing: .14em; text-transform: none; color: var(--muted-stone); transition: color var(--t-fast); }
+.circle-tab::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: var(--sovereign-gold); transform: scaleX(0); transform-origin: left; transition: transform var(--t-mid) var(--ease); }
+.circle-tab:hover, .circle-tab[aria-selected='true'] { color: var(--alabaster-silk); }
+.circle-tab[aria-selected='true']::after { transform: scaleX(1); }
+.circle-panel { display: grid; min-height: 220px; align-content: start; }
+.circle-panel > .salon-card:first-child { border-top: 0; }

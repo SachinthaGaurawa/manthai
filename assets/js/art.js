@@ -23,7 +23,7 @@
   }
 
   /* ---------------- product plates ---------------- */
-  var G = '#C5A059', G2 = '#e6c682';
+  var G = '#C9AF7E', G2 = '#e6c682';
 
   function petals(cx, cy, count, size, rot, rnd, fill) {
     var out = '';
@@ -34,7 +34,7 @@
     return out + '<circle cx="' + cx + '" cy="' + cy + '" r="' + (size * 0.12) + '" fill="#fbeccb"/>';
   }
 
-  /* silk rosette: concentric folded petals, used on the Ceylon Rosette gown */
+  /* silk rosette: concentric folded petals (detail ornament) */
   function rosette(cx, cy, s, a, b) {
     var out = '';
     [1, 0.74, 0.5, 0.28].forEach(function (k, i) {
@@ -52,7 +52,7 @@
   }
 
   var forms = {
-    /* Meridian Silk Charmeuse Column Shirt */
+    /* silk shirt (reserved form, not in the Phase 1 catalog) */
     shirt: function (id, p, r) {
       var s = '<defs>' + grad(id + 'c', '#efe2c6', '#a8916a', { x1: 0, y1: 0, x2: 1, y2: 1 }) + grad(id + 'h', '#fff6e2', '#cdb78e') + '</defs>';
       s += '<path d="M150 96 L104 140 L70 330 L104 338 L134 196 Z M250 96 L296 140 L330 330 L296 338 L266 196 Z" fill="url(#' + id + 'c)" stroke="#8f7a55" stroke-opacity=".45"/>';
@@ -62,7 +62,7 @@
       s += '<path d="M70 330 L104 338 L102 350 L68 342 Z M330 330 L296 338 L298 350 L332 342 Z" fill="#fff6e2" opacity=".7"/>';
       return s;
     },
-    /* Mantai Wide-Leg Liquid Silk Trouser */
+    /* Meridian High-Waist Wide Silk Trousers */
     trouser: function (id, p, r) {
       var s = '<defs>' + grad(id + 't', '#3a3a40', '#08080a', { x1: 0, y1: 0, x2: 1, y2: 1 }) + '</defs>';
       s += '<path d="M138 70 L262 70 L266 110 L134 110 Z" fill="#1c1c20" stroke="' + G + '" stroke-opacity=".5"/>';
@@ -71,21 +71,20 @@
       s += '<path d="M100 300 C110 380 96 440 84 484 M300 300 C292 380 306 440 316 484" stroke="#d8d2c4" stroke-opacity=".12" stroke-width="6" fill="none"/>';
       return s;
     },
-    /* Alstroemeria Hand-Painted Velvet Couture Gown */
+    /* Aurelia Liquid Silk-Velvet Evening Gown: asymmetric neckline, one unbroken fall */
     gown: function (id, p, r) {
-      var s = '<defs>' + grad(id + 'v', '#8a2236', '#2a070c') + grad(id + 'v2', '#5d1524', '#1b0508', { x1: 1, y1: 0, x2: 0, y2: 1 }) + '</defs>';
-      s += '<path d="M200 66 C170 88 158 128 166 172 C146 236 126 340 92 484 L338 484 C304 384 284 300 240 200 C248 150 238 98 200 66 Z" fill="url(#' + id + 'v)"/>';
-      s += '<path d="M166 172 C222 200 292 262 338 484 L252 484 C250 380 226 270 166 172 Z" fill="url(#' + id + 'v2)" opacity=".9"/>';
-      s += '<path d="M200 66 C186 110 190 150 204 196" stroke="#c0455a" stroke-opacity=".35" stroke-width="2" fill="none"/>';
-      s += petals(196, 150, 5, 34, 12, r) + petals(222, 196, 6, 26, 70, r) + petals(178, 232, 5, 22, 30, r) + petals(258, 280, 6, 30, 5, r) + petals(228, 352, 5, 24, 40, r);
-      for (var i = 0; i < 46; i++) { var t = i / 45; var x = 166 + t * 172 + Math.sin(t * 6) * 6, y = 172 + t * 312; s += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (1.4 + r() * 1.6).toFixed(1) + '" fill="#f3dca2" opacity=".85"/>'; }
+      var s = '<defs>' + grad(id + 'v', '#6b4a2e', '#170d07') + grad(id + 'v2', '#3e2716', '#0c0704', { x1: 1, y1: 0, x2: 0, y2: 1 }) + '</defs>';
+      s += '<path d="M182 70 L236 92 C246 120 244 150 236 186 C262 260 300 360 338 484 L92 484 C122 380 146 290 166 200 C156 150 164 104 182 70 Z" fill="url(#' + id + 'v)"/>';
+      s += '<path d="M236 186 C272 262 306 360 338 484 L262 484 C258 380 246 280 214 200 Z" fill="url(#' + id + 'v2)" opacity=".9"/>';
+      s += '<path d="M182 70 L236 92" stroke="' + G + '" stroke-opacity=".6" stroke-width="2"/>';
+      s += '<path d="M190 120 C184 240 160 360 132 484" stroke="#e9c99a" stroke-opacity=".22" stroke-width="14" fill="none"/><path d="M214 150 C222 260 236 380 248 484" stroke="#f3dcb4" stroke-opacity=".12" stroke-width="8" fill="none"/>';
       return s;
     },
-    /* Mahatittha Draped Garnet Lace Midi Dress */
+    /* Solstice Draped Garnet Midi Dress: satin twill, one twist at the waist */
     lace: function (id, p, r) {
       var s = '<defs>' + grad(id + 'v', '#8a2236', '#240709') + lacePattern(id + 'l', 26) + '</defs>';
       s += '<path d="M168 70 C150 96 150 140 176 196 C186 214 190 226 172 252 C140 330 120 400 100 484 L330 484 C312 400 276 330 236 262 C214 230 216 214 226 196 C252 150 250 96 232 70 Z" fill="url(#' + id + 'v)"/>';
-      s += '<path d="M168 70 C150 96 150 140 176 196 C186 214 190 226 172 252 C140 330 120 400 100 484 L330 484 C312 400 276 330 236 262 C214 230 216 214 226 196 C252 150 250 96 232 70 Z" fill="url(#' + id + 'l)"/>';
+      s += '<path d="M150 300 C140 380 124 440 112 484 M266 300 C290 380 306 440 318 484" stroke="#c05a6c" stroke-opacity=".22" stroke-width="10" fill="none"/>';
       s += '<path d="M174 232 C200 250 230 232 252 262" stroke="' + G2 + '" stroke-opacity=".55" stroke-width="2" fill="none"/><path d="M172 252 C204 232 232 258 238 262" stroke="#13040a" stroke-opacity=".7" stroke-width="5" fill="none"/>';
       return s;
     },
@@ -101,7 +100,7 @@
       s += rosette(130, 410, 46, '#f3ecd8', '#d8ccae') + rosette(236, 434, 54, '#f3ecd8', '#d8ccae') + rosette(300, 372, 36, '#f3ecd8', '#d8ccae');
       return s;
     },
-    /* Serendib Strapless Bow-Sculpted Column Gown */
+    /* Alabaster Bias-Cut Mulberry Silk Slip Dress (column form) */
     column: function (id, p, r) {
       var s = '<defs>' + grad(id + 'a', '#f5f0e3', '#bcb092', { x1: 0, y1: 0, x2: 1, y2: 1 }) + '</defs>';
       s += '<path d="M152 130 C152 100 178 92 190 88 L210 88 C222 92 248 100 248 130 Z" fill="#8d6a4c" opacity=".85"/>';
@@ -112,7 +111,7 @@
       for (var i = 0; i < 9; i++) { var t = i / 8; s += '<circle cx="' + (154 + t * 92).toFixed(0) + '" cy="' + (134 + Math.sin(t * Math.PI) * 14).toFixed(0) + '" r="2.4" fill="#fffdf6" stroke="#cbbf9f" stroke-width=".6"/>'; }
       return s;
     },
-    /* Anuradhapura Asymmetric Twisted Silk Midi */
+    /* asymmetric silk midi (reserved form) */
     silkmidi: function (id, p, r) {
       var s = '<defs>' + grad(id + 'k', '#34343a', '#050506', { x1: 0, y1: 0, x2: 1, y2: 1 }) + '</defs>';
       s += '<path d="M150 118 C150 96 176 88 190 86 L212 86 C224 90 248 100 248 126 Z" fill="#8d6a4c" opacity=".85"/>';
@@ -123,18 +122,16 @@
       s += '<path d="M150 424 L146 480 L168 480 L176 436 Z M218 410 L226 480 L248 480 L246 400 Z" fill="#8d6a4c" opacity=".8"/>';
       return s;
     },
-    /* Sovereign Wave-Ruffle Tailored Blazer, Alabaster Silk */
+    /* Meridian Structured Ivory Tailored Blazer */
     blazer: function (id, p, r) {
       var s = '<defs>' + grad(id + 'w', '#f7f2e5', '#c9bd9c', { x1: 0, y1: 0, x2: 1, y2: 1 }) + grad(id + 's', '#fffbf1', '#d3c6a4') + '</defs>';
       s += '<path d="M128 100 L84 160 L58 332 L98 340 L126 204 Z M272 100 L316 160 L342 332 L302 340 L274 204 Z" fill="url(#' + id + 'w)" stroke="#a89972" stroke-opacity=".5"/>';
-      s += '<path d="M128 100 L200 74 L272 100 L288 268 L112 268 Z" fill="url(#' + id + 'w)"/>';
-      s += '<path d="M112 264 L288 264 C324 298 344 352 334 396 q-21 -16 -42 0 t-42 0 t-42 0 t-42 0 t-42 0 q-25 -16 -50 0 C58 352 78 298 112 264 Z" fill="url(#' + id + 'w)" stroke="#a89972" stroke-opacity=".55"/>';
-      s += wave(74, 372, 250, 6, 12, '#b2a47f', 1.6) + wave(84, 350, 232, 6, 10, '#b2a47f', 1.2);
+      s += '<path d="M128 100 L200 74 L272 100 L292 352 L108 352 Z" fill="url(#' + id + 'w)" stroke="#a89972" stroke-opacity=".45"/>';
       s += '<path d="M200 74 L148 196 L200 264 L216 190 Z" fill="url(#' + id + 's)" stroke="' + G + '" stroke-opacity=".6"/><path d="M200 74 L252 196 L200 264 L184 190 Z" fill="url(#' + id + 's)" stroke="' + G + '" stroke-opacity=".6"/>';
       s += '<circle cx="200" cy="262" r="4" fill="' + G + '"/><path d="M200 264 L200 340" stroke="#a89972" stroke-opacity=".6"/>';
       return s;
     },
-    /* Kotiya Noir Scarf-Neck Tailored Mini Dress */
+    /* tailored mini (reserved form) */
     mini: function (id, p, r) {
       var s = '<defs>' + grad(id + 'n', '#2e2e33', '#0a0a0b', { x1: 0, y1: 0, x2: 1, y2: 1 }) + grad(id + 'e', '#17604a', '#082a20') + '</defs>';
       s += '<path d="M158 340 L148 482 L176 482 L186 340 Z M214 340 L222 482 L252 482 L244 340 Z" fill="#8d6a4c" opacity=".82"/>';
@@ -144,10 +141,10 @@
       s += '<path d="M214 144 C246 206 246 270 226 346 L250 340 C268 268 266 204 238 138 Z" fill="url(#' + id + 'e)" stroke="' + G + '" stroke-opacity=".45"/>';
       return s;
     },
-    /* Mannar Pearl Sheer Lace Atelier Cape */
+    /* Nocturne Hand-Beaded Sheer Organza Cape Top */
     cape: function (id, p, r) {
       var s = '<defs>' + grad(id + 'c', '#f1e6c9', '#a89874') + lacePattern(id + 'l', 20) + '</defs>';
-      s += '<path d="M170 88 C152 200 142 340 134 484 L266 484 C258 340 248 200 230 88 Z" fill="#0b0b0c" opacity=".7"/>';
+      s += '<path d="M170 88 C152 200 142 340 134 484 L266 484 C258 340 248 200 230 88 Z" fill="#0E0D0C" opacity=".7"/>';
       var cape = 'M200 62 C150 68 100 108 72 200 C56 300 50 400 36 484 L364 484 C350 400 344 300 328 200 C300 108 250 68 200 62 Z';
       s += '<path d="' + cape + '" fill="url(#' + id + 'c)" opacity=".3"/><path d="' + cape + '" fill="url(#' + id + 'l)"/>';
       s += wave(36, 484, 328, 12, 10, '#f1e6c9', 2);
@@ -221,7 +218,7 @@
       return s;
     },
     mini: function (id) {
-      var s = '<defs>' + grad(id + 'n', '#2a2a2f', '#0b0b0c', { x1: 0, y1: 0, x2: 1, y2: 1 }) + grad(id + 'e', '#17604a', '#082a20') + '</defs><rect width="400" height="500" fill="url(#' + id + 'n)"/>';
+      var s = '<defs>' + grad(id + 'n', '#2a2a2f', '#0E0D0C', { x1: 0, y1: 0, x2: 1, y2: 1 }) + grad(id + 'e', '#17604a', '#082a20') + '</defs><rect width="400" height="500" fill="url(#' + id + 'n)"/>';
       for (var i = -12; i < 40; i++) s += '<path d="M' + (i * 14) + ' 0 L' + (i * 14 + 200) + ' 500" stroke="#3a3a40" stroke-opacity=".5" stroke-width="2"/>';
       s += '<path d="M-10 90 C140 130 250 70 410 170 L410 330 C250 250 140 330 -10 270 Z" fill="url(#' + id + 'e)" stroke="' + G + '" stroke-opacity=".5"/>';
       s += '<path d="M-10 150 C140 190 250 130 410 230" stroke="#4aa386" stroke-opacity=".35" stroke-width="6" fill="none"/>';
@@ -236,7 +233,7 @@
     blazer: function (id) {
       var s = satin(id, '#f7f2e5', '#bdb090', '#ffffff');
       s += wave(-10, 150, 420, 8, 26, '#9b8c68', 3) + wave(-10, 200, 420, 8, 26, '#b2a47f', 2) + wave(-10, 250, 420, 8, 26, '#b2a47f', 1.4);
-      s += '<g transform="translate(112 376) scale(.19)" color="' + G + '"><rect x="-26" y="-26" width="470" height="150" fill="#0b0b0c" stroke="' + G + '" stroke-opacity=".6" stroke-width="3"/><use href="#wm-paths" transform="translate(-122 -35) translate(8 14) scale(.5)"/></g>';
+      s += '<g transform="translate(112 376) scale(.19)" color="' + G + '"><rect x="-26" y="-26" width="470" height="150" fill="#0E0D0C" stroke="' + G + '" stroke-opacity=".6" stroke-width="3"/><use href="#wm-paths" transform="translate(-122 -35) translate(8 14) scale(.5)"/></g>';
       return s;
     }
   };
@@ -300,7 +297,7 @@
       s += '<path d="M0 500 L0 150 C0 70 80 40 100 40 C120 40 200 70 200 150 L200 500 Z" fill="#2a1d10" opacity=".55"/><path d="M200 500 L200 150 C200 70 280 40 300 40 C320 40 400 70 400 150 L400 500 Z" fill="#2a1d10" opacity=".4"/>';
       s += '<rect y="400" width="400" height="100" fill="url(#' + id + 'f)"/><circle cx="330" cy="130" r="48" fill="#ffd994" opacity=".7"/><polygon points="330,130 160,500 400,500 400,260" fill="url(#' + id + 'b)"/>';
       s += '<path d="M140 150 C100 230 70 330 52 460 L196 460 C184 340 176 240 160 150 Z" fill="#f4eee0"/><path d="M114 220 C80 270 60 340 52 460" stroke="#fff" stroke-width="10" fill="none" opacity=".6"/><circle cx="150" cy="118" r="16" fill="#8d6a4c"/>';
-      s += '<path d="M276 130 C262 190 272 330 244 460 L338 460 C318 330 330 190 312 130 C300 122 288 122 276 130 Z" fill="#0b0b0c"/><path d="M276 132 C290 170 300 250 306 460" stroke="' + G + '" stroke-opacity=".45" stroke-width="2" fill="none"/><circle cx="294" cy="106" r="15" fill="#6d4e36"/>';
+      s += '<path d="M276 130 C262 190 272 330 244 460 L338 460 C318 330 330 190 312 130 C300 122 288 122 276 130 Z" fill="#0E0D0C"/><path d="M276 132 C290 170 300 250 306 460" stroke="' + G + '" stroke-opacity=".45" stroke-width="2" fill="none"/><circle cx="294" cy="106" r="15" fill="#6d4e36"/>';
     } else if (item.kind === 'studio') {
       s = '<defs>' + grad(id + 'b', '#2b2b2f', '#0a0a0b') + grad(id + 'i', '#f7f2e5', '#c9bd9c', { x1: 0, y1: 0, x2: 1, y2: 1 }) + lacePattern(id + 'l', 18) + '</defs><rect width="400" height="500" fill="url(#' + id + 'b)"/><path d="M0 410 C100 390 200 430 400 400 L400 500 L0 500Z" fill="#050506"/><path d="M0 410 C100 390 200 430 400 400" stroke="' + G + '" stroke-opacity=".6" fill="none"/>';
       s += '<path d="M200 330 L200 450 M150 456 L250 456" stroke="#8c8f98" stroke-opacity=".6" stroke-width="5"/><path d="M164 120 C152 190 158 260 172 330 L228 330 C242 260 248 190 236 120 C220 108 180 108 164 120 Z" fill="url(#' + id + 'i)"/><path d="M168 280 L232 280 C262 306 270 340 264 366 q-14 -12 -30 0 t-30 0 t-30 0 q-12 -12 -26 0 C128 340 138 306 168 280 Z" fill="url(#' + id + 'i)" stroke="#a89972" stroke-opacity=".6"/>';
@@ -313,7 +310,7 @@
       for (var i = 0; i < 14; i++) s += '<path d="M0 ' + (i * 38) + ' C130 ' + (i * 38 - 8) + ' 260 ' + (i * 38 + 8) + ' 400 ' + (i * 38) + '" stroke="#2a1a0d" stroke-opacity=".35" fill="none"/>';
       s += '<rect x="50" y="120" width="300" height="250" fill="#f2ead7" transform="rotate(-4 200 245)"/>';
       s += '<g transform="rotate(-4 200 245)">' + petals(150, 230, 5, 46, 20, r) + petals(244, 280, 6, 36, 60, r) + '<path d="M80 320 C140 290 200 330 320 300" stroke="' + G2 + '" stroke-width="4" stroke-linecap="round" fill="none"/></g>';
-      s += '<path d="M280 150 L360 80" stroke="#0b0b0c" stroke-width="10"/><path d="M280 150 L296 168" stroke="' + G + '" stroke-width="10"/>';
+      s += '<path d="M280 150 L360 80" stroke="#0E0D0C" stroke-width="10"/><path d="M280 150 L296 168" stroke="' + G + '" stroke-width="10"/>';
       for (var j = 0; j < 14; j++) s += '<circle cx="' + (60 + r() * 120).toFixed(0) + '" cy="' + (400 + r() * 60).toFixed(0) + '" r="3" fill="#e7e1d2"/>';
       s += '<polygon points="0,0 200,0 400,400 400,500" fill="url(#' + id + 'b)"/>';
     } else {
@@ -326,7 +323,7 @@
   /* ---------------- hero film placeholder reel (1600 x 900) ---------------- */
   function film() {
     var VB = '0 0 1600 900', r = seeded(11);
-    var shot1 = '<defs>' + grad('f1v', '#4a121c', '#0b0b0c', { x1: 0, y1: 1, x2: 1, y2: 0 }) + '<linearGradient id="f1s" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd994" stop-opacity="0"/><stop offset=".5" stop-color="#ffd994" stop-opacity=".34"/><stop offset="1" stop-color="#ffd994" stop-opacity="0"/></linearGradient></defs><rect width="1600" height="900" fill="url(#f1v)"/>';
+    var shot1 = '<defs>' + grad('f1v', '#4a121c', '#0E0D0C', { x1: 0, y1: 1, x2: 1, y2: 0 }) + '<linearGradient id="f1s" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd994" stop-opacity="0"/><stop offset=".5" stop-color="#ffd994" stop-opacity=".34"/><stop offset="1" stop-color="#ffd994" stop-opacity="0"/></linearGradient></defs><rect width="1600" height="900" fill="url(#f1v)"/>';
     for (var i = 0; i < 18; i++) { var y = r() * 950; shot1 += '<path d="M-40 ' + y.toFixed(0) + ' C400 ' + (y - 80 + r() * 160).toFixed(0) + ' 1000 ' + (y + 60).toFixed(0) + ' 1700 ' + (y - 40 + r() * 80).toFixed(0) + '" stroke="#b8344c" stroke-opacity=".13" stroke-width="' + (2 + r() * 8).toFixed(1) + '" fill="none"/>'; }
     for (var k = 0; k < 7; k++) { var yy = 120 + k * 110 + r() * 40; shot1 += '<path d="M' + (120 + r() * 200).toFixed(0) + ' ' + yy.toFixed(0) + ' C600 ' + (yy - 90).toFixed(0) + ' 1000 ' + (yy + 90).toFixed(0) + ' ' + (1300 + r() * 220).toFixed(0) + ' ' + (yy - 20).toFixed(0) + '" stroke="' + (k % 2 ? G : G2) + '" stroke-opacity=".55" stroke-width="' + (3 + r() * 7).toFixed(1) + '" stroke-linecap="round" fill="none"/>'; }
     shot1 += '<polygon points="520,0 980,0 1360,900 760,900" fill="url(#f1s)" class="sweep"/>';
@@ -335,7 +332,7 @@
     for (var a = 0; a < 4; a++) { var ax = 40 + a * 400; shot2 += '<path d="M' + ax + ' 900 L' + ax + ' 360 C' + ax + ' 190 ' + (ax + 360) + ' 190 ' + (ax + 360) + ' 360 L' + (ax + 360) + ' 900 Z" fill="#2a1d10" opacity="' + (0.5 - a * 0.06).toFixed(2) + '"/>'; }
     shot2 += '<rect y="740" width="1600" height="160" fill="#2a1d10" opacity=".6"/>';
     shot2 += '<g class="sway"><path d="M520 250 C430 400 380 600 350 790 L690 790 C660 600 620 400 570 250 Z" fill="#f4eee0" opacity=".96"/><path d="M470 330 C420 460 400 620 390 790" stroke="#fff" stroke-width="22" opacity=".5" fill="none"/></g><circle cx="545" cy="206" r="34" fill="#8d6a4c"/>';
-    shot2 += '<g class="sway"><path d="M1100 250 C1040 400 1010 600 980 790 L1240 790 C1210 600 1170 400 1130 250 Z" fill="#0b0b0c"/><path d="M1070 330 C1040 460 1020 620 1010 790" stroke="' + G + '" stroke-opacity=".5" stroke-width="6" fill="none"/></g><circle cx="1116" cy="206" r="32" fill="#6d4e36"/>';
+    shot2 += '<g class="sway"><path d="M1100 250 C1040 400 1010 600 980 790 L1240 790 C1210 600 1170 400 1130 250 Z" fill="#0E0D0C"/><path d="M1070 330 C1040 460 1020 620 1010 790" stroke="' + G + '" stroke-opacity=".5" stroke-width="6" fill="none"/></g><circle cx="1116" cy="206" r="32" fill="#6d4e36"/>';
 
     var shot3 = '<defs><radialGradient id="f3m" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#f0cf84" stop-opacity=".9"/><stop offset="1" stop-color="#f0cf84" stop-opacity="0"/></radialGradient>' + grad('f3v', '#6a1a2b', '#14050a', { x1: 0, y1: 0, x2: 1, y2: 1 }) + '</defs><rect width="1600" height="900" fill="url(#f3v)"/>';
     for (var q = 0; q < 16; q++) { var qy = r() * 950; shot3 += '<path d="M-40 ' + qy.toFixed(0) + ' C400 ' + (qy - 80 + r() * 160).toFixed(0) + ' 1000 ' + (qy + 60).toFixed(0) + ' 1700 ' + (qy - 40 + r() * 80).toFixed(0) + '" stroke="#b8344c" stroke-opacity=".12" stroke-width="' + (2 + r() * 8).toFixed(1) + '" fill="none"/>'; }

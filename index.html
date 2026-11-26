@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>House of MANTHAI | Atelier Womenswear, Colombo</title>
 <meta name="description" content="House of MANTHAI. Contemporary luxury womenswear from the Colombo atelier: sculptural silhouettes, hand-finished textiles and architectural tailoring conceived far beyond seasonal trends.">
-<meta name="theme-color" content="#0B0B0C">
+<meta name="theme-color" content="#0E0D0C">
 <link rel="canonical" href="https://manthai.vercel.app/">
 <meta property="og:title" content="House of MANTHAI | Tailored Without Boundaries. Crafted to Endure.">
 <meta property="og:description" content="Sculpted for women who refuse boundaries. Atelier Womenswear, Edition 01.">
@@ -37,9 +37,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Tenor+Sans&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/tokens.css?v=20261127">
-<link rel="stylesheet" href="assets/css/site.css?v=20261127">
-<link rel="stylesheet" href="assets/css/flagship.css?v=20261127">
+<link rel="stylesheet" href="assets/css/tokens.css?v=20261128a">
+<link rel="stylesheet" href="assets/css/site.css?v=20261128a">
+<link rel="stylesheet" href="assets/css/flagship.css?v=20261128a">
+<link rel="stylesheet" href="assets/css/gallery.css?v=20261128a">
 </head>
 <body>
 
@@ -107,7 +108,7 @@
   <span id="top"></span>
 
   <!-- =============================== HERO =============================== -->
-  <section class="hero" id="hero" aria-label="Sculpted for women who refuse boundaries">
+  <section class="hero" id="hero" data-view="home" aria-label="Sculpted Beyond Boundaries">
     <!-- MEDIA SLOT: hero film. 12 s seamless loop, WebM (AV1/VP9) under 3.5 MB + H.264 MP4 under 4.5 MB, audio track stripped,
          120 KB WebP first-frame poster. Drop the files at the paths below and the film replaces the placeholder reel automatically.
          Director's script (4 shots x 3 s): origin and texture, craft and silhouette, brushwork and beadwork shimmer, the woven damask neck label reveal. -->
@@ -124,11 +125,11 @@
     </div>
 
     <div class="hero__inner">
-      <p class="hero__edition" data-seq="1">Atelier Womenswear · Edition 01</p>
-      <h1 class="hero__title" data-seq="2">Sculpted for Women<br> Who Refuse Boundaries</h1>
+      <p class="hero__edition" data-seq="1">Ladies Collection · Colombo Atelier</p>
+      <h1 class="hero__title" data-seq="2">Sculpted Beyond Boundaries</h1>
       <div class="hero__cta" data-seq="3">
         <a class="btn btn--gold" href="#collection" data-action="scroll-collection">Explore the Collection</a>
-        <a class="link-btn link-btn--light" href="#maison">Discover the Maison</a>
+        <a class="link-btn link-btn--light" href="/the-maison" data-route="maison">The Maison</a>
       </div>
     </div>
 
@@ -149,7 +150,7 @@
   </section>
 
   <!-- ============================== PILLARS ============================== -->
-  <section class="pillars on-light" id="pillars" aria-labelledby="pillarsTitle">
+  <section class="pillars on-light" id="pillars" data-view="home" aria-labelledby="pillarsTitle">
     <div class="wrap">
       <h2 class="sr-only" id="pillarsTitle">The three pillars of Edition 01</h2>
       <div class="pillars__list" id="pillarsList"></div>
@@ -157,11 +158,11 @@
   </section>
 
   <!-- ============================= COLLECTION ============================= -->
-  <section class="collection on-light" id="collection" aria-labelledby="collectionTitle">
+  <section class="collection on-light" id="collection" data-view="home" aria-labelledby="collectionTitle">
     <div class="wrap">
       <header class="collection__head">
         <h2 class="display" id="collectionTitle">New arrivals, Edition 01</h2>
-        <p class="lede">Ten pieces of ladies apparel from the Colombo atelier. Some are numbered editions of a dozen. All are made to be kept.</p>
+        <p class="lede">Six pieces of ladies ready-to-wear from the Colombo atelier, released in small numbered batches and made to be kept.</p>
       </header>
       <div class="tabs" role="tablist" aria-label="Filter the collection" id="filterTabs"></div>
       <div class="collection__status"><p class="collection__count" id="collectionCount" aria-live="polite"></p><div id="occasionChip"></div></div>
@@ -170,27 +171,57 @@
   </section>
 
   <!-- ============================== CAMPAIGN ============================== -->
-  <section class="campaign" id="campaign" aria-labelledby="campaignTitle">
+  <section class="campaign on-light" id="campaign" data-view="home" aria-labelledby="campaignTitle">
     <div class="wrap">
-      <h2 class="display display--light" id="campaignTitle">The Lookbook</h2>
+      <h2 class="display" id="campaignTitle">The Lookbook</h2>
     </div>
     <!-- MEDIA SLOTS: lookbook stills. Add file paths in assets/js/catalog.js (M.LOOKBOOK[].src) or replace the figure contents. -->
     <div class="rail" id="rail" tabindex="0" role="region" aria-label="Campaign stills, scroll horizontally"></div>
   </section>
 
+  <!-- ========================= SEAL TEASER (home) ========================= -->
+  <section class="teaser" id="teaser" data-view="home" aria-labelledby="teaserTitle">
+    <div class="wrap teaser__inner">
+      <svg class="teaser__seal" viewBox="0 0 1000 860" aria-hidden="true" focusable="false"><use href="#spiral-seal"/></svg>
+      <h2 class="sr-only" id="teaserTitle">The Maison</h2>
+      <div class="teaser__lines">
+        <p>Named for Mantai, where silk and distant cultures met without borders.</p>
+        <p>Cut, finished and numbered by hand in our Colombo atelier.</p>
+        <p>Delivered in a sealed linen box, with a card that proves it is yours.</p>
+      </div>
+      <a class="link-btn link-btn--light teaser__cta" href="/the-maison" data-route="maison">Explore The Maison &amp; The Meaning of Our Seal <span aria-hidden="true">→</span></a>
+    </div>
+  </section>
+
+  <!-- =========================== THE MAISON PAGE =========================== -->
+  <section class="maison-intro on-light" id="maisonTop" data-view="maison" aria-labelledby="maisonPageTitle">
+    <div class="wrap maison-intro__inner">
+      <p class="eyebrow">House of MANTHAI · Colombo</p>
+      <h1 class="display maison-intro__title" id="maisonPageTitle">The Maison</h1>
+      <nav class="chapters" aria-label="Chapters">
+        <a href="#maison" data-jump="maison"><span>Chapter I</span>The Spirit Without Borders</a>
+        <a href="#seal" data-jump="seal"><span>The Seal</span>The Anatomy of Our Emblem</a>
+        <a href="#ritual" data-jump="ritual"><span>Chapter II</span>The Unboxing &amp; Verification Ritual</a>
+      </nav>
+    </div>
+  </section>
+
   <!-- =============================== MAISON =============================== -->
-  <section class="maison" id="maison" aria-labelledby="maisonTitle">
+  <section class="maison on-light" id="maison" data-view="maison" aria-labelledby="maisonTitle">
     <div class="wrap maison__statement">
       <figure class="maison__plate" id="maisonPlate" data-cursor="View"></figure>
       <div class="maison__copy">
-        <h2 class="display display--light maison__title" id="maisonTitle">Tailored Without Boundaries. Crafted to Endure.</h2>
-        <p>Our name honors Mantai, the ancient Indian Ocean crossroads where silk, craft, and distant cultures met without borders. House of MANTHAI carries that borderless spirit into contemporary womenswear: sculptural silhouettes, hand-finished textiles, and architectural tailoring conceived far beyond seasonal trends.</p>
+        <p class="eyebrow">Chapter I</p>
+        <h2 class="display maison__title" id="maisonTitle">The Spirit Without Borders</h2>
+        <p>Our name honors Mantai, the ancient Indian Ocean crossroads where silk, craft, and distant cultures met without borders. House of MANTHAI carries that borderless spirit into contemporary Sri Lankan luxury womenswear: sculptural silhouettes, tactile fine fabrics, and disciplined tailoring designed to outlive every passing trend.</p>
+        <p class="maison__slogan">Tailored Without Boundaries. Crafted to Endure.</p>
       </div>
     </div>
 
-    <div class="seal-divider" aria-hidden="true"><svg viewBox="0 0 1000 860"><use href="#spiral-seal"/></svg></div>
+  </section>
 
-    <div class="wrap decoder" id="seal" aria-labelledby="sealTitle">
+  <section class="seal-chapter" id="seal" data-view="maison" aria-labelledby="sealTitle">
+    <div class="wrap decoder">
       <div class="decoder__copy">
         <h2 class="display display--light" id="sealTitle">The Anatomy of Our Seal</h2>
         <p class="lede lede--dark">The Unbounded Spiral is an original sculptural emblem created exclusively for House of MANTHAI, uniting nature&rsquo;s self-similar logarithmic growth with the fluid poise of haute couture.</p>
@@ -204,7 +235,7 @@
   </section>
 
   <!-- ============================== RITUAL ============================== -->
-  <section class="ritual" id="ritual" aria-labelledby="ritualTitle">
+  <section class="ritual" id="ritual" data-view="maison" aria-labelledby="ritualTitle">
     <div class="wrap ritual__grid">
       <div class="ritual__stage">
         <!-- MEDIA SLOT: unboxing film or still. Placeholder is a drawn, exploded view of the box. -->
@@ -212,30 +243,30 @@
           <defs>
             <linearGradient id="gBox" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1f1f22"/><stop offset="1" stop-color="#0d0d0e"/></linearGradient>
             <linearGradient id="gLid" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#242427"/><stop offset="1" stop-color="#121214"/></linearGradient>
-                        <linearGradient id="gCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F6F3EC"/><stop offset="1" stop-color="#e3dccb"/></linearGradient>
-            <radialGradient id="gGlow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#C5A059" stop-opacity=".28"/><stop offset="1" stop-color="#C5A059" stop-opacity="0"/></radialGradient>
+                        <linearGradient id="gCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7F4EE"/><stop offset="1" stop-color="#e3dccb"/></linearGradient>
+            <radialGradient id="gGlow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#C9AF7E" stop-opacity=".28"/><stop offset="1" stop-color="#C9AF7E" stop-opacity="0"/></radialGradient>
           </defs>
           <ellipse cx="260" cy="470" rx="190" ry="22" fill="#000" opacity=".5"/>
           <ellipse cx="260" cy="300" rx="250" ry="190" fill="url(#gGlow)"/>
           <!-- box body -->
           <g class="part part--box" data-part="box">
-            <path d="M110 300 L260 350 L410 300 L410 420 L260 470 L110 420 Z" fill="url(#gBox)" stroke="#C5A059" stroke-opacity=".35" stroke-width="1"/>
-            <path d="M110 300 L260 250 L410 300 L260 350 Z" fill="#0b0b0c" stroke="#C5A059" stroke-opacity=".35"/>
+            <path d="M110 300 L260 350 L410 300 L410 420 L260 470 L110 420 Z" fill="url(#gBox)" stroke="#C9AF7E" stroke-opacity=".35" stroke-width="1"/>
+            <path d="M110 300 L260 250 L410 300 L260 350 Z" fill="#0E0D0C" stroke="#C9AF7E" stroke-opacity=".35"/>
           </g>
           <!-- garment tissue with gold emblem wafer -->
           <g class="part part--garment" data-part="garment">
             <g class="lift lift--garment">
-              <path d="M156 302 L262 262 L364 302 L258 342 Z" fill="#efe9dc" stroke="#C5A059" stroke-opacity=".5"/>
+              <path d="M156 302 L262 262 L364 302 L258 342 Z" fill="#efe9dc" stroke="#C9AF7E" stroke-opacity=".5"/>
               <path d="M176 300 L262 270 L344 300" fill="none" stroke="#cfc6b3"/>
               <path d="M214 316 L300 286" stroke="#cfc6b3" stroke-opacity=".7"/>
-              <circle cx="262" cy="304" r="10" fill="#C5A059"/>
-              <svg x="255" y="297" width="14" height="14" viewBox="0 0 1000 860" color="#0B0B0C"><use href="#spiral-seal"/></svg>
+              <circle cx="262" cy="304" r="10" fill="#C9AF7E"/>
+              <svg x="255" y="297" width="14" height="14" viewBox="0 0 1000 860" color="#0E0D0C"><use href="#spiral-seal"/></svg>
             </g>
           </g>
           <!-- story card -->
           <g class="part part--card" data-part="card">
             <g class="lift lift--card">
-              <path d="M170 288 L310 244 L350 262 L210 308 Z" fill="url(#gCard)" stroke="#C5A059" stroke-width="1.4"/>
+              <path d="M170 288 L310 244 L350 262 L210 308 Z" fill="url(#gCard)" stroke="#C9AF7E" stroke-width="1.4"/>
               <path d="M200 286 L300 254" stroke="#7E5F20" stroke-width="1"/>
               <path d="M205 296 L270 275" stroke="#7E5F20" stroke-opacity=".5" stroke-width="1"/>
             </g>
@@ -243,20 +274,20 @@
           <!-- woven damask label -->
           <g class="part part--label" data-part="label">
             <g class="lift lift--label">
-              <path d="M270 308 L350 282 L368 292 L288 320 Z" fill="#0b0b0c" stroke="#C5A059" stroke-opacity=".6"/>
-              <g transform="translate(284 306) rotate(-19) scale(.052)" color="#C5A059"><use href="#wm-paths" transform="translate(-122 -35)"/></g>
+              <path d="M270 308 L350 282 L368 292 L288 320 Z" fill="#0E0D0C" stroke="#C9AF7E" stroke-opacity=".6"/>
+              <g transform="translate(284 306) rotate(-19) scale(.052)" color="#C9AF7E"><use href="#wm-paths" transform="translate(-122 -35)"/></g>
             </g>
           </g>
           <!-- lid -->
           <g class="lid" data-part="box">
             <g class="part part--box">
-              <path d="M104 232 L260 284 L416 232 L416 270 L260 322 L104 270 Z" fill="url(#gLid)" stroke="#C5A059" stroke-opacity=".5"/>
-              <path d="M104 232 L260 180 L416 232 L260 284 Z" fill="#17171a" stroke="#C5A059" stroke-opacity=".5"/>
+              <path d="M104 232 L260 284 L416 232 L416 270 L260 322 L104 270 Z" fill="url(#gLid)" stroke="#C9AF7E" stroke-opacity=".5"/>
+              <path d="M104 232 L260 180 L416 232 L260 284 Z" fill="#17171a" stroke="#C9AF7E" stroke-opacity=".5"/>
             </g>
             <!-- burnished gold Seal stamped on the linen lid -->
             <g class="part part--seal" data-part="seal">
-              <g transform="translate(222 221) scale(.076 .0253)" color="#C5A059"><use href="#spiral-seal" width="1000" height="860"/></g>
-              <g transform="translate(232.4 253) scale(.07 .07) skewY(18.4)" color="#C5A059" opacity=".9"><use href="#wm-paths" transform="translate(-122 -35) scale(.5)"/></g>
+              <g transform="translate(222 221) scale(.076 .0253)" color="#C9AF7E"><use href="#spiral-seal" width="1000" height="860"/></g>
+              <g transform="translate(232.4 253) scale(.07 .07) skewY(18.4)" color="#C9AF7E" opacity=".9"><use href="#wm-paths" transform="translate(-122 -35) scale(.5)"/></g>
             </g>
           </g>
         </svg>
@@ -264,7 +295,8 @@
       </div>
 
       <div class="ritual__copy">
-        <h2 class="display display--light" id="ritualTitle">The Unboxing &amp; Authenticity Ritual</h2>
+        <p class="eyebrow eyebrow--dark">Chapter II</p>
+        <h2 class="display display--light" id="ritualTitle">The Unboxing &amp; Verification Ritual</h2>
         <p class="lede lede--dark">What arrives at your door, in the order you meet it. Select an object to see what it is made of.</p>
         <ol class="parts" id="partsList"></ol>
         <p class="parts__detail" id="partDetail" role="status" aria-live="polite"></p>
@@ -412,12 +444,12 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="assets/js/catalog.js?v=20261127"></script>
-<script src="assets/js/art.js?v=20261127"></script>
-<script src="assets/js/core.js?v=20261127"></script>
-<script src="assets/js/shop.js?v=20261127"></script>
-<script src="assets/js/maison.js?v=20261127"></script>
-<script src="assets/vendor/lenis.min.js?v=20261127" defer></script>
-<script src="assets/js/flagship.js?v=20261127" defer></script>
+<script src="assets/js/catalog.js?v=20261128a"></script>
+<script src="assets/js/art.js?v=20261128a"></script>
+<script src="assets/js/core.js?v=20261128a"></script>
+<script src="assets/js/shop.js?v=20261128a"></script>
+<script src="assets/js/maison.js?v=20261128a"></script>
+<script src="assets/vendor/lenis.min.js?v=20261128a" defer></script>
+<script src="assets/js/flagship.js?v=20261128a" defer></script>
 </body>
 </html>
