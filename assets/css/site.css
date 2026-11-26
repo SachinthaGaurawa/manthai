@@ -77,15 +77,6 @@ body::after {
 .atelier-panel__figure figcaption { position: absolute; left: 20px; bottom: 16px; font: 400 var(--fs-small)/1.2 var(--sans); letter-spacing: .08em; color: var(--alabaster-silk); text-shadow: 0 1px 10px #000; }
 
 /* Region popover */
-.region-pop { position: fixed; z-index: var(--z-panel); top: calc(var(--header-h) + 8px); right: var(--gutter); width: min(340px, calc(100vw - 2 * var(--gutter))); background: var(--anuradhapura-charcoal); color: var(--alabaster-silk); border: 1px solid var(--hairline); padding: 22px; opacity: 0; transform: translateY(-6px); transition: opacity var(--t-fast) var(--ease), transform var(--t-fast) var(--ease); }
-.region-pop.is-in { opacity: 1; transform: none; }
-.region-pop__title { font: 400 var(--fs-ui)/1 var(--sans); letter-spacing: var(--track-ui); text-transform: uppercase; color: var(--muted-stone); margin-bottom: 14px; }
-.region-pop__list { display: grid; }
-.region-opt { display: flex; justify-content: space-between; gap: 16px; padding: 13px 0; border-top: 1px solid var(--hairline-soft); font: 400 0.9rem/1.2 var(--sans); letter-spacing: .04em; cursor: pointer; color: var(--alabaster-silk); }
-.region-opt:hover { color: var(--sovereign-gold); }
-.region-opt[aria-checked='true'] { color: var(--sovereign-gold); }
-.region-opt small { color: var(--muted-stone); font-size: .75rem; }
-.region-pop__note { margin-top: 14px; font: 400 var(--fs-small)/1.5 var(--serif); color: var(--muted-stone); }
 
 /* ------------------------------- buttons ------------------------------- */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: .8em; min-height: 50px; padding: 0 34px; font: 400 var(--fs-ui)/1 var(--sans); letter-spacing: var(--track-ui); text-transform: uppercase; white-space: nowrap; color: var(--text); background: transparent; border: 1px solid var(--accent); cursor: pointer; position: relative; overflow: hidden; transition: color var(--t-mid) var(--ease), background-position var(--t-mid) var(--ease), border-color var(--t-fast), transform var(--t-fast) var(--ease); }
@@ -501,7 +492,6 @@ dialog[open] ~ .toast { z-index: 2147483647; }
   .utilities { justify-self: end; }
   .atelier-panel { display: none; }
 }
-@media (max-width: 1499px) { .rg-long { display: none; } }
 @media (max-width: 1079px) {
   .footer__grid { grid-template-columns: 1fr 1fr; }
   .footer__brand { grid-column: 1 / -1; }

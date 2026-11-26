@@ -1,5 +1,5 @@
 /* ==========================================================================
-   MANTHAI  |  shop: gallery, product drawer, loupe, measurements, bag, checkout
+   MANTHAI  |  shop: gallery, product drawer, loupe, size guide, bag, checkout
    ========================================================================== */
 (function () {
   'use strict';
@@ -149,10 +149,8 @@
   }
   function syncShip() {
     var b = $('#pdpShip'), w = $('#pdpWhen'); if (!b) return;
-    if (C.isLocal()) { b.textContent = 'Complimentary insured delivery'; w.textContent = ' · ' + C.deliveryWhen('colombo') + ' in Colombo'; }
-    else { b.textContent = 'International DHL Express, duties included'; w.textContent = ' · ' + C.deliveryWhen('intl'); }
+    b.textContent = 'Complimentary insured delivery'; w.textContent = ' · ' + C.deliveryWhen('colombo') + ' in Colombo';
   }
-  C.on('currency', syncShip);
 
   shop.openProduct = function (id) {
     var p = C.product(id); if (!p) return;
@@ -301,13 +299,10 @@
 
   /* ======================= bag and checkout ======================= */
   var bagView = 'bag', lastOrder = null;
-  var COUNTRIES = ['Sri Lanka', 'United Arab Emirates', 'United Kingdom', 'United States', 'Ireland', 'France', 'Italy', 'Germany', 'Singapore', 'Maldives', 'India', 'Australia', 'Japan'];
-  var CUR_COUNTRY = { LKR: 'Sri Lanka', USD: 'United States', EUR: 'France', GBP: 'United Kingdom', AED: 'United Arab Emirates' };
   var PAY = {
     payhere: { label: 'PayHere secure card payment', text: 'Visa, Mastercard and American Express, in Sri Lankan rupees.', marks: ['Visa', 'Mastercard', 'AMEX'] },
     lankaqr: { label: 'LankaQR instant pay', text: 'Scan with any Sri Lankan banking or wallet app.', marks: ['LankaQR'] },
-    bank: { label: 'Private bank transfer', text: 'An instant payment reference, with the Maison account details sent by email.', marks: [] },
-    intl: { label: 'International card', text: 'Visa, Mastercard and American Express, charged in your currency.', marks: ['Visa', 'Mastercard', 'AMEX'] }
+    bank: { label: 'Private bank transfer', text: 'An instant payment reference, with the Maison account details sent by email.', marks: [] }
   };
   var co = { step: 1, d: {} };
   function req(label) { return label + ' <span class="req" aria-hidden="true">*</span>'; }
@@ -315,9 +310,9 @@
   function coField(id, name, label, attrs, val) {
     return '<div class="field"><label for="' + id + '">' + label + '</label><input id="' + id + '" name="' + name + '" ' + attrs + ' value="' + esc(val || '') + '" aria-describedby="' + id + '-e"><span class="field__error" id="' + id + '-e" role="alert"></span></div>';
   }
-  function isLK() { return (co.d.country || CUR_COUNTRY[C.state.currency]) === 'Sri Lanka'; }
-  function shipOptions() { return isLK() ? ['colombo', 'island', 'atelier'] : ['intl']; }
-  function payOptions() { return isLK() ? ['payhere', 'lankaqr', 'bank'] : ['intl', 'bank']; }
+  /* Phase 1: Sri Lankan fulfilment and payment only */
+  function shipOptions() { return ['colombo', 'island', 'atelier']; }
+  function payOptions() { return ['payhere', 'lankaqr', 'bank']; }
   function giftState() { return C.state.gift || (C.state.gift = { on: false, note: '' }); }
 
   function bagHead(title, back) {
@@ -348,7 +343,7 @@
         '<label class="gift"><input type="checkbox" data-gift' + (g.on ? ' checked' : '') + '><span><b>Prepare as a gift</b><span>A complimentary calligraphy note card inside the rigid box. Prices are never shown in the parcel.</span></span></label>' +
         '<div class="field gift-note"' + (g.on ? '' : ' hidden') + '><label for="giftNote">' + opt('Your note') + '</label><textarea id="giftNote" data-gift-note maxlength="240" rows="2" placeholder="Written by hand on the card">' + esc(g.note) + '</textarea></div>' +
         '<div class="totals"><span>Subtotal</span><output>' + P(C.bagTotalLKR()) + '</output></div>' +
-        '<p class="fine-print">' + (C.isLocal() ? 'Complimentary insured delivery across Sri Lanka. ' + C.deliveryWhen('colombo') + ' in Colombo.' : 'International DHL Express, all duties and taxes included in this total.') + '</p>' +
+        '<p class="fine-print">' + 'Complimentary insured delivery across Sri Lanka. ' + C.deliveryWhen('colombo') + ' in Colombo.' + '</p>' +
         '<button class="btn btn--gold btn--block" type="button" data-checkout>Proceed to Acquisition</button>' +
         '<button class="link-btn" type="button" data-browse style="justify-self:center">Continue browsing</button></div>';
   }
@@ -359,7 +354,7 @@
   function renderCheckout(panel) {
     var m = C.state.member, d = co.d, g = giftState();
     if (!d.email && m) { d.email = m.email; d.name = d.name || m.name; }
-    if (!d.country) d.country = CUR_COUNTRY[C.state.currency] || 'Sri Lanka';
+    d.country = M.MARKET.countryName;
     if (shipOptions().indexOf(d.ship) < 0) d.ship = shipOptions()[0];
     if (payOptions().indexOf(d.pay) < 0) d.pay = payOptions()[0];
     if (d.gift === undefined) { d.gift = g.on; d.giftNote = g.note; }
@@ -379,7 +374,7 @@
         coField('co-addr', 'addr', req('Address'), 'autocomplete="address-line1"', d.addr) +
         coField('co-addr2', 'addr2', opt('Apartment, suite or floor'), 'autocomplete="address-line2"', d.addr2) +
         '<div class="row-2">' + coField('co-city', 'city', req('City'), 'autocomplete="address-level2"', d.city) + coField('co-post', 'post', opt('Postal code'), 'autocomplete="postal-code"', d.post) + '</div>' +
-        '<div class="field"><label for="co-country">' + req('Country') + '</label><select id="co-country" name="country" autocomplete="country-name">' + COUNTRIES.map(function (c) { return '<option' + (c === d.country ? ' selected' : '') + '>' + c + '</option>'; }).join('') + '</select></div>' +
+        '<div class="field"><span class="field__label-static">Country</span><p class="field__static">Sri Lanka</p><input type="hidden" name="country" value="Sri Lanka"></div>' +
         '<button class="btn btn--gold btn--block" type="submit">Continue to fulfilment</button></form>';
     } else {
       h += '<div class="co-sum"><p>' + esc(d.name) + '<br>' + esc(d.email) + ' · ' + esc(d.phone) + '</p><p>' + esc([d.addr, d.addr2, d.city, d.post, d.country].filter(Boolean).join(', ')) + '</p></div>';
@@ -413,7 +408,7 @@
         '<p class="secure-note">Payments are encrypted and processed by PayHere, a licensed Sri Lankan payment gateway. MANTHAI never sees or stores your card number.</p>' +
         '<div class="summary-rows">' + C.state.bag.map(function (l) { var p = C.product(l.id); return '<div class="summary-row"><span>' + esc(p.short) + ' · ' + esc(l.size) + (l.qty > 1 ? ' × ' + l.qty : '') + '</span><span>' + P(p.price * l.qty) + '</span></div>'; }).join('') +
           '<div class="summary-row"><span>' + esc(C.DELIVERY[d.ship].label) + '</span><span>Complimentary</span></div>' + (d.gift ? '<div class="summary-row"><span>Gift preparation</span><span>Complimentary</span></div>' : '') +
-          (isLK() ? '' : '<div class="summary-row"><span>Duties and taxes</span><span>Included</span></div>') + '</div>' +
+          '</div>' +
         '<div class="totals"><span>Total</span><output>' + P(C.bagTotalLKR()) + '</output></div>' +
         '<p class="fine-print">Demonstration storefront: no payment is taken and no email is sent.</p>' +
         '<button class="btn btn--solid" type="submit"><span class="btn__label">Complete acquisition</span></button></form>';
@@ -507,9 +502,8 @@
   C.on('close', function (dlg) { if (dlg.id === 'layerBag' && bagView === 'done') { bagView = 'bag'; lastOrder = null; } });
   C.on('member', function () { if ($('#layerBag').open && bagView === 'done') renderBag(); });
 
-  /* live updates when stock or currency change */
+  /* live updates when stock changes */
   C.on('bag', function () { syncAddButtons(); });
-  C.on('currency', function () { if ($('#layerBag').open && bagView === 'bag') renderBag(); });
 
   /* ======================= wishlist ======================= */
   shop.toggleWish = function (id) {

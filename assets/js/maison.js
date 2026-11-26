@@ -120,7 +120,6 @@
   });
   document.addEventListener('click', function (e) {
     if (panelOpen && !header.contains(e.target)) closePanel();
-    var rp = $('#regionPop'); if (!rp.hidden && !rp.contains(e.target) && !e.target.closest('#regionBtn')) C.hideRegion();
   });
 
   /* ======================= mobile menu ======================= */
@@ -136,41 +135,6 @@
     if (!open) { b.setAttribute('aria-expanded', 'true'); $('#' + b.getAttribute('aria-controls')).hidden = false; }
   });
   $('#menuToggle').addEventListener('click', function () { C.open($('#layerMenu')); });
-
-  /* ======================= currency and region ======================= */
-  var regionT;
-  function regionNote() { return C.isLocal() ? 'Complimentary white-glove insured delivery across Sri Lanka.' : 'Delivered by DHL Express, duties and taxes included. Rates are indicative and confirmed at checkout.'; }
-  function buildRegion() {
-    $('#regionList').innerHTML = Object.keys(M.CURRENCIES).map(function (k) {
-      var c = M.CURRENCIES[k];
-      return '<button class="region-opt" type="button" role="radio" aria-checked="' + (k === C.state.currency) + '" data-cur="' + k + '"><span>' + esc(c.region) + '</span><small>' + k + '</small></button>';
-    }).join('');
-    $('#regionNote').textContent = regionNote();
-  }
-  C.showRegion = function () {
-    var pop = $('#regionPop'); clearTimeout(regionT); closePanel(true);
-    buildRegion(); pop.hidden = false; $('#regionBtn').setAttribute('aria-expanded', 'true');
-    requestAnimationFrame(function () { requestAnimationFrame(function () { pop.classList.add('is-in'); var s = $('.region-opt[aria-checked="true"]', pop); if (s) s.focus({ preventScroll: true }); }); });
-  };
-  C.hideRegion = function () {
-    var pop = $('#regionPop'); pop.classList.remove('is-in'); $('#regionBtn').setAttribute('aria-expanded', 'false');
-    clearTimeout(regionT); regionT = setTimeout(function () { pop.hidden = true; }, C.reduced() ? 0 : 320);
-  };
-  $('#regionBtn').addEventListener('click', function () { if ($('#regionPop').hidden) C.showRegion(); else { C.hideRegion(); } });
-  $('#regionList').addEventListener('click', function (e) {
-    var b = e.target.closest('[data-cur]'); if (!b) return;
-    var k = b.getAttribute('data-cur'); C.setCurrency(k); buildRegion();
-    C.toast(k === 'LKR' ? 'Prices shown in Sri Lankan rupees.' : 'Prices shown in ' + k + ', duties included.');
-    setTimeout(function () { C.hideRegion(); var rb = $('#regionBtn'); if (rb && rb.offsetParent) rb.focus({ preventScroll: true }); }, 260);
-  });
-  $('#regionPop').addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') { e.stopPropagation(); C.hideRegion(); $('#regionBtn').focus(); return; }
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      e.preventDefault(); var o = $$('.region-opt'), i = o.indexOf(document.activeElement) + (e.key === 'ArrowDown' ? 1 : -1); o[(i + o.length) % o.length].focus();
-    }
-  });
-  $('[data-action="region-from-menu"]').addEventListener('click', function () { C.close($('#layerMenu')); later(function () { C.showRegion(); }); });
-  C.on('currency', function () { var rn = $('#regionNote'); if (rn) rn.textContent = regionNote(); var mb = $('[data-action="region-from-menu"]'); if (mb) mb.textContent = M.CURRENCIES[C.state.currency].label; });
 
   /* ======================= search ======================= */
   var KIND_WORDS = { shirt: 'shirt blouse top silk separates charmeuse', trouser: 'trouser trousers pants wide-leg silk separates', gown: 'dress gown couture evening velvet painted', mullet: 'gown evening rosette train silk', column: 'gown evening strapless bow satin pearl', lace: 'dress lace midi velvet garnet', silkmidi: 'dress midi silk twisted asymmetric', blazer: 'jacket tailoring blazer ruffle peplum', mini: 'dress mini scarf tailored', cape: 'cape lace sheer pearl' };
@@ -769,7 +733,6 @@
   window.addEventListener('beforeunload', function () { if (!location.hash) window.scrollTo(0, 0); });
 
   $('#year').textContent = new Date().getFullYear();
-  C.setCurrency(C.state.currency);
   C.emit('member');
   fbInit();
   C.updateBagUI();
