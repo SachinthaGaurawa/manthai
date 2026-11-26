@@ -317,3 +317,26 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select { cursor
   .decoder__seal .sp, .vcard, .btn--gold::before, .cursor::before, .veil { transition: none; }
   .cursor { display: none; }
 }
+
+/* ---------------- polish: menu choreography, photo wells ---------------- */
+/* close mark: the two hamburger strokes fold into an X as the menu opens */
+.menu-close path { transform-box: view-box; transform-origin: 12px 12px; transition: transform .6s var(--ease) .12s; }
+.menu-close__a { transform: translateY(-4px); }
+.menu-close__b { transform: translateY(4px); }
+.layer--menu.is-in .menu-close__a { transform: rotate(45deg); }
+.layer--menu.is-in .menu-close__b { transform: rotate(-45deg); }
+/* menu rows rise in one after another, once per opening */
+.layer--menu .menu-group, .layer--menu .menu-foot { opacity: 0; transform: translateY(14px); transition: opacity .6s var(--ease), transform .6s var(--ease); }
+.layer--menu.is-in .menu-group, .layer--menu.is-in .menu-foot { opacity: 1; transform: none; }
+.layer--menu.is-in .menu-group:nth-child(1) { transition-delay: .14s; }
+.layer--menu.is-in .menu-group:nth-child(2) { transition-delay: .2s; }
+.layer--menu.is-in .menu-group:nth-child(3) { transition-delay: .26s; }
+.layer--menu.is-in .menu-group:nth-child(4) { transition-delay: .32s; }
+.layer--menu.is-in .menu-group:nth-child(5) { transition-delay: .38s; }
+.layer--menu.is-in .menu-foot { transition-delay: .46s; }
+/* product photos rest on the pearl well until decoded, then crossfade in */
+.js img[data-ph-id] { opacity: 0; transition: opacity .6s var(--ease); }
+.js img[data-ph-id].is-loaded { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .menu-close path, .layer--menu .menu-group, .layer--menu .menu-foot, .js img[data-ph-id] { transition: none; }
+}

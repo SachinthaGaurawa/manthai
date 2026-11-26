@@ -155,6 +155,9 @@
     return M.Art.plate(p, view);
   };
 
+  /* real photos wait on the pearl well and fade in once loaded */
+  document.addEventListener('load', function (e) { var t = e.target; if (t && t.tagName === 'IMG' && t.hasAttribute('data-ph-id')) t.classList.add('is-loaded'); }, true);
+
   /* a missing or broken photo falls back to the atmospheric plate instead of showing a broken image */
   document.addEventListener('error', function (e) {
     var t = e.target; if (!t || t.tagName !== 'IMG') return;
