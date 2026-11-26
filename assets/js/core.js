@@ -18,41 +18,28 @@
   C.emit = function (ev, data) { (handlers[ev] || []).forEach(function (fn) { fn(data); }); };
 
   /* ---------- state (persisted in this browser only) ---------- */
-  var DEFAULTS = { currency: 'LKR', bag: [], member: null, accounts: {}, measurements: null, orders: [], notify: {}, stylist: null, wishlist: [], gift: { on: false, note: '' }, addresses: [], fitSize: '' };
+  var DEFAULTS = { currency: 'LKR', bag: [], member: null, accounts: {}, orders: [], notify: {}, stylist: null, wishlist: [], gift: { on: false, note: '' }, addresses: [], fitSize: '' };
   C.state = JSON.parse(JSON.stringify(DEFAULTS));
   try {
     var raw = window.localStorage.getItem(M.CONFIG.storageKey);
     if (raw) { var saved = JSON.parse(raw); Object.keys(DEFAULTS).forEach(function (k) { if (saved[k] !== undefined) C.state[k] = saved[k]; }); }
   } catch (e) { /* storage unavailable: run in memory */ }
-  if (!M.CURRENCIES[C.state.currency]) C.state.currency = 'LKR';
+  C.state.currency = M.MARKET.currency; /* Phase 1: storefront locked to Sri Lanka, LKR */
   C.state.bag = (C.state.bag || []).filter(function (l) { return C.product(l.id); });
   C.save = function () { try { window.localStorage.setItem(M.CONFIG.storageKey, JSON.stringify(C.state)); } catch (e) { /* ignore */ } };
 
-  /* ---------- currency ---------- */
-  var FX = (C.FX = {
-    /* Indicative rates live in catalog.js. Replace refresh() with a live feed call that updates M.CURRENCIES[code].rate. */
-    refresh: function () { return Promise.resolve(M.CURRENCIES); },
-    convert: function (lkr, code) {
-      code = code || C.state.currency;
-      var v = lkr * M.CURRENCIES[code].rate;
-      return code === 'LKR' ? Math.round(v) : Math.round(v / 5) * 5;
-    },
-    format: function (lkr, code) {
-      code = code || C.state.currency;
-      return code + ' ' + FX.convert(lkr, code).toLocaleString('en-US');
-    }
-  });
-  C.price = function (lkr) { return FX.format(lkr); };
-  C.setCurrency = function (code) {
-    if (!M.CURRENCIES[code]) return;
-    C.state.currency = code; C.save();
-    document.documentElement.setAttribute('data-currency', code);
-    C.$$('[data-price]').forEach(function (el) { el.textContent = C.price(Number(el.getAttribute('data-price'))); });
-    C.$$('[data-region-code]').forEach(function (el) { el.textContent = code; });
-    var rl = C.$('#regionLabel'); if (rl) rl.innerHTML = '<span class="rg-long">' + C.esc(M.CURRENCIES[code].region) + ' · </span>' + code;
-    C.emit('currency', code);
+  /* ---------- pricing: the single formatter every price passes through ----------
+     Amounts are authored in LKR. Phase 1 renders LKR only ("LKR 48,000"). For Phase 2, add a currency
+     to M.CURRENCIES and pass its code; conversion and rounding already live here. */
+  C.formatPrice = function (amountLKR, code) {
+    var c = M.CURRENCIES[code || C.state.currency] || M.CURRENCIES.LKR;
+    var v = amountLKR * c.rate;
+    v = c.code === 'LKR' ? Math.round(v) : Math.round(v / 5) * 5;
+    return c.code + ' ' + v.toLocaleString('en-US');
   };
-  C.isLocal = function () { return C.state.currency === 'LKR'; };
+  C.price = C.formatPrice;
+  M.formatPrice = C.formatPrice;
+  C.isLocal = function () { return true; };
 
   /* ---------- bag helpers ---------- */
   C.qtyOf = function (id) { return C.state.bag.reduce(function (n, l) { return n + (l.id === id ? l.qty : 0); }, 0); };
@@ -71,7 +58,6 @@
   C.open = function (dlg) {
     if (!dlg || dlg.open) return;
     dlg._opener = document.activeElement;
-    var pop = C.$('#regionPop'); if (pop && !pop.hidden) C.hideRegion();
     dlg.showModal();
     locks += 1; document.documentElement.style.overflow = 'hidden';
     requestAnimationFrame(function () { requestAnimationFrame(function () { dlg.classList.add('is-in'); }); });
@@ -139,8 +125,7 @@
   C.DELIVERY = {
     colombo: { label: 'Complimentary White-Glove Colombo Delivery', days: 2 },
     island: { label: 'Islandwide Insured Courier', days: 4 },
-    atelier: { label: 'Private Atelier Collection', days: 1, atelier: true },
-    intl: { label: 'International DHL Express, duties included', days: 5 }
+    atelier: { label: 'Private Atelier Collection', days: 1, atelier: true }
   };
   C.deliveryWhen = function (key) {
     var o = C.DELIVERY[key] || C.DELIVERY.colombo;

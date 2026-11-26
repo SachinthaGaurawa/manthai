@@ -22,13 +22,12 @@
     storageKey: 'manthai.v1'
   };
 
-  /* ---------- Currencies. Rates are indicative; swap FX.refresh() for a live feed ---------- */
+  /* ---------- Market. Phase 1 sells in Sri Lanka only, priced in LKR.
+     Phase 2: add currencies here (code, rate, locale) and enable a selector; every price already
+     passes through MANTHAI.core.formatPrice(amountLKR), so nothing else needs to change. ---------- */
+  M.MARKET = { country: 'LK', countryName: 'Sri Lanka', currency: 'LKR' };
   M.CURRENCIES = {
-    LKR: { code: 'LKR', region: 'Sri Lanka',     rate: 1,        label: 'Sri Lanka · LKR',      locale: 'en-LK' },
-    USD: { code: 'USD', region: 'United States', rate: 0.0033,   label: 'United States · USD',  locale: 'en-US' },
-    EUR: { code: 'EUR', region: 'Europe',        rate: 0.00285,  label: 'Europe · EUR',         locale: 'en-IE' },
-    GBP: { code: 'GBP', region: 'United Kingdom',rate: 0.00246,  label: 'United Kingdom · GBP', locale: 'en-GB' },
-    AED: { code: 'AED', region: 'United Arab Emirates', rate: 0.01212, label: 'UAE · AED',     locale: 'en-AE' }
+    LKR: { code: 'LKR', rate: 1, locale: 'en-LK' }
   };
 
   /* ---------- Collection filters (Phase 1: ladies luxury apparel only) ---------- */
@@ -306,19 +305,18 @@
 
   /* ---------- Short policy texts for the footer info layer ---------- */
   M.INFO = {
-    delivery: { title: 'Delivery and duties',
+    delivery: { title: 'Delivery',
       body: ['Complimentary white-glove insured delivery in Colombo, usually within two working days. A Maison courier brings the piece to you and waits while you open it.',
              'Islandwide insured courier across Sri Lanka, usually within four working days, also complimentary. You may also collect from the Colombo atelier.',
-             'International orders travel by DHL Express, delivered duty paid (DDP). All duties and taxes are included in the price you see at checkout, so nothing is collected at your door.',
              'Delivery is always complimentary. Every order is prepaid by card, LankaQR or bank transfer; cash on delivery is not offered.'] },
     care: { title: 'Care and repair',
       body: ['Every piece comes with care notes on its Story Card. The atelier in Colombo repairs and refreshes MANTHAI pieces for life.',
              'Scan the NFC tag inside your piece to open its Digital Product Passport and request care at any time.'] },
     privacy: { title: 'Privacy',
-      body: ['This storefront stores your bag, currency and Private Circle details in your own browser. Sign-in is handled by Google Firebase Authentication; orders are not sent to a server in this build.',
+      body: ['This storefront stores your bag and Private Circle details in your own browser. Sign-in is handled by Google Firebase Authentication; orders are not sent to a server in this build.',
              'Draft text. Final policy wording is to be confirmed before launch.'] },
     terms: { title: 'Terms of sale',
-      body: ['Prices are shown in your chosen currency at an indicative rate and are charged as confirmed at checkout.',
+      body: ['Prices are shown and charged in Sri Lankan rupees (LKR), with complimentary delivery across Sri Lanka.',
              'Draft text. Final terms are to be confirmed before launch.'] }
   };
 })();

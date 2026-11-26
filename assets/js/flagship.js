@@ -116,7 +116,7 @@
     if (!window.Lenis || C.reduced() || !fine || C.lenis) return;
     try {
       var lenis = new window.Lenis({ duration: 1.15, easing: function (t) { return 1 - Math.pow(1 - t, 4); }, smoothWheel: true,
-        prevent: function (node) { return !!(node.closest && node.closest('dialog, .rail, .atelier-panel, .region-pop, .tabs')); } });
+        prevent: function (node) { return !!(node.closest && node.closest('dialog, .rail, .atelier-panel, .tabs')); } });
       C.lenis = lenis;
       function frame(t) { lenis.raf(t); requestAnimationFrame(frame); }
       requestAnimationFrame(frame);

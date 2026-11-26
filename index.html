@@ -81,9 +81,6 @@
       <button class="icon-btn" id="searchBtn" aria-label="Search" aria-haspopup="dialog">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M15.5 15.5L21 21" stroke="currentColor" stroke-width="1.1"/></svg>
       </button>
-      <button class="util-btn util-btn--region" id="regionBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="regionPop">
-        <span id="regionLabel">Sri Lanka · LKR</span>
-      </button>
       <button class="icon-btn util-account" id="salonBtn" aria-label="Private Circle account" aria-haspopup="dialog">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="8.5" r="3.8" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M4.5 20.5c.9-4 4-6 7.5-6s6.6 2 7.5 6" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>
       </button>
@@ -105,12 +102,6 @@
     </div>
   </div>
 </header>
-
-<div class="region-pop" id="regionPop" role="dialog" aria-label="Currency and region" hidden>
-  <p class="region-pop__title">Currency and region</p>
-  <div class="region-pop__list" id="regionList" role="radiogroup" aria-label="Currency"></div>
-  <p class="region-pop__note" id="regionNote"></p>
-</div>
 
 <main id="main">
   <span id="top"></span>
@@ -330,10 +321,10 @@
     <div class="footer__col footer__pay">
       <h3>Payment</h3>
       <p class="pay-marks" aria-label="Accepted payment methods"><span>Visa</span><span>Mastercard</span><span>AMEX</span><span>LankaQR</span><span>Bank transfer</span></p>
-      <p class="footer__fine">Complimentary insured delivery. International orders travel duties included. Prices shown in <span data-region-code>LKR</span>.</p>
+      <p class="footer__fine">Complimentary insured delivery across Sri Lanka. All prices in Sri Lankan rupees (LKR).</p>
     </div>
   </div>
-  <p class="wrap footer__future">Future Chapters: Menswear Tailoring &amp; Maison Objects in Development</p>
+  <p class="wrap footer__future">Future Chapters: Menswear &amp; Maison Objects to Follow.</p>
   <div class="wrap footer__legal">
     <p>&copy; <span id="year">2026</span> House of MANTHAI. Colombo.</p>
     <p class="footer__links"><button type="button" data-info="privacy">Privacy</button><button type="button" data-info="terms">Terms of sale</button></p>
@@ -351,7 +342,6 @@
     </div>
     <div class="menu-body" id="menuBody"></div>
     <div class="menu-foot">
-      <button class="btn btn--ghost btn--sm" type="button" data-action="region-from-menu">Sri Lanka · LKR</button>
       <button class="btn btn--ghost btn--sm" type="button" data-action="salon">Private Circle</button>
     </div>
   </div>
