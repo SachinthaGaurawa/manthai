@@ -367,7 +367,7 @@
     var n = C.bagCount();
     var h = bagHead('Acquisition', true) + '<div class="checkout" id="checkout">' +
       '<div class="co-intro"><p class="co-total"><span>' + n + (n === 1 ? ' piece' : ' pieces') + '</span><output>' + P(C.bagTotalLKR()) + '</output></p>' +
-      (m ? '<p class="fine-print">Signed in to the Private Circle as ' + esc(m.email) + '.</p>' : '<p class="fine-print">Complete your acquisition as a guest &mdash; you may save your Private Circle profile in one click afterward.</p>') + '</div>';
+      (m ? '<p class="fine-print">Signed in to the Private Circle as ' + esc(m.email) + '.</p>' : '<p class="fine-print">Complete your acquisition as a guest. You may save your Private Circle profile in one click afterward.</p>') + '</div>';
 
     /* step 1: contact and delivery */
     h += '<section class="co-step' + (s1 ? ' is-open' : ' is-done') + '" aria-labelledby="coh1">' + stepHead(1, '<span id="coh1">Contact &amp; delivery</span>', !s1);

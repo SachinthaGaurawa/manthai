@@ -266,13 +266,13 @@
   /* ---------- The Unbounded Spiral Seal: the four meanings shown in the decoder (group ids in index.html) ---------- */
   M.SEAL_PARTS = [
     { key: 'core', title: 'The Origin Thread', group: 'spiral-core',
-      text: 'Rooted in the logarithmic curve mathematician Jakob Bernoulli named Spira Mirabilis \u2014 \u201cThough changed, I shall arise the same\u201d \u2014 this unbroken central coil embodies the single thread of craft discipline that anchors every MANTHAI silhouette, however boldly the house evolves.' },
+      text: 'Rooted in the logarithmic curve mathematician Jakob Bernoulli named Spira Mirabilis (\u201cThough changed, I shall arise the same\u201d), this unbroken central coil embodies the single thread of craft discipline that anchors every MANTHAI silhouette, however boldly the house evolves.' },
     { key: 'foundation', title: 'Chambers of Mastery', group: 'chambers-foundation',
-      text: 'Like nature\u2019s chambered shells that perfect each space before expanding into the next, these foundational arcs represent quiet atelier patience \u2014 textile curation, structural pattern work, and finishing built to outlive seasonal noise.' },
+      text: 'Like nature\u2019s chambered shells that perfect each space before expanding into the next, these foundational arcs represent quiet atelier patience: textile curation, structural pattern work, and finishing built to outlive seasonal noise.' },
     { key: 'crescendo', title: 'The Crescendo', group: 'chambers-crescendo',
-      text: 'Rising progressively wider in measured proportion, the upper chambers express sculptural volume, architectural pleating, and a house that refuses stagnation \u2014 outgrowing yesterday\u2019s ceiling with every collection.' },
+      text: 'Rising progressively wider in measured proportion, the upper chambers express sculptural volume, architectural pleating, and a house that refuses stagnation, outgrowing yesterday\u2019s ceiling with every collection.' },
     { key: 'arch', title: 'The Unbounded Horizon', group: 'unbounded-arch',
-      text: 'Deliberately open rather than closed into a circle, the sweeping outer arch flows like liquid silk in motion \u2014 declaring our founding conviction that true fashion has no cage, no border, and no final limit.' }
+      text: 'Deliberately open rather than closed into a circle, the sweeping outer arch flows like liquid silk in motion, declaring our founding conviction that true fashion has no cage, no border, and no final limit.' }
   ];
 
   /* ---------- Lookbook stills (campaign media slots) ---------- */
