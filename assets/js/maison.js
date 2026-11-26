@@ -1,5 +1,5 @@
 /* ==========================================================================
-   MANTHAI  |  maison: navigation, layers, hero film, Salon, Stylist, Passport
+   MANTHAI  |  maison: navigation, layers, hero film, Private Circle, Stylist, Passport
    Loaded last. Defines M.ui, which shop.js calls into.
    ========================================================================== */
 (function () {
@@ -30,13 +30,14 @@
   function run(action) {
     var i = action.indexOf(':'), k = i < 0 ? action : action.slice(0, i), v = i < 0 ? '' : action.slice(i + 1);
     if (k === 'filter') M.shop.setFilter(v, true);
+    else if (k === 'occasion') M.shop.setOccasion(v, true);
+    else if (k === 'seal') C.scrollTo('seal');
     else if (k === 'product') M.shop.openProduct(v);
     else if (k === 'stylist') ui.openStylist();
     else if (k === 'fitting') ui.openStylist(null, M.FITTING);
     else if (k === 'salon') ui.openSalon();
     else if (k === 'film') ui.openFilm();
     else if (k === 'anchor') C.scrollTo(v);
-    else if (k === 'cipher') { C.scrollTo('cipher'); setTimeout(function () { setCipher(true); }, C.reduced() ? 0 : 700); }
     else if (k === 'passport') ui.openPassport();
     else if (k === 'info') ui.openInfo(v);
     else if (k === 'search') ui.openSearch();
@@ -64,7 +65,9 @@
   /* ======================= atelier panel (desktop navigation) ======================= */
   var panel = $('#atelierPanel'), navList = $('#primaryNavList'), curKey = null, panelOpen = false, hideT, overT, leaveT;
   navList.innerHTML = M.NAV.map(function (n) {
-    return '<li><button class="nav-item" type="button" data-nav="' + n.key + '" aria-expanded="false" aria-controls="atelierPanel">' + esc(n.label) + '</button></li>';
+    return n.groups
+      ? '<li><button class="nav-item" type="button" data-nav="' + n.key + '" aria-expanded="false" aria-controls="atelierPanel">' + esc(n.label) + '</button></li>'
+      : '<li><button class="nav-item" type="button" data-go="' + esc(n.action) + '">' + esc(n.label) + '</button></li>';
   }).join('');
   function navItem(key) { return M.NAV.filter(function (n) { return n.key === key; })[0]; }
   function openPanel(key) {
@@ -72,7 +75,9 @@
     clearTimeout(hideT); clearTimeout(leaveT);
     if (key !== curKey) {
       $('#apTitle').textContent = item.title;
-      $('#apLinks').innerHTML = item.links.map(function (l) { return '<li><button type="button" data-go="' + esc(l.action) + '">' + esc(l.label) + '</button></li>'; }).join('');
+      $('#apLinks').innerHTML = item.groups.map(function (g) {
+        return '<li class="ap-group"><p class="ap-group__title">' + esc(g.title) + '</p><ul>' + g.links.map(function (l) { return '<li><button type="button" data-go="' + esc(l.action) + '">' + esc(l.label) + '</button></li>'; }).join('') + '</ul></li>';
+      }).join('');
       $('#apFigure').innerHTML = M.Art.panel(item) + '<figcaption>' + esc(item.image) + '</figcaption>';
     }
     curKey = key; panelOpen = true;
@@ -95,7 +100,8 @@
   });
   navList.addEventListener('pointerover', function (e) {
     if (e.pointerType !== 'mouse') return;
-    var b = e.target.closest('[data-nav]'); if (!b) return;
+    var b = e.target.closest('[data-nav]');
+    if (!b) { if (panelOpen && e.target.closest('.nav-item')) { clearTimeout(overT); overT = setTimeout(function () { closePanel(); }, 120); } return; }
     clearTimeout(overT); overT = setTimeout(function () { openPanel(b.getAttribute('data-nav')); }, 80);
   });
   navList.addEventListener('pointerout', function () { clearTimeout(overT); });
@@ -103,8 +109,8 @@
   header.addEventListener('pointerleave', function (e) { if (e.pointerType !== 'mouse' || !panelOpen) return; clearTimeout(leaveT); leaveT = setTimeout(function () { closePanel(); }, 240); });
   header.addEventListener('focusout', function (e) { if (panelOpen && e.relatedTarget && !header.contains(e.relatedTarget)) closePanel(); });
   navList.addEventListener('keydown', function (e) {
-    var b = e.target.closest('[data-nav]'); if (!b) return;
-    if (e.key === 'ArrowDown') { e.preventDefault(); openPanel(b.getAttribute('data-nav')); var f = $('#apLinks button'); if (f) f.focus(); }
+    var b = e.target.closest('.nav-item'); if (!b) return;
+    if (e.key === 'ArrowDown' && b.hasAttribute('data-nav')) { e.preventDefault(); openPanel(b.getAttribute('data-nav')); var f = $('#apLinks button'); if (f) f.focus(); }
     if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
       var all = $$('.nav-item'), i = all.indexOf(b) + (e.key === 'ArrowRight' ? 1 : -1); all[(i + all.length) % all.length].focus();
     }
@@ -119,11 +125,12 @@
 
   /* ======================= mobile menu ======================= */
   $('#menuBody').innerHTML = M.NAV.map(function (n, i) {
+    if (!n.groups) return '<div class="menu-group"><button type="button" class="menu-link" data-go="' + esc(n.action) + '">' + esc(n.label) + '</button></div>';
     return '<div class="menu-group"><button type="button" aria-expanded="false" aria-controls="mg-' + i + '">' + esc(n.label) + '</button><ul id="mg-' + i + '" hidden>' +
-      n.links.map(function (l) { return '<li><button type="button" data-go="' + esc(l.action) + '">' + esc(l.label) + '</button></li>'; }).join('') + '</ul></div>';
-  }).join('');
+      n.groups.map(function (g) { return '<li class="mg-title">' + esc(g.title) + '</li>' + g.links.map(function (l) { return '<li><button type="button" data-go="' + esc(l.action) + '">' + esc(l.label) + '</button></li>'; }).join(''); }).join('') + '</ul></div>';
+  }).join('') + '<div class="menu-group"><button type="button" class="menu-link" data-go="stylist">Speak with a Maison Stylist</button></div>';
   $('#menuBody').addEventListener('click', function (e) {
-    var b = e.target.closest('.menu-group > button'); if (!b) return;
+    var b = e.target.closest('.menu-group > button'); if (!b || b.hasAttribute('data-go')) return;
     var open = b.getAttribute('aria-expanded') === 'true';
     $$('.menu-group > button').forEach(function (x) { x.setAttribute('aria-expanded', 'false'); $('#' + x.getAttribute('aria-controls')).hidden = true; });
     if (!open) { b.setAttribute('aria-expanded', 'true'); $('#' + b.getAttribute('aria-controls')).hidden = false; }
@@ -166,10 +173,10 @@
   C.on('currency', function () { var rn = $('#regionNote'); if (rn) rn.textContent = regionNote(); var mb = $('[data-action="region-from-menu"]'); if (mb) mb.textContent = M.CURRENCIES[C.state.currency].label; });
 
   /* ======================= search ======================= */
-  var KIND_WORDS = { gown: 'dress gown couture evening velvet painted', mullet: 'gown evening rosette train silk', column: 'gown evening strapless bow satin pearl', lace: 'dress lace midi velvet garnet', silkmidi: 'dress midi silk twisted asymmetric', blazer: 'jacket tailoring blazer ruffle peplum', mini: 'dress mini scarf tailored', cape: 'cape lace sheer pearl' };
-  function hay(p) { return [p.name, p.short, p.summary, p.materials, p.collection, p.tabs.join(' '), KIND_WORDS[p.kind] || '', p.provenance, ''].join(' ').toLowerCase(); }
+  var KIND_WORDS = { shirt: 'shirt blouse top silk separates charmeuse', trouser: 'trouser trousers pants wide-leg silk separates', gown: 'dress gown couture evening velvet painted', mullet: 'gown evening rosette train silk', column: 'gown evening strapless bow satin pearl', lace: 'dress lace midi velvet garnet', silkmidi: 'dress midi silk twisted asymmetric', blazer: 'jacket tailoring blazer ruffle peplum', mini: 'dress mini scarf tailored', cape: 'cape lace sheer pearl' };
+  function hay(p) { return [p.name, p.short, p.summary, p.materials, p.collection, p.tabs.join(' '), (p.occasions || []).join(' '), KIND_WORDS[p.kind] || '', p.provenance, ''].join(' ').toLowerCase(); }
   var index = M.PRODUCTS.map(function (p) { return { p: p, h: hay(p) }; });
-  var SUGGEST = ['gown', 'velvet', 'lace', 'cape', 'silk'];
+  var SUGGEST = ['gown', 'silk', 'tailoring', 'lace', 'bridal'];
   function renderSearch(q) {
     var box = $('#searchResults'), terms = q.toLowerCase().split(/\s+/).filter(Boolean);
     if (!terms.length) {
@@ -294,31 +301,6 @@
     if (e.key === 'ArrowLeft') { e.preventDefault(); this.scrollBy({ left: -340, behavior: C.reduced() ? 'auto' : 'smooth' }); }
   });
 
-  /* ======================= hidden cipher ======================= */
-  var cipher = $('#cipher'), cbtn = $('#cipherBtn');
-  function setCipher(on) {
-    if (on === cipher.classList.contains('is-lit')) return;
-    cipher.classList.toggle('is-lit', on);
-    cbtn.setAttribute('aria-expanded', String(on));
-    cbtn.textContent = on ? 'Conceal the cipher' : 'Discover the Hidden Sun & Moon Cipher';
-    $('#cipherNotes').setAttribute('aria-hidden', String(!on)); $('#cipherVow').setAttribute('aria-hidden', String(!on));
-    $$('#cipherNotes li').forEach(function (li) { if (on) li.setAttribute('tabindex', '0'); else li.removeAttribute('tabindex'); });
-    if (!on) $$('.is-focus', cipher).forEach(function (el) { el.classList.remove('is-focus'); });
-    $('#cipherStatus').textContent = on ? 'Cipher revealed. The crossbars of the first A, the H and the second A are the Sun and Moon. Enduring as the Sun and Moon.' : 'Cipher hidden.';
-  }
-  cbtn.addEventListener('click', function () { setCipher(!cipher.classList.contains('is-lit')); });
-  $('#cipherMark').addEventListener('click', function (e) { if (e.target.closest('.cipher-accent')) setCipher(true); });
-  function barFocus(li, on) {
-    var bar = li.getAttribute('data-bar');
-    $$('.bar-' + bar, cipher).forEach(function (el) { el.classList.toggle('is-focus', on); });
-  }
-  $$('#cipherNotes li').forEach(function (li) {
-    li.addEventListener('mouseenter', function () { barFocus(li, true); });
-    li.addEventListener('mouseleave', function () { barFocus(li, false); });
-    li.addEventListener('focus', function () { barFocus(li, true); });
-    li.addEventListener('blur', function () { barFocus(li, false); });
-  });
-
   /* ======================= unboxing ritual ======================= */
   var box = $('#boxSvg'), boxBtn = $('#boxToggle');
   $('#partsList').innerHTML = M.RITUAL.map(function (r) {
@@ -334,7 +316,7 @@
     if (id !== 'box' && box.getAttribute('data-open') !== 'true') setBox(true);
   }
   $('#partsList').addEventListener('click', function (e) { var b = e.target.closest('[data-part]'); if (b) pickPart(b.getAttribute('data-part')); });
-  box.addEventListener('click', function (e) { var g = e.target.closest('[data-part]'); if (g && g !== box) pickPart({ ribbon: 'box', crest: 'box' }[g.getAttribute('data-part')] || g.getAttribute('data-part')); });
+  box.addEventListener('click', function (e) { var g = e.target.closest('[data-part]'); if (g && g !== box) pickPart({ seal: 'box' }[g.getAttribute('data-part')] || g.getAttribute('data-part')); });
   boxBtn.addEventListener('click', function () { setBox(box.getAttribute('data-open') !== 'true'); });
 
   /* ======================= info layer ======================= */
@@ -364,7 +346,8 @@
   var styView = 'form', styRef = null;
   function waLink(text) { return 'https://wa.me/' + M.CONFIG.whatsapp + '?text=' + encodeURIComponent(text); }
   function tomorrow() { var d = new Date(); d.setDate(d.getDate() + 1); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
-  var SLOTS = ['10:00', '12:00', '15:00', '17:00'], TOPICS = [M.FITTING, 'Sizing and fit', 'Choosing a piece', 'A gift or a commission', 'Delivery and duties', 'Care and repair'];
+  var SLOTS = ['10:00', '12:00', '15:00', '17:00'], TOPICS = [M.FITTING, 'Sizing and fit', 'Choosing a piece', 'Styling for an occasion', 'A gift', 'Delivery and exchanges', 'Care and repair'];
+  var FORMATS = ['Video styling appointment', 'In person at the Colombo atelier', 'WhatsApp call'];
   function renderStylist(pid, topic) {
     var p = pid && C.product(pid), s = C.state.stylist || {}, mem = C.state.member || {};
     if (topic) s = Object.assign({}, s, { topic: topic });
@@ -372,18 +355,19 @@
     var body;
     if (styView === 'done' && s.ref) {
       body = '<div class="confirm"><h3>Thank you, ' + esc(firstName(s.name)) + '.</h3><p class="order-ref" aria-label="Request reference">' + esc(s.ref) + '</p>' +
-        '<p>Your request for ' + esc(fmtDate(s.date)) + ' at ' + esc(s.time) + ' (Colombo time) is with the atelier. A stylist confirms the appointment by email within one working day.</p>' +
+        '<p>Your request for a ' + esc((s.format || FORMATS[0]).toLowerCase()) + ' on ' + esc(fmtDate(s.date)) + ' at ' + esc(s.time) + ' (Colombo time) is with the atelier. A stylist confirms the appointment by email within one working day.</p>' +
         '<p class="fine-print">Demonstration storefront: no email was sent.</p>' +
         '<div class="choices"><button class="btn btn--gold btn--block" type="button" data-ics>Add to calendar</button><a class="btn btn--ghost btn--block" href="' + waLink(msg) + '" target="_blank" rel="noopener">Message on WhatsApp</a></div>' +
         '<button class="link-btn" type="button" data-again>Request another time</button></div>';
     } else {
       body = '<form class="panel-body" id="stylistForm" novalidate>' +
-        '<p class="lede lede--dark">A private conversation with someone who knows the atelier. Ask about fit, a commission or anything you would ask in the Colombo salon.</p>' +
+        '<p class="lede lede--dark">A private conversation with someone who knows the atelier: fit, styling for an occasion, or anything you would ask in Colombo. A person answers, never a bot.</p>' +
         (p ? '<div class="notice"><strong>About:</strong> ' + esc(p.short) + '</div>' : '') +
         '<a class="btn btn--ghost btn--block" href="' + waLink(msg) + '" target="_blank" rel="noopener">Message on WhatsApp now</a>' +
         '<p class="sep">or book a time</p>' +
         fld('st-name', 'Full name', '<input id="st-name" name="name" type="text" autocomplete="name" value="' + esc(s.name || mem.name || '') + '">') +
         fld('st-email', 'Email', '<input id="st-email" name="email" type="email" autocomplete="email" inputmode="email" value="' + esc(s.email || mem.email || '') + '">') +
+        fld('st-format', 'Appointment', '<select id="st-format" name="format">' + FORMATS.map(function (t) { return '<option' + (s.format === t ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select>') +
         fld('st-topic', 'What would you like to discuss', '<select id="st-topic" name="topic">' + TOPICS.map(function (t) { return '<option' + (s.topic === t ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select>') +
         '<div class="row-2">' +
           fld('st-date', 'Preferred date', '<input id="st-date" name="date" type="date" min="' + tomorrow() + '" value="' + esc(s.date || '') + '">') +
@@ -415,7 +399,7 @@
     need('email', C.validEmail, 'Enter a valid email address, such as name@example.com.');
     need('date', function (v) { return !!v && v >= tomorrow(); }, 'Choose a date from tomorrow onwards.');
     if (bad) { bad.focus(); return; }
-    C.state.stylist = { ref: C.uid('STY'), name: f.elements.name.value.trim(), email: f.elements.email.value.trim(), topic: f.elements.topic.value, date: f.elements.date.value, time: f.elements.time.value, note: f.elements.note.value.trim(), at: new Date().toISOString() };
+    C.state.stylist = { ref: C.uid('STY'), name: f.elements.name.value.trim(), email: f.elements.email.value.trim(), format: f.elements.format.value, topic: f.elements.topic.value, date: f.elements.date.value, time: f.elements.time.value, note: f.elements.note.value.trim(), at: new Date().toISOString() };
     C.save(); styView = 'done'; renderStylist($('#stylistPanel').getAttribute('data-product')); $('#stylistPanel').scrollTop = 0;
   });
 
@@ -463,7 +447,7 @@
   $('#passportPanel').addEventListener('click', function (e) { if (e.target.closest('#scanBtn')) scan(); });
   C.on('close', function (d) { if (d.id === 'layerPassport') clearTimeout(scanT); });
 
-  /* ======================= Private Salon ======================= */
+  /* ======================= Private Circle ======================= */
   var salonView = 'in', salonEmail = '', pendingCb = null, salonMsg = '';
   var STEPS = ['Order confirmed', 'In the atelier', 'Dispatched', 'Delivered'];
   var MLAB = { chest: 'Bust', waist: 'Waist', hips: 'Hip', height: 'Height', heel: 'Heel height' };
@@ -479,77 +463,97 @@
     C.save(); C.emit('member');
     return isNew;
   }
-  function welcomeToast(isNew) { C.toast(isNew ? 'Your MANTHAI account has been created. Welcome to the Private Salon.' : 'Welcome back to the Private Salon.'); }
+  function welcomeToast(isNew) { C.toast(isNew ? 'Your Private Circle profile has been created. Welcome to the House.' : 'Welcome back to the Private Circle.'); }
   C.on('member', function () {
     var b = $('#salonBtn'), m = C.state.member;
     b.classList.toggle('is-member', !!m);
-    b.setAttribute('aria-label', m ? 'Private Salon, signed in as ' + m.name : 'Private Salon account');
+    b.setAttribute('aria-label', m ? 'Private Circle, signed in as ' + m.name : 'Private Circle account');
   });
   function gIcon() { return '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M12 12h8M20 12a8 8 0 01-2.4 5.7" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>'; }
   function renderSalon() {
     var m = C.state.member, h;
     if (m) h = salonDash(m);
     else if (salonView === 'sent' && fbReady()) {
-      h = head('salonTitle', 'Check your inbox', 'Close Private Salon') + '<div class="panel-body"><p>We have sent a private link to <strong>' + esc(salonEmail) + '</strong>. Open it on this device to enter your Private Salon.</p>' +
+      h = head('salonTitle', 'Check your inbox', 'Close Private Circle') + '<div class="panel-body"><p>We have sent a private link to <strong>' + esc(salonEmail) + '</strong>. Open it on this device to enter the Private Circle.</p>' +
         '<p class="fine-print">Nothing yet? Look in your spam or promotions folder. The link works once and expires soon.</p>' +
         '<button class="link-btn" type="button" data-back>Use a different email</button></div>';
     } else if (salonView === 'confirm') {
-      h = head('salonTitle', 'Confirm your email', 'Close Private Salon') + '<form class="panel-body" id="confirmForm" novalidate>' +
+      h = head('salonTitle', 'Confirm your email', 'Close Private Circle') + '<form class="panel-body" id="confirmForm" novalidate>' +
         '<p class="lede lede--dark">You opened your private link on a different device. Enter the email address it was sent to.</p>' +
         fld('c-email', 'Email', '<input id="c-email" name="email" type="email" autocomplete="email" inputmode="email">') +
-        '<button class="btn btn--gold btn--block" type="submit">Open my Private Salon</button></form>';
+        '<button class="btn btn--gold btn--block" type="submit">Open my Private Circle</button></form>';
     } else if (salonView === 'sent') {
-      h = head('salonTitle', 'Check your inbox', 'Close Private Salon') + '<div class="panel-body"><p>A private link would be sent to <strong>' + esc(salonEmail) + '</strong>.</p>' +
+      h = head('salonTitle', 'Check your inbox', 'Close Private Circle') + '<div class="panel-body"><p>A private link would be sent to <strong>' + esc(salonEmail) + '</strong>.</p>' +
         '<p class="notice"><strong>Demonstration.</strong> This storefront has no mail server, so no email is sent. Continue to see your Salon.</p>' +
-        '<button class="btn btn--gold btn--block" type="button" data-enter>Open my Private Salon</button><button class="link-btn" type="button" data-back>Use a different email</button></div>';
+        '<button class="btn btn--gold btn--block" type="button" data-enter>Open my Private Circle</button><button class="link-btn" type="button" data-back>Use a different email</button></div>';
     } else if (salonView === 'google') {
       h = M.CONFIG.googleClientId
-        ? head('salonTitle', 'Continue with Google', 'Close Private Salon') + '<div class="panel-body">' +
+        ? head('salonTitle', 'Continue with Google', 'Close Private Circle') + '<div class="panel-body">' +
           '<p class="lede lede--dark">Choose your Google account. If you are new to MANTHAI, your account is created for you.</p>' +
           '<div id="gsiSlot" class="gsi-slot" aria-live="polite"><p class="fine-print">Loading Google sign-in&hellip;</p></div>' +
           '<button class="link-btn" type="button" data-back>Use email instead</button></div>'
-        : head('salonTitle', 'Continue with Google', 'Close Private Salon') + '<form class="panel-body" id="googleForm" novalidate>' +
+        : head('salonTitle', 'Continue with Google', 'Close Private Circle') + '<form class="panel-body" id="googleForm" novalidate>' +
           '<p class="notice"><strong>Demonstration account chooser.</strong> Add a Google client ID in <code>assets/js/catalog.js</code> to use real Google sign-in.</p>' +
           fld('g-name', 'Name', '<input id="g-name" name="name" type="text" autocomplete="name">') +
           fld('g-email', 'Google email', '<input id="g-email" name="email" type="email" autocomplete="email" inputmode="email">') +
           '<button class="btn btn--gold btn--block" type="submit">Continue</button><button class="link-btn" type="button" data-back>Back</button></form>';
     } else {
-      h = head('salonTitle', 'The Private Salon', 'Close Private Salon') + '<div class="panel-body">' +
-        '<p class="lede lede--dark">A quiet room for people who have chosen the House. Follow your deliveries, hear about archive previews first and hold the passports of every piece you own.</p>' +
+      h = head('salonTitle', 'The Private Circle', 'Close Private Circle') + '<div class="panel-body">' +
+        '<p class="lede lede--dark">A private room for clients of the House: your wardrobe and its authenticity records, saved silhouettes, delivery addresses and your Maison Stylist, in one place.</p>' +
         (salonMsg ? '<p class="notice" role="alert">' + esc(salonMsg) + '</p>' : '') +
         '<button class="google-btn" type="button" data-google>' + gIcon() + ' Continue with Google</button>' +
         '<p class="sep">or by email</p>' +
         '<form id="salonForm" novalidate class="salon-form">' + fld('s-email', 'Email', '<input id="s-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="name@example.com">') +
         '<button class="btn btn--gold btn--block" type="submit">Send me a private link</button></form>' +
-        '<p class="fine-print">No password. Your details stay in this browser.</p></div>';
+        '<p class="fine-print">No password needed. You never need an account to acquire a piece.</p></div>';
     }
     $('#salonPanel').innerHTML = h;
     salonMsg = '';
     if (!m && salonView === 'google' && M.CONFIG.googleClientId) mountGoogle();
   }
   function salonDash(m) {
-    var notify = C.state.notify || {}, orders = C.state.orders;
+    var notify = C.state.notify || {}, orders = C.state.orders, wish = (C.state.wishlist || []).map(C.product).filter(Boolean);
     var items = []; orders.forEach(function (o) { o.items.forEach(function (it) { items.push(it); }); });
-    var low = M.PRODUCTS.filter(function (p) { return p.remaining > 0 && p.remaining <= 4; });
+    var addrs = (C.state.addresses || []).slice(0, 4);
+    var wardrobe = items.length ? '<div class="pass-list">' + items.map(function (it) {
+        return '<div class="pass-item"><span>' + esc(it.short) + ' <small>Size ' + esc(it.size) + ' · Verified · ' + esc(it.passport) + '</small></span><button class="link-btn" type="button" data-pass="' + esc(it.passport) + '">View record</button></div>';
+      }).join('') + '</div>'
+      : '<p>Pieces you acquire appear here with their verification serial.</p><button class="link-btn" type="button" data-pass-sample>See a sample authenticity record</button>';
     var oHtml = orders.length ? orders.map(function (o) {
       var st = Math.min(o.step || 0, 3);
       return '<div class="salon-order"><p><strong>' + esc(o.ref) + '</strong> · ' + esc(fmtDate(o.date)) + ' · ' + o.items.length + (o.items.length === 1 ? ' piece' : ' pieces') + ' · ' + esc(o.display) + '</p>' +
-        '<div class="track" aria-hidden="true">' + STEPS.map(function (s, i) { return '<i class="' + (i <= st ? 'on' : '') + '"></i>'; }).join('') + '</div><p class="fine-print">' + STEPS[st] + (o.country === 'Sri Lanka' ? '. White-glove courier.' : '. DHL Express, duties included.') + '</p></div>';
-    }).join('') : '<p>No orders yet. Pieces you reserve are tracked here.</p>';
-    var vHtml = items.length ? '<div class="pass-list">' + items.map(function (it) { return '<div class="pass-item"><span>' + esc(it.short) + '</span><button class="link-btn" type="button" data-pass="' + esc(it.passport) + '">View passport</button></div>'; }).join('') + '</div>'
-      : '<p>Passports appear here after your first order.</p><button class="link-btn" type="button" data-pass-sample>See a sample passport</button>';
-    var aHtml = '<p>Members may reserve the last pieces of an edition before they are shown elsewhere.</p>' +
-      (low.length ? '<div class="pass-list">' + low.map(function (p) { return '<div class="pass-item"><span>' + esc(p.short) + ' <small>(' + p.remaining + ' of ' + p.edition + ' remain)</small></span><button class="link-btn" type="button" data-product="' + p.id + '">View</button></div>'; }).join('') + '</div>' : '') +
-      '<label class="toggle-row"><span>Tell me about new archive previews</span><input type="checkbox" data-notify="archive"' + (notify.archive ? ' checked' : '') + '></label>' +
-      '<label class="toggle-row"><span>Tell me when a sold-out piece returns</span><input type="checkbox" data-notify="restock"' + (notify.restock ? ' checked' : '') + '></label>';
-    return head('salonTitle', 'Welcome, ' + esc(firstName(m.name)), 'Close Private Salon') + '<div class="panel-body salon-grid">' +
+        '<div class="track" aria-hidden="true">' + STEPS.map(function (s, i) { return '<i class="' + (i <= st ? 'on' : '') + '"></i>'; }).join('') + '</div><p class="fine-print">' + STEPS[st] + (o.when ? '. ' + esc(o.when) + '.' : '.') + '</p></div>';
+    }).join('') : '<p>No acquisitions yet.</p>';
+    var wHtml = wish.length ? '<div class="pass-list">' + wish.map(function (p) {
+        return '<div class="pass-item"><span>' + esc(p.short) + ' <small data-price="' + p.price + '">' + C.price(p.price) + '</small></span><span class="pass-item__ctl"><button class="link-btn" type="button" data-product="' + p.id + '">View</button><button class="link-btn" type="button" data-unwish="' + p.id + '">Remove</button></span></div>';
+      }).join('') + '</div>' : '<p>Save a silhouette from any piece and it waits for you here.</p>';
+    var fit = C.state.fitSize || '';
+    var fHtml = '<div class="field"><label for="fitSize">Your usual size</label><select id="fitSize" data-fit-size><option value="">Not set</option>' + M.SIZECHART.sizes.map(function (z) { return '<option' + (z === fit ? ' selected' : '') + '>' + z + '</option>'; }).join('') + '</select></div>' +
+      '<p class="fine-print">We preselect it on every piece. For the closest fit, book a private atelier fitting in Colombo.</p><button class="link-btn" type="button" data-fitting>Book a private atelier fitting</button>';
+    var sHtml = '<p>A named stylist in the Colombo atelier answers you personally, by WhatsApp or a video appointment.</p>' +
+      '<div class="salon-actions"><a class="btn btn--ghost btn--sm" href="https://wa.me/' + M.CONFIG.whatsapp + '?text=' + encodeURIComponent('Good day, I am a Private Circle client and would like to speak with my Maison Stylist.') + '" target="_blank" rel="noopener">Message on WhatsApp</a><button class="btn btn--ghost btn--sm" type="button" data-stylist-open>Book an appointment</button></div>';
+    var aHtml = addrs.length ? '<ul class="addr-list">' + addrs.map(function (a) { return '<li>' + esc(a) + '</li>'; }).join('') + '</ul>' : '<p>Your delivery address is saved from your first acquisition.</p>';
+    var pHtml = '<label class="toggle-row"><span>Invite me to private archive previews</span><input type="checkbox" data-notify="archive"' + (notify.archive ? ' checked' : '') + '></label>' +
+      '<label class="toggle-row"><span>Tell me when a sold-out size returns</span><input type="checkbox" data-notify="restock"' + (notify.restock ? ' checked' : '') + '></label>';
+    return head('salonTitle', 'Welcome, ' + esc(firstName(m.name)), 'Close Private Circle') + '<div class="panel-body salon-grid">' +
       '<div class="salon-id">' + (m.picture ? '<img src="' + esc(m.picture) + '" alt="" width="44" height="44" referrerpolicy="no-referrer">' : '<span class="salon-id__mono" aria-hidden="true">' + esc(firstName(m.name).charAt(0).toUpperCase()) + '</span>') +
-      '<p class="fine-print"><strong>' + esc(m.name) + '</strong><br>' + esc(m.email) + '<br>Account ' + esc(m.id || '') + ' · signed in with ' + (m.provider === 'google' ? 'Google' : 'a private link') + ' · member since ' + esc(fmtDate(m.since)) + '</p></div>' +
-      '<section class="salon-card"><h3>Orders and delivery</h3>' + oHtml + '</section>' +
-      '<section class="salon-card"><h3>NFC passport vault</h3>' + vHtml + '</section>' +
-      '<section class="salon-card"><h3>Archive previews</h3>' + aHtml + '</section>' +
+      '<p class="fine-print"><strong>' + esc(m.name) + '</strong><br>' + esc(m.email) + '<br>Private Circle ' + esc(m.id || '') + ' · signed in with ' + (m.provider === 'google' ? 'Google' : 'a private link') + ' · client since ' + esc(fmtDate(m.since)) + '</p></div>' +
+      '<section class="salon-card salon-card--wide"><h3>My wardrobe &amp; authenticity vault</h3>' + wardrobe + '</section>' +
+      '<section class="salon-card"><h3>Acquisitions and delivery</h3>' + oHtml + '</section>' +
+      '<section class="salon-card"><h3>Saved silhouettes</h3>' + wHtml + '</section>' +
+      '<section class="salon-card"><h3>Fit profile</h3>' + fHtml + '</section>' +
+      '<section class="salon-card"><h3>Your Maison Stylist</h3>' + sHtml + '</section>' +
+      '<section class="salon-card"><h3>Delivery addresses</h3>' + aHtml + '</section>' +
+      '<section class="salon-card"><h3>Preferences</h3>' + pHtml + '</section>' +
       '<button class="btn btn--ghost btn--block" type="button" data-signout>Sign out</button></div>';
   }
+  /* one-click activation from the order confirmation: a private sign-in link to the order email */
+  ui.sendCircleLink = function (email) {
+    salonEmail = email;
+    var l = $('#layerSalon');
+    if (fbReady()) { salonView = 'in'; renderSalon(); if (!l.open) C.open(l); fbSendLink(email); }
+    else { salonView = 'sent'; renderSalon(); if (!l.open) C.open(l); }
+  };
   ui.openSalon = function () { salonView = 'in'; renderSalon(); C.open($('#layerSalon')); if (fbReady()) fbLoad().catch(noop); };
   var salonPanel = $('#salonPanel');
   salonPanel.addEventListener('click', function (e) {
@@ -557,13 +561,16 @@
     if (e.target.closest('[data-google]')) { if (fbReady()) { pendingCb = null; fbGoogle(); } else ui.googleSignIn(null); return; }
     if (e.target.closest('[data-back]')) { salonView = 'in'; renderSalon(); return; }
     if (e.target.closest('[data-enter]')) { var nw = signIn({ email: salonEmail }, 'email'); renderSalon(); welcomeToast(nw); return; }
-    if (e.target.closest('[data-signout]')) { if (FB && C.state.member && C.state.member.fb) FB.A.signOut(FB.auth).catch(noop); C.state.member = null; C.save(); C.emit('member'); salonView = 'in'; renderSalon(); C.toast('You have left the Private Salon on this device.'); return; }
-    if (e.target.closest('[data-measure]')) { M.shop.openMeasure(function () { renderSalon(); }); return; }
+    if (e.target.closest('[data-signout]')) { if (FB && C.state.member && C.state.member.fb) FB.A.signOut(FB.auth).catch(noop); C.state.member = null; C.save(); C.emit('member'); salonView = 'in'; renderSalon(); C.toast('You have left the Private Circle on this device.'); return; }
+    if ((t = e.target.closest('[data-unwish]'))) { M.shop.toggleWish(t.getAttribute('data-unwish')); renderSalon(); return; }
+    if (e.target.closest('[data-stylist-open]')) { ui.openStylist(); return; }
+    if (e.target.closest('[data-fitting]')) { ui.openStylist(null, M.FITTING); return; }
     if ((t = e.target.closest('[data-pass]'))) { ui.openPassport(null, t.getAttribute('data-pass')); return; }
     if (e.target.closest('[data-pass-sample]')) { ui.openPassport(); return; }
     if ((t = e.target.closest('[data-product]'))) { var id = t.getAttribute('data-product'); C.close($('#layerSalon')); later(function () { M.shop.openProduct(id); }); }
   });
   salonPanel.addEventListener('change', function (e) {
+    if (e.target.hasAttribute && e.target.hasAttribute('data-fit-size')) { C.state.fitSize = e.target.value; C.save(); C.toast(e.target.value ? 'Size ' + e.target.value + ' will be preselected for you.' : 'Fit profile cleared.'); return; }
     var n = e.target.getAttribute && e.target.getAttribute('data-notify'); if (!n) return;
     C.state.notify = C.state.notify || {}; C.state.notify[n] = e.target.checked; C.save();
     C.toast(e.target.checked ? 'We will let you know.' : 'Notification switched off.');
@@ -751,47 +758,6 @@
   document.addEventListener('input', function (e) {
     var f = e.target.closest && e.target.closest('.field.has-error');
     if (f && e.target.matches('input, select, textarea')) C.setError(e.target, '');
-  });
-
-  /* ======================= Future Métiers and the Private Registry ======================= */
-  $('#metiersGrid').innerHTML = M.METIERS.map(function (m) {
-    var cta = m.action
-      ? '<button class="btn btn--gold" type="button" data-action="' + m.action + '">' + esc(m.cta) + '</button>'
-      : '<button class="btn btn--ghost" type="button" data-registry="' + esc(m.interest) + '">' + esc(m.cta) + '</button>';
-    return '<li class="metier' + (m.action ? ' is-now' : '') + '"><p class="metier__chapter">' + esc(m.chapter) + '</p><h3 class="metier__title">' + esc(m.title) + '</h3><p class="metier__sub">' + esc(m.sub) + '</p>' +
-      '<p class="metier__text">' + esc(m.text) + '</p><p class="metier__badge">' + esc(m.badge) + '</p>' + cta + '</li>';
-  }).join('');
-  var REG_CHAPTERS = M.METIERS.filter(function (m) { return m.interest; }).map(function (m) { return m.interest; });
-  var regDone = false;
-  function renderRegistry(interest) {
-    var reg = C.state.registry || {}, p;
-    if (regDone) {
-      p = '<div class="confirm"><h3>Thank you, ' + esc(firstName(reg.name)) + '.</h3><p>Your name has been inscribed in the MANTHAI Private Registry.</p>' +
-        '<p class="fine-print">Demonstration storefront: your entry is kept in this browser only and no message is sent.</p>' +
-        '<button class="btn btn--gold btn--block" type="button" data-close>Continue</button></div>';
-    } else {
-      p = '<form class="panel-body" id="registryForm" novalidate>' +
-        '<p class="lede lede--dark">Be among the first to see what the House builds next. Chapters are shown privately, in order, to those on the list.</p>' +
-        fld('rg-name', 'Name', '<input id="rg-name" name="name" type="text" autocomplete="name" value="' + esc(reg.name || (C.state.member && C.state.member.name) || '') + '">') +
-        fld('rg-contact', 'Email or WhatsApp', '<input id="rg-contact" name="contact" type="text" autocomplete="email" inputmode="email" value="' + esc(reg.contact || (C.state.member && C.state.member.email) || '') + '">') +
-        fld('rg-interest', 'Chapter of interest', '<select id="rg-interest" name="interest">' + REG_CHAPTERS.map(function (c) { return '<option' + (c === interest ? ' selected' : '') + '>' + esc(c) + '</option>'; }).join('') + '</select>') +
-        '<button class="btn btn--gold btn--block" type="submit">Inscribe my name</button></form>';
-    }
-    $('#registryPanel').innerHTML = head('registryTitle', 'The Private Registry', 'Close registry') + p;
-  }
-  ui.openRegistry = function (interest) { regDone = false; renderRegistry(interest || REG_CHAPTERS[0]); C.open($('#layerRegistry')); };
-  $('#registryPanel').addEventListener('submit', function (e) {
-    if (e.target.id !== 'registryForm') return; e.preventDefault();
-    var f = e.target, bad = null;
-    function need(n, ok, msg) { var i = f.elements[n]; if (!ok(i.value)) { C.setError(i, msg); bad = bad || i; } else C.setError(i, ''); }
-    need('name', function (v) { return v.trim().length > 1; }, 'Enter your name.');
-    need('contact', function (v) { return C.validEmail(v) || C.validPhone(v); }, 'Enter an email address or a WhatsApp number.');
-    if (bad) { bad.focus(); return; }
-    C.state.registry = { name: f.elements.name.value.trim(), contact: f.elements.contact.value.trim(), interest: f.elements.interest.value, at: new Date().toISOString() };
-    C.save(); regDone = true; renderRegistry(); $('#registryPanel').scrollTop = 0;
-  });
-  document.addEventListener('click', function (e) {
-    var r = e.target.closest('[data-registry]'); if (r) ui.openRegistry(r.getAttribute('data-registry'));
   });
 
   /* ======================= init ======================= */

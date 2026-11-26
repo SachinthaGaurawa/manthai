@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-label="MANTHAI Sovereign Meridian Seal">
+  <title>MANTHAI — Sovereign Meridian Seal</title>
+  <g id="manthai-sovereign-meridian-seal" fill="currentColor">
+    <path id="outer-arc-left" d="M 331.99,104.18 A 430,430 0 0,0 331.99,895.82 L 340.58,875.57 A 428.14,428.14 0 0,1 340.58,124.43 Z" />
+    <path id="outer-arc-right" d="M 668.01,104.18 A 430,430 0 0,1 668.01,895.82 L 659.42,875.57 A 428.14,428.14 0 0,0 659.42,124.43 Z" />
+    <path id="inner-arc-left" d="M 324.07,218.45 A 332,332 0 0,0 324.07,781.55 L 335.2,763.74 A 327.72,327.72 0 0,1 335.2,236.26 Z" />
+    <path id="inner-arc-right" d="M 675.93,218.45 A 332,332 0 0,1 675.93,781.55 L 664.8,763.74 A 327.72,327.72 0 0,0 664.8,236.26 Z" />
+    <path id="meridian-bridge-left" d="M 94,482 L 292,482 L 292,518 L 94,518 Z" />
+    <path id="meridian-bridge-right" d="M 708,482 L 906,482 L 906,518 L 708,518 Z" />
+    <path id="diamond-outer" fill-rule="evenodd" d="M 500,40 L 736,500 L 500,960 L 264,500 Z M 500,123.25 L 306.71,500 L 500,876.75 L 693.29,500 Z" />
+    <path id="diamond-inner" fill-rule="evenodd" d="M 500,210.88 L 648.33,500 L 500,789.12 L 351.67,500 Z M 500,267.83 L 380.89,500 L 500,732.17 L 619.11,500 Z" />
+    <path id="meridian-star" d="M 500,382 Q 517,483 574,500 Q 517,517 500,618 Q 483,517 426,500 Q 483,483 500,382 Z" />
+  </g>
+</svg>

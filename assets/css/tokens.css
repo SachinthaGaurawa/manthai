@@ -2,17 +2,27 @@
    MANTHAI  |  design tokens (WCAG 2.1 verified pairs from the Maison directive)
    ========================================================================== */
 :root {
-  /* Colour */
-  --obsidian-void: #0B0B0C;          /* primary dark editorial canvas, 17.75:1 with ivory */
-  --anuradhapura-charcoal: #151517;  /* elevated dark surfaces, drawers */
-  --alabaster-silk: #F6F3EC;         /* primary light gallery canvas, never #FFFFFF */
-  --mannar-pearl: #EAE4D7;           /* secondary warm surface, product frames */
-  --sovereign-gold: #C5A059;         /* hairlines, dark-mode icons, 8.01:1 on obsidian */
-  --solar-ochre: #7E5F20;            /* gold text on light surfaces only, 5.35:1 */
-  --ceylon-emerald: #0E3B2E;         /* heritage couture and fragrance accent */
-  --garnet-velvet: #4A121C;          /* evening couture accent */
-  --muted-stone: #A39E93;            /* secondary text on dark, 7.37:1 */
-  --graphite-ink: #4A4843;           /* secondary text on light, 8.24:1 */
+  /* Colour: the Sovereign palette (Phase 1 directive) */
+  --obsidian: #0B0B0C;    /* deep editorial dark scenes, preloader, ritual; 17.75:1 with alabaster */
+  --charcoal: #141416;    /* elevated dark drawers and panels */
+  --alabaster: #F6F3EC;   /* primary light gallery canvas, never #FFFFFF */
+  --pearl: #EAE4D7;       /* quiet secondary surface: editorial cards, size guide */
+  --gold: #C5A059;        /* 1px hairlines, emblem on dark, active states; 8.0:1 on obsidian */
+  --ochre: #7A5C20;       /* accessible gold for text and links on light; 5.6:1 on alabaster, 4.9:1 on pearl */
+  --ink: #141415;         /* primary text on light; 16.6:1 on alabaster */
+  --stone: #68645D;       /* secondary text on light; 5.3:1 on alabaster, 4.6:1 on pearl */
+  --mist: #A39E93;        /* secondary text on dark; 7.4:1 on obsidian */
+
+  /* legacy names kept as aliases so older rules resolve to the same palette */
+  --obsidian-void: var(--obsidian);
+  --anuradhapura-charcoal: var(--charcoal);
+  --alabaster-silk: var(--alabaster);
+  --mannar-pearl: var(--pearl);
+  --sovereign-gold: var(--gold);
+  --solar-ochre: var(--ochre);
+  --muted-stone: var(--mist);
+  --graphite-ink: var(--stone);
+  --ceylon-emerald: var(--charcoal);
 
   /* Semantic roles (dark is the default canvas; .on-light swaps them) */
   --bg: var(--obsidian-void);
@@ -28,15 +38,15 @@
   /* Type */
   --serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
   --sans: 'Tenor Sans', 'Gill Sans', 'Helvetica Neue', sans-serif;
-  --inscription: 'Cinzel', 'Trajan Pro', Georgia, serif;
+  --inscription: var(--sans);
 
-  --fs-hero: clamp(2.6rem, 1.2rem + 6.4vw, 7rem);
-  --fs-display: clamp(2.2rem, 1.4rem + 3.4vw, 4.4rem);
+  --fs-hero: clamp(2.75rem, 1.4rem + 5.4vw, 6.4rem);
+  --fs-display: clamp(2.5rem, 5.2vw, 5.2rem);
   --fs-title: clamp(1.45rem, 1.25rem + 0.7vw, 1.85rem);
   --fs-body: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
-  --fs-ui: clamp(0.72rem, 0.7rem + 0.08vw, 0.8rem);
+  --fs-ui: clamp(0.75rem, 0.72rem + 0.1vw, 0.8125rem);
   --fs-small: 0.8125rem;
-  --track-ui: 0.16em;
+  --track-ui: 0.08em;
 
   /* Space and rhythm */
   --gutter: clamp(20px, 4.4vw, 72px);
@@ -48,22 +58,25 @@
   --t-fast: 240ms;
   --t-mid: 480ms;
   --t-slow: 900ms;
+  --ease-curtain: cubic-bezier(0.76, 0, 0.24, 1);
 
   /* Layer scale */
   --z-header: 40;
   --z-panel: 45;
   --z-toast: 60;
+  --z-cursor: 70;
+  --z-intro: 90;
 }
 
 /* Light gallery canvas: swaps semantic roles so text and focus rings stay AA */
 .on-light {
   --bg: var(--alabaster-silk);
   --surface: var(--mannar-pearl);
-  --text: var(--obsidian-void);
-  --text-2: var(--graphite-ink);
+  --text: var(--ink);
+  --text-2: var(--stone);
   --accent: var(--sovereign-gold);
   --accent-text: var(--solar-ochre);
-  --hairline: rgba(126, 95, 32, 0.45);
-  --hairline-soft: rgba(126, 95, 32, 0.2);
+  --hairline: rgba(122, 92, 32, 0.45);
+  --hairline-soft: rgba(122, 92, 32, 0.2);
   --ring: var(--solar-ochre);
 }

@@ -18,7 +18,7 @@
   C.emit = function (ev, data) { (handlers[ev] || []).forEach(function (fn) { fn(data); }); };
 
   /* ---------- state (persisted in this browser only) ---------- */
-  var DEFAULTS = { currency: 'LKR', bag: [], member: null, accounts: {}, measurements: null, orders: [], notify: {}, stylist: null, registry: null };
+  var DEFAULTS = { currency: 'LKR', bag: [], member: null, accounts: {}, measurements: null, orders: [], notify: {}, stylist: null, wishlist: [], gift: { on: false, note: '' }, addresses: [], fitSize: '' };
   C.state = JSON.parse(JSON.stringify(DEFAULTS));
   try {
     var raw = window.localStorage.getItem(M.CONFIG.storageKey);
@@ -59,7 +59,7 @@
   C.available = function (p) { return Math.max(0, p.remaining - C.qtyOf(p.id)); };
   C.bagCount = function () { return C.state.bag.reduce(function (n, l) { return n + l.qty; }, 0); };
   C.bagTotalLKR = function () { return C.state.bag.reduce(function (n, l) { return n + l.qty * C.product(l.id).price; }, 0); };
-  C.lineKey = function (id, size, bespoke) { return id + '|' + (size || '-') + '|' + (bespoke ? 'b' : 's'); };
+  C.lineKey = function (id, size) { return id + '|' + (size || '-'); };
   C.updateBagUI = function () {
     var n = C.bagCount(), badge = C.$('#bagCount'), btn = C.$('#bagBtn');
     badge.textContent = n; badge.classList.toggle('has-items', n > 0);
@@ -112,9 +112,40 @@
   };
 
   /* ---------- scrolling ---------- */
+  /* Short hops glide (Lenis when it is running). Long jumps pass under a brief obsidian veil instead of a long scroll. */
   C.scrollTo = function (id) {
     var el = document.getElementById(id); if (!el) return;
-    el.scrollIntoView({ behavior: C.reduced() ? 'auto' : 'smooth', block: 'start' });
+    var off = -(parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h'), 10) || 72) + 1;
+    var top = el.getBoundingClientRect().top + window.scrollY + off, far = Math.abs(top - window.scrollY) > window.innerHeight * 1.6;
+    var veil = C.$('#veil');
+    function jump(smooth) {
+      if (C.lenis) C.lenis.scrollTo(top, { immediate: !smooth, duration: 1.1 });
+      else window.scrollTo({ top: top, behavior: smooth ? 'smooth' : 'auto' });
+    }
+    if (C.reduced()) { jump(false); return; }
+    if (far && veil) {
+      veil.classList.add('is-on');
+      setTimeout(function () { jump(false); requestAnimationFrame(function () { veil.classList.remove('is-on'); }); }, 260);
+    } else jump(true);
+  };
+
+  /* ---------- delivery dates: business days, Colombo calendar ---------- */
+  C.addBusinessDays = function (n, from) {
+    var d = new Date(from || Date.now());
+    while (n > 0) { d.setDate(d.getDate() + 1); var w = d.getDay(); if (w !== 0 && w !== 6) n -= 1; }
+    return d;
+  };
+  C.fmtDay = function (d) { return d.toLocaleDateString('en-GB', { weekday: 'long' }) + ', ' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); };
+  C.DELIVERY = {
+    colombo: { label: 'Complimentary White-Glove Colombo Delivery', days: 2 },
+    island: { label: 'Islandwide Insured Courier', days: 4 },
+    atelier: { label: 'Private Atelier Collection', days: 1, atelier: true },
+    intl: { label: 'International DHL Express, duties included', days: 5 }
+  };
+  C.deliveryWhen = function (key) {
+    var o = C.DELIVERY[key] || C.DELIVERY.colombo;
+    if (o.atelier) return 'Ready tomorrow, 2:00 PM';
+    return 'Arrives by ' + C.fmtDay(C.addBusinessDays(o.days));
   };
 
   /* ---------- plate html (real photo wins over placeholder) ---------- */

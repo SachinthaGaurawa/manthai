@@ -18,12 +18,15 @@ vercel.json           static deploy config, cache and security headers
 docs/                 Pass 1 design plan (tokens, spatial blueprint, self-review)
 assets/css/tokens.css exact design tokens from the brand directive
 assets/css/site.css   layout, components, motion, responsive rules
-assets/js/catalog.js  womenswear products, prices (LKR), navigation, size chart, lookbook, apparel ritual, Future Métiers, policy text, config
+assets/css/flagship.css curtain reveal, Seal decoder, pillars, cursor, verification card, PDP and checkout refinements
+assets/js/catalog.js  womenswear products, prices (LKR), navigation, size chart, lookbook, pillars, Seal anatomy, apparel ritual, policy text, config
 assets/js/art.js      atmospheric SVG placeholders for photography and film
 assets/js/core.js     state, currency, dialogs, toast, helpers
 assets/js/shop.js     collection, product drawer, loupe, size guide, bag, checkout
-assets/js/maison.js   navigation, search, hero film, Salon, Stylist, Passport
-assets/brand/         official wordmark, crest, favicon
+assets/js/maison.js   navigation, search, hero film, Private Circle, Stylist, Passport
+assets/js/flagship.js curtain reveal, Seal decoder, silk-curtain reveals, Lenis smooth scroll, custom cursor, card tilt
+assets/vendor/        Lenis 1.1.13 (MIT), self-hosted
+assets/brand/         official wordmark, Sovereign Meridian Seal master SVG, favicon (the Seal)
 assets/media/         drop-in folders for real photography and film
 ```
 
@@ -51,12 +54,12 @@ Each slot carries a `data-media-slot` attribute and the director's prompt in `da
 All in `assets/js/catalog.js` under `M.CONFIG`:
 
 - `whatsapp`: the Maison concierge number, international format, digits only. Set to +94 77 878 7998.
-- `googleClientId`: set. The Private Salon uses real Google sign-in on `https://manthai.vercel.app`. Add any other origin (for example a preview domain) in the Google Cloud console under Authorized JavaScript origins.
+- `googleClientId`: set. The Private Circle uses real Google sign-in on `https://manthai.vercel.app`. Add any other origin (for example a preview domain) in the Google Cloud console under Authorized JavaScript origins.
 - Currency rates in `M.CURRENCIES` are indicative. `FX.refresh()` in `core.js` is the place to connect a live rate feed.
 
 ## What is demonstration only
 
-This build has no server. Checkout creates an order reference in the browser and takes no payment. PayHere, LankaQR, bank transfer and card are presented as the intended methods. Salon sign-in, stylist requests and NFC passports run locally and send no email. Privacy and terms texts are marked as drafts. Wire these to real services before taking orders.
+This build has no server. Checkout creates an order reference in the browser and takes no payment. PayHere card, LankaQR and bank transfer are presented (there is no cash on delivery) as the intended methods. Private Circle sign-in, stylist requests and NFC passports run locally and send no email. Privacy and terms texts are marked as drafts. Wire these to real services before taking orders.
 
 ## Accessibility and motion
 
@@ -68,11 +71,11 @@ This build has no server. Checkout creates an order reference in the browser and
 
 ## Phase 1 scope
 
-The launch collection is 100% luxury womenswear: eight pieces across Atelier Couture, Evening & Gowns, Midi & Occasion and Tailoring & Capes. Menswear (Chapter II), leather goods and haute parfumerie (Chapter III) appear only in the "Future Métiers" section, which collects names in a Private Registry. There are no empty shop pages for them. When a chapter launches, add its products and a nav item in `catalog.js`.
+The launch collection is 100% luxury womenswear: ten pieces filtered as Evening Gowns, Midi & Cocktail, Tailoring, Silk Separates and Limited Atelier, and by occasion. Menswear tailoring and Maison objects appear only as one "Future Chapters" line in the footer. There are no empty shop pages for them. When a chapter launches, add its products and a nav item in `catalog.js`.
 
 ## Accounts and sign-in
 
-The Private Salon supports two modes.
+The Private Circle supports two modes.
 
 1. **Firebase Authentication (real accounts).** Paste the web app's `firebaseConfig` into `M.CONFIG.firebase` in `assets/js/catalog.js`. Google sign-in and email-link sign-in then run through Firebase, accounts appear in the Firebase console under Authentication, Users, and they follow a customer across devices. In the Firebase console switch on the Google and Email link providers and add `manthai.vercel.app` under Authentication, Settings, Authorized domains. The email wording can be edited under Authentication, Templates.
 2. **No Firebase config (fallback).** Google sign-in uses the Google Identity Services client ID, and accounts are kept in the visitor's browser only. The email-link form is a demonstration and sends nothing.
