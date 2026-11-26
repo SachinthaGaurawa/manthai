@@ -266,23 +266,88 @@
     if (e.key === 'ArrowLeft') { e.preventDefault(); this.scrollBy({ left: -340, behavior: C.reduced() ? 'auto' : 'smooth' }); }
   });
 
-  /* ======================= unboxing ritual ======================= */
-  var box = $('#boxSvg'), boxBtn = $('#boxToggle');
+  /* ======================= unboxing ritual: cinematic gatefold box ======================= */
+  var ub = $('#unbox'), ubCam = $('#unboxCam'), ubCap = $('#unboxCap'), boxBtn = $('#boxToggle'), playBtn = $('#boxPlay');
+  var SHOTS = {
+    closed:  ['I', 'Matte black linen, closed on hidden magnets.'],
+    open:    ['II', 'The doors part from the centre, lined in velvet garnet.'],
+    box:     ['III', 'The Unbounded Spiral Seal, in burnished gold foil.'],
+    garment: ['IV', 'Your piece, folded in acid-free tissue under a gold wafer.'],
+    label:   ['V', 'The woven silk-damask neck label.'],
+    card:    ['VI', 'The Verification Card. Select it to turn it over.']
+  };
+  var PART_SHOT = { box: 'box', garment: 'garment', label: 'label', card: 'card' };
+  var moveT = 0, capT = 0, playT = [], playing = false;
   $('#partsList').innerHTML = M.RITUAL.map(function (r) {
     return '<li><button class="part-btn" type="button" data-part="' + r.id + '" aria-pressed="false"><span class="part-btn__name">' + esc(r.name) + '</span><span class="part-btn__spec">' + esc(r.spec) + '</span></button></li>';
   }).join('');
   $('#partDetail').textContent = 'Select a part to see what it is made of.';
-  function setBox(open) { box.setAttribute('data-open', String(open)); boxBtn.setAttribute('aria-pressed', String(open)); boxBtn.textContent = open ? 'Close the box' : 'Open the box'; }
-  function pickPart(id) {
-    var r = M.RITUAL.filter(function (x) { return x.id === id; })[0]; if (!r) return;
-    box.setAttribute('data-part', id);
-    $$('.part-btn').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-part') === id)); });
-    $('#partDetail').textContent = r.name + '. ' + r.text;
-    if (id !== 'box' && box.getAttribute('data-open') !== 'true') setBox(true);
+  function shot(name, opts) {
+    opts = opts || {};
+    if (ub.getAttribute('data-state') === name && !opts.force) return;
+    ub.setAttribute('data-state', name);
+    if (name !== 'card') ub.setAttribute('data-flip', 'false');
+    var open = name !== 'closed' && name !== 'box';
+    boxBtn.setAttribute('aria-pressed', String(open)); boxBtn.textContent = open ? 'Close the box' : 'Open the box';
+    if (!C.reduced()) { ub.classList.add('is-moving'); clearTimeout(moveT); moveT = setTimeout(function () { ub.classList.remove('is-moving'); }, 1900); }
+    ubCap.classList.remove('is-on'); clearTimeout(capT);
+    capT = setTimeout(function () { var c = SHOTS[name]; ubCap.innerHTML = '<b>' + c[0] + '</b>' + esc(c[1]); ubCap.classList.add('is-on'); }, C.reduced() ? 0 : 700);
+    var part = { box: 'box', garment: 'garment', label: 'label', card: 'card' }[name];
+    $$('.part-btn').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-part') === part)); });
+    var r = part && M.RITUAL.filter(function (x) { return x.id === part; })[0];
+    $('#partDetail').textContent = r ? r.name + '. ' + r.text : 'Select a part to see what it is made of.';
   }
-  $('#partsList').addEventListener('click', function (e) { var b = e.target.closest('[data-part]'); if (b) pickPart(b.getAttribute('data-part')); });
-  box.addEventListener('click', function (e) { var g = e.target.closest('[data-part]'); if (g && g !== box) pickPart({ seal: 'box' }[g.getAttribute('data-part')] || g.getAttribute('data-part')); });
-  boxBtn.addEventListener('click', function () { setBox(box.getAttribute('data-open') !== 'true'); });
+  function stopPlay() { playing = false; playT.forEach(clearTimeout); playT = []; playBtn.textContent = 'Play the ritual'; }
+  function play() {
+    if (playing) { stopPlay(); return; }
+    playing = true; playBtn.textContent = 'Stop';
+    var seq = [['closed', 0], ['box', 1400], ['open', 4600], ['garment', 8000], ['label', 11400], ['card', 14800], ['flip', 18200], ['open', 21600]];
+    if (C.reduced()) seq = seq.map(function (s, i) { return [s[0], i * 2600]; });
+    seq.forEach(function (s, i) {
+      playT.push(setTimeout(function () {
+        if (s[0] === 'flip') ub.setAttribute('data-flip', 'true'); else shot(s[0], { force: i === 0 });
+        if (i === seq.length - 1) stopPlay();
+      }, s[1]));
+    });
+  }
+  /* on a phone the list sits below the box: bring the box back into view so the camera move is seen */
+  function frameBox() {
+    var r = ub.getBoundingClientRect(); if (r.top >= 56 && r.bottom <= window.innerHeight) return;
+    var top = r.top + window.scrollY - Math.max(64, (window.innerHeight - r.height) / 2);
+    if (C.lenis) C.lenis.scrollTo(top, { immediate: C.reduced(), duration: 1 }); else window.scrollTo({ top: top, behavior: C.reduced() ? 'auto' : 'smooth' });
+  }
+  $('#partsList').addEventListener('click', function (e) { var b = e.target.closest('[data-part]'); if (b) { stopPlay(); frameBox(); shot(PART_SHOT[b.getAttribute('data-part')]); } });
+  ub.addEventListener('click', function (e) {
+    stopPlay();
+    var h = e.target.closest('[data-hit]'), st = ub.getAttribute('data-state'), k = h && h.getAttribute('data-hit');
+    if (k === 'vcard' || k === 'card') { if (st === 'card') ub.setAttribute('data-flip', String(ub.getAttribute('data-flip') !== 'true')); else shot('card'); return; }
+    if (k === 'label' && st !== 'closed' && st !== 'box') { shot('label'); return; }
+    if (k === 'garment' && st !== 'closed' && st !== 'box') { shot('garment'); return; }
+    if (k === 'door' && st === 'box') { shot('open'); return; }
+    if (k === 'door' && st === 'closed') { shot('open'); return; }
+    if (st === 'closed') shot('open'); else if (st !== 'open') shot('open'); else shot('closed');
+  });
+  ub.setAttribute('tabindex', '0'); ub.setAttribute('role', 'img'); ub.setAttribute('aria-describedby', 'unboxDesc');
+  ub.setAttribute('aria-label', 'Interactive MANTHAI box. Use the list of parts or the buttons below to move the camera.');
+  ub.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); stopPlay(); shot(ub.getAttribute('data-state') === 'closed' ? 'open' : 'closed'); } });
+  boxBtn.addEventListener('click', function () { stopPlay(); var st = ub.getAttribute('data-state'); shot(st === 'closed' || st === 'box' ? 'open' : 'closed'); });
+  playBtn.addEventListener('click', function () { if (!playing) frameBox(); play(); });
+  /* a gentle hand-held drift that follows the pointer */
+  if (!C.reduced() && window.matchMedia('(hover: hover)').matches) {
+    ub.addEventListener('pointermove', function (e) {
+      var r = ub.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+      ubCam.style.setProperty('--px', (x * 6).toFixed(2) + 'deg'); ubCam.style.setProperty('--py', (y * -4).toFixed(2) + 'deg');
+    });
+    ub.addEventListener('pointerleave', function () { ubCam.style.setProperty('--px', '0deg'); ubCam.style.setProperty('--py', '0deg'); });
+  }
+  /* the first time the ritual comes into view, the doors open on their own */
+  shot('closed', { force: true });
+  if ('IntersectionObserver' in window) {
+    var ubIO = new IntersectionObserver(function (en) {
+      if (en[0].isIntersecting) { ubIO.disconnect(); setTimeout(function () { if (!playing && ub.getAttribute('data-state') === 'closed') shot('open'); }, C.reduced() ? 0 : 900); }
+    }, { threshold: .55 });
+    ubIO.observe(ub);
+  }
 
   /* ======================= info layer ======================= */
   ui.openInfo = function (key) {

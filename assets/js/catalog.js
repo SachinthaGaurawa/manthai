@@ -254,8 +254,8 @@
   /* ---------- Unboxing and authenticity ritual: four objects ----------
      parts = which drawn objects light up in the exploded view */
   M.RITUAL = [
-    { id: 'box',     name: 'Rigid Linen Apparel Box', spec: 'Matte black linen, 2.5 mm board', parts: ['box', 'seal'],
-      text: 'A rigid apparel box wrapped in matte black linen and stamped in burnished gold with the Unbounded Spiral Seal and the MANTHAI wordmark. It closes on hidden magnets, and it is made to be kept.' },
+    { id: 'box',     name: 'Rigid Linen Gatefold Box', spec: 'Matte black linen, 2.5 mm board, magnetic doors', parts: ['box', 'seal'],
+      text: 'A rigid apparel box wrapped in matte black linen. Two doors close on hidden magnets and open from the centre: the left carries the MANTHAI wordmark, the right the Unbounded Spiral Seal, both in burnished gold foil, and both are lined in velvet garnet. It is made to be kept.' },
     { id: 'garment', name: 'Couture Garment Bag and Tissue', spec: 'Breathable cotton, acid-free tissue', parts: ['garment'],
       text: 'Your piece rests inside a breathable cotton garment bag, folded in acid-free Alabaster tissue and sealed with a small gold wafer bearing the Seal. Keep the bag: it is how the piece should always be stored.' },
     { id: 'label',   name: 'Woven Silk-Damask Neck Label', spec: '65 mm × 24 mm', parts: ['label'],

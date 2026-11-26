@@ -37,10 +37,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Tenor+Sans&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/tokens.css?v=20261128a">
-<link rel="stylesheet" href="assets/css/site.css?v=20261128a">
-<link rel="stylesheet" href="assets/css/flagship.css?v=20261128a">
-<link rel="stylesheet" href="assets/css/gallery.css?v=20261128a">
+<link rel="stylesheet" href="assets/css/tokens.css?v=20261127b">
+<link rel="stylesheet" href="assets/css/site.css?v=20261127b">
+<link rel="stylesheet" href="assets/css/flagship.css?v=20261127b">
+<link rel="stylesheet" href="assets/css/gallery.css?v=20261127b">
+<link rel="stylesheet" href="assets/css/unbox.css?v=20261127b">
 </head>
 <body>
 
@@ -238,66 +239,79 @@
   <section class="ritual" id="ritual" data-view="maison" aria-labelledby="ritualTitle">
     <div class="wrap ritual__grid">
       <div class="ritual__stage">
-        <!-- MEDIA SLOT: unboxing film or still. Placeholder is a drawn, exploded view of the box. -->
-        <svg class="box" id="boxSvg" viewBox="0 0 520 520" role="img" aria-label="Exploded view of the MANTHAI rigid linen apparel box stamped with the Unbounded Spiral Seal, with garment tissue, story and verification cards and the woven silk-damask neck label" data-open="false">
-          <defs>
-            <linearGradient id="gBox" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1f1f22"/><stop offset="1" stop-color="#0d0d0e"/></linearGradient>
-            <linearGradient id="gLid" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#242427"/><stop offset="1" stop-color="#121214"/></linearGradient>
-                        <linearGradient id="gCard" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7F4EE"/><stop offset="1" stop-color="#e3dccb"/></linearGradient>
-            <radialGradient id="gGlow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#C9AF7E" stop-opacity=".28"/><stop offset="1" stop-color="#C9AF7E" stop-opacity="0"/></radialGradient>
-          </defs>
-          <ellipse cx="260" cy="470" rx="190" ry="22" fill="#000" opacity=".5"/>
-          <ellipse cx="260" cy="300" rx="250" ry="190" fill="url(#gGlow)"/>
-          <!-- box body -->
-          <g class="part part--box" data-part="box">
-            <path d="M110 300 L260 350 L410 300 L410 420 L260 470 L110 420 Z" fill="url(#gBox)" stroke="#C9AF7E" stroke-opacity=".35" stroke-width="1"/>
-            <path d="M110 300 L260 250 L410 300 L260 350 Z" fill="#0E0D0C" stroke="#C9AF7E" stroke-opacity=".35"/>
-          </g>
-          <!-- garment tissue with gold emblem wafer -->
-          <g class="part part--garment" data-part="garment">
-            <g class="lift lift--garment">
-              <path d="M156 302 L262 262 L364 302 L258 342 Z" fill="#efe9dc" stroke="#C9AF7E" stroke-opacity=".5"/>
-              <path d="M176 300 L262 270 L344 300" fill="none" stroke="#cfc6b3"/>
-              <path d="M214 316 L300 286" stroke="#cfc6b3" stroke-opacity=".7"/>
-              <circle cx="262" cy="304" r="10" fill="#C9AF7E"/>
-              <svg x="255" y="297" width="14" height="14" viewBox="0 0 1000 860" color="#0E0D0C"><use href="#spiral-seal"/></svg>
-            </g>
-          </g>
-          <!-- story card -->
-          <g class="part part--card" data-part="card">
-            <g class="lift lift--card">
-              <path d="M170 288 L310 244 L350 262 L210 308 Z" fill="url(#gCard)" stroke="#C9AF7E" stroke-width="1.4"/>
-              <path d="M200 286 L300 254" stroke="#7E5F20" stroke-width="1"/>
-              <path d="M205 296 L270 275" stroke="#7E5F20" stroke-opacity=".5" stroke-width="1"/>
-            </g>
-          </g>
-          <!-- woven damask label -->
-          <g class="part part--label" data-part="label">
-            <g class="lift lift--label">
-              <path d="M270 308 L350 282 L368 292 L288 320 Z" fill="#0E0D0C" stroke="#C9AF7E" stroke-opacity=".6"/>
-              <g transform="translate(284 306) rotate(-19) scale(.052)" color="#C9AF7E"><use href="#wm-paths" transform="translate(-122 -35)"/></g>
-            </g>
-          </g>
-          <!-- lid -->
-          <g class="lid" data-part="box">
-            <g class="part part--box">
-              <path d="M104 232 L260 284 L416 232 L416 270 L260 322 L104 270 Z" fill="url(#gLid)" stroke="#C9AF7E" stroke-opacity=".5"/>
-              <path d="M104 232 L260 180 L416 232 L260 284 Z" fill="#17171a" stroke="#C9AF7E" stroke-opacity=".5"/>
-            </g>
-            <!-- burnished gold Seal stamped on the linen lid -->
-            <g class="part part--seal" data-part="seal">
-              <g transform="translate(222 221) scale(.076 .0253)" color="#C9AF7E"><use href="#spiral-seal" width="1000" height="860"/></g>
-              <g transform="translate(232.4 253) scale(.07 .07) skewY(18.4)" color="#C9AF7E" opacity=".9"><use href="#wm-paths" transform="translate(-122 -35) scale(.5)"/></g>
-            </g>
-          </g>
-        </svg>
-        <button class="btn btn--ghost btn--sm" type="button" id="boxToggle" aria-pressed="false">Open the box</button>
+        <!-- Cinematic gatefold box. Pure CSS 3D: a rectangular rigid box with two magnetic doors that open from the centre.
+             States (data-state): closed, open, box, garment, label, card. maison.js drives the camera. -->
+        <div class="unbox" id="unbox" data-state="closed" data-flip="false">
+          <div class="unbox__view"><div class="unbox__cam" id="unboxCam">
+            <div class="ub ub-ground" aria-hidden="true"></div>
+            <!-- tray -->
+            <div class="ub ub-floor" aria-hidden="true"><span class="ub-floor__glow"></span></div>
+            <div class="ub ub-wall ub-wall--front" aria-hidden="true"></div>
+            <div class="ub ub-wall ub-wall--back" aria-hidden="true"></div>
+            <div class="ub ub-wall ub-wall--left" aria-hidden="true"></div>
+            <div class="ub ub-wall ub-wall--right" aria-hidden="true"></div>
+            <div class="ub ub-divider" aria-hidden="true"></div>
+            <!-- garment folded in silk, with the woven neck label -->
+            <div class="ub ub-garment" data-hit="garment">
+              <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <defs>
+                  <linearGradient id="ubSilk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F4EEE3"/><stop offset=".45" stop-color="#E7DDCC"/><stop offset=".62" stop-color="#F7F2E8"/><stop offset="1" stop-color="#DCD0BC"/></linearGradient>
+                </defs>
+                <rect x="6" y="6" width="88" height="90" fill="url(#ubSilk)"/>
+                <path d="M36 6 Q50 30 64 6" fill="#E2D7C4" stroke="#CFC2AB" stroke-width=".6"/>
+                <path d="M30 6 L36 6 Q50 34 64 6 L70 6" fill="none" stroke="#C9BBA2" stroke-width=".5"/>
+                <path d="M24 10 L24 96 M76 10 L76 96" stroke="#D3C6B0" stroke-width=".5" opacity=".8"/>
+                <path d="M6 60 L94 60" stroke="#D3C6B0" stroke-width=".45" opacity=".7"/>
+                <path d="M30 70 Q50 64 70 70" stroke="#E9E0D1" stroke-width="1.2" fill="none" opacity=".7"/>
+              </svg>
+              <span class="ub-label" data-hit="label" aria-hidden="true"><svg viewBox="120 30 796 120"><use href="#wm-paths"/></svg></span>
+            </div>
+            <!-- acid-free tissue, two leaves sealed with a gold wafer -->
+            <div class="ub ub-tissue ub-tissue--l" data-hit="garment" aria-hidden="true"></div>
+            <div class="ub ub-tissue ub-tissue--r" data-hit="garment" aria-hidden="true"><span class="ub-wafer"><svg viewBox="0 0 1000 860"><use href="#spiral-seal"/></svg></span></div>
+            <!-- story card and verification card in their own compartment -->
+            <div class="ub ub-story" data-hit="card" aria-hidden="true">
+              <span class="ub-story__k">The Story of Your Piece</span>
+              <span class="ub-story__l"></span><span class="ub-story__l"></span><span class="ub-story__l ub-story__l--s"></span>
+            </div>
+            <div class="ub ub-vcard" data-hit="vcard">
+              <div class="ub-vcard__face ub-vcard__face--front">
+                <svg class="ub-vcard__seal" viewBox="0 0 1000 860" aria-hidden="true"><use href="#spiral-seal"/></svg>
+                <svg class="ub-vcard__wm" viewBox="120 30 796 120" aria-hidden="true"><use href="#wm-paths"/></svg>
+                <span class="ub-vcard__k">Verification Card</span>
+                <span class="ub-vcard__n">Piece 03 of 12</span>
+                <span class="ub-vcard__sheen" aria-hidden="true"></span>
+              </div>
+              <div class="ub-vcard__face ub-vcard__face--back">
+                <span class="ub-vcard__qr" aria-hidden="true"></span>
+                <span class="ub-vcard__k">Authenticity record</span>
+                <span class="ub-vcard__n">MNT-A7Q2K9</span>
+                <span class="ub-vcard__t">Tap with a phone (NFC) or scan the code</span>
+              </div>
+            </div>
+            <!-- two magnetic doors, hinged at the outer edges -->
+            <div class="ub ub-door ub-door--l" data-hit="door">
+              <div class="ub-door__out"><svg class="ub-door__wm" viewBox="120 30 796 120" aria-hidden="true"><use href="#wm-paths"/></svg><span class="ub-door__sheen"></span></div>
+              <div class="ub-door__in"><span class="ub-door__slogan">Sculpted Beyond Boundaries.</span></div>
+            </div>
+            <div class="ub ub-door ub-door--r" data-hit="door">
+              <div class="ub-door__out"><svg class="ub-door__seal" viewBox="0 0 1000 860" aria-hidden="true"><use href="#spiral-seal"/></svg><span class="ub-door__sheen"></span></div>
+              <div class="ub-door__in"><svg class="ub-door__seal ub-door__seal--in" viewBox="0 0 1000 860" aria-hidden="true"><use href="#spiral-seal"/></svg></div>
+            </div>
+          </div></div>
+          <p class="unbox__cap" id="unboxCap" aria-live="polite"></p>
+          <p class="sr-only" id="unboxDesc">A rigid black linen apparel box with two magnetic doors stamped in gold with the MANTHAI wordmark and the Unbounded Spiral Seal. Inside: a garment folded in sealed tissue with its woven neck label, a Story Card and a Verification Card.</p>
+        </div>
+        <div class="unbox__ctl">
+          <button class="btn btn--gold btn--sm" type="button" id="boxPlay">Play the ritual</button>
+          <button class="btn btn--ghost btn--sm" type="button" id="boxToggle" aria-pressed="false">Open the box</button>
+        </div>
       </div>
 
       <div class="ritual__copy">
         <p class="eyebrow eyebrow--dark">Chapter II</p>
         <h2 class="display display--light" id="ritualTitle">The Unboxing &amp; Verification Ritual</h2>
-        <p class="lede lede--dark">What arrives at your door, in the order you meet it. Select an object to see what it is made of.</p>
+        <p class="lede lede--dark">What arrives at your door, in the order you meet it. Play the ritual, or select an object and the camera will take you to it.</p>
         <ol class="parts" id="partsList"></ol>
         <p class="parts__detail" id="partDetail" role="status" aria-live="polite"></p>
       </div>
@@ -444,12 +458,12 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="assets/js/catalog.js?v=20261128a"></script>
-<script src="assets/js/art.js?v=20261128a"></script>
-<script src="assets/js/core.js?v=20261128a"></script>
-<script src="assets/js/shop.js?v=20261128a"></script>
-<script src="assets/js/maison.js?v=20261128a"></script>
-<script src="assets/vendor/lenis.min.js?v=20261128a" defer></script>
-<script src="assets/js/flagship.js?v=20261128a" defer></script>
+<script src="assets/js/catalog.js?v=20261127b"></script>
+<script src="assets/js/art.js?v=20261127b"></script>
+<script src="assets/js/core.js?v=20261127b"></script>
+<script src="assets/js/shop.js?v=20261127b"></script>
+<script src="assets/js/maison.js?v=20261127b"></script>
+<script src="assets/vendor/lenis.min.js?v=20261127b" defer></script>
+<script src="assets/js/flagship.js?v=20261127b" defer></script>
 </body>
 </html>
