@@ -349,6 +349,36 @@
     ubIO.observe(ub);
   }
 
+  /* ======================= the hidden Sun & Moon cipher ======================= */
+  (function () {
+    var sec = $('#cipher'), btn = $('#cipherBtn'), status = $('#cipherStatus');
+    if (!sec || !btn) return;
+    function set(open) {
+      sec.setAttribute('data-state', open ? 'revealed' : 'concealed');
+      sec.removeAttribute('data-focus');
+      btn.setAttribute('aria-expanded', String(open));
+      btn.textContent = open ? 'Conceal the Cipher' : 'Discover the Hidden Sun & Moon Cipher';
+      status.textContent = open ? 'Cipher revealed. The first A: a rising solar horizon. The H: a lunar crescent cradling a solar orb. The second A: a waxing lunar crescent. Enduring as the Sun and Moon.' : 'Cipher concealed.';
+    }
+    btn.addEventListener('click', function () { set(sec.getAttribute('data-state') !== 'revealed'); });
+    /* hovering or focusing a caption (or its letter) lights that stroke alone */
+    function focusOn(k) { if (sec.getAttribute('data-state') !== 'revealed') return; if (k) sec.setAttribute('data-focus', k); else sec.removeAttribute('data-focus'); }
+    sec.addEventListener('pointerover', function (e) { var t = e.target.closest('[data-c]'); focusOn(t && t.getAttribute('data-c')); });
+    sec.addEventListener('pointerleave', function () { focusOn(null); });
+    sec.addEventListener('focusin', function (e) { var t = e.target.closest('.cipher__note'); focusOn(t && t.getAttribute('data-c')); });
+    sec.addEventListener('focusout', function () { focusOn(null); });
+    /* tapping a letter on the wordmark reveals the cipher */
+    $('.cipher__svg', sec).addEventListener('click', function () { if (sec.getAttribute('data-state') !== 'revealed') set(true); });
+    /* the first time the wordmark comes into view, one faint pass of light hints that something is hidden */
+    if ('IntersectionObserver' in window && !C.reduced()) {
+      var io = new IntersectionObserver(function (en) {
+        if (!en[0].isIntersecting) return; io.disconnect();
+        setTimeout(function () { if (sec.getAttribute('data-state') === 'concealed') { sec.classList.add('is-hint'); setTimeout(function () { sec.classList.remove('is-hint'); }, 2500); } }, 700);
+      }, { threshold: .5 });
+      io.observe($('.cipher__svg', sec));
+    }
+  })();
+
   /* ======================= info layer ======================= */
   ui.openInfo = function (key) {
     var i = M.INFO[key]; if (!i) return;
