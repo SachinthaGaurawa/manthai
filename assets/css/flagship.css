@@ -163,9 +163,11 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select { cursor
 .decoder__part { padding: 12px 16px; text-align: left; border: 1px solid rgba(247, 244, 238, 0.26); font: 400 13px/1 var(--sans); letter-spacing: .06em; color: var(--alabaster-silk); transition: border-color var(--t-fast), color var(--t-fast), background-color var(--t-fast); }
 .decoder__part:hover { border-color: var(--sovereign-gold); color: var(--sovereign-gold); }
 .decoder__part[aria-pressed='true'] { border-color: var(--sovereign-gold); background: rgba(201, 175, 126, 0.12); color: var(--sovereign-gold); }
-.decoder__meaning { min-height: 9.5em; padding-top: 22px; border-top: 1px solid var(--hairline-soft); display: grid; gap: 10px; align-content: start; }
+.decoder__meaning { padding-top: 22px; border-top: 1px solid var(--hairline-soft); display: grid; align-content: start; }
+.decoder__panel { grid-area: 1 / 1; display: grid; gap: 10px; align-content: start; opacity: 0; visibility: hidden; transform: translateY(6px); transition: opacity .45s ease, transform .55s var(--ease), visibility 0s linear .45s; }
+.decoder__panel.is-on { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
 .decoder__title { font: 400 1.5rem/1.2 var(--serif); color: var(--sovereign-gold); }
-.decoder__meaning p { color: #d6d1c5; max-width: 52ch; }
+.decoder__panel p { color: #d6d1c5; max-width: 52ch; }
 .decoder__hint { color: var(--muted-stone); font-style: italic; }
 .decoder__stage { display: grid; place-items: center; padding: clamp(8px, 3vw, 40px); }
 .decoder__seal { width: min(100%, 540px); aspect-ratio: 1000 / 860; color: var(--sovereign-gold); overflow: visible; }
