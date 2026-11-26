@@ -1,0 +1,142 @@
+/* =====================================================================
+   MANTHAI · Cinematic gatefold box (The Unboxing & Verification Ritual)
+   A rigid rectangular apparel box built in CSS 3D. Two magnetic doors
+   open from the centre; a camera rig glides between six shots:
+   closed · open · box (Seal) · garment · label · card (lift, zoom, flip).
+   Geometry: --W width, --D depth, --H wall height, all in container units.
+   ===================================================================== */
+.ritual__stage { width: 100%; }
+.unbox { position: relative; width: 100%; max-width: 640px; aspect-ratio: 1 / .84; container-type: inline-size; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.unbox__view { position: absolute; inset: 0; perspective: 210cqw; perspective-origin: 50% 30%; }
+.unbox__cam {
+  --W: 70cqw; --D: 47cqw; --H: 12cqw;
+  --s: .9; --rx: 58deg; --rz: -24deg; --tx: 0px; --ty: 0px; --tz: calc(var(--H) * -.5);
+  position: absolute; left: 50%; top: 52%; width: 0; height: 0; transform-style: preserve-3d;
+  transform: scale(var(--s)) rotateX(calc(var(--rx) + var(--py, 0deg))) rotateZ(calc(var(--rz) + var(--px, 0deg))) translate3d(var(--tx), var(--ty), var(--tz));
+  transition: transform 1.9s cubic-bezier(.62, 0, .18, 1);
+}
+/* camera shots */
+.unbox[data-state='open'] .unbox__cam { --s: .84; --rx: 50deg; --rz: -14deg; --ty: calc(var(--D) * -.02); --tz: calc(var(--H) * -.6); }
+/* Chromium clips a 3D layer that runs far off-screen, so every shot keeps the closed doors fully in frame */
+.unbox[data-state='box'] .unbox__cam { --s: 1.1; --rx: 34deg; --rz: -14deg; --tx: calc(var(--W) * -.16); --tz: calc(var(--H) * -1); }
+.unbox[data-state='garment'] .unbox__cam { --s: 1.55; --rx: 26deg; --rz: -4deg; --tx: calc(var(--W) * .19); --tz: calc(var(--H) * -.45); }
+.unbox[data-state='label'] .unbox__cam { --s: 3.1; --rx: 22deg; --rz: -2deg; --tx: calc(var(--W) * .19); --ty: calc(var(--D) * .35); --tz: calc(var(--H) * -.45); }
+.unbox[data-state='card'] .unbox__cam { --s: 1.3; --rx: 14deg; --rz: 0deg; --tz: calc(var(--H) * -2.2); }
+
+.ub { position: absolute; transform-style: preserve-3d; }
+
+/* ground shadow and tray */
+.ub-ground { left: calc(var(--W) * -.66); top: calc(var(--D) * -.7); width: calc(var(--W) * 1.32); height: calc(var(--D) * 1.4); transform: translateZ(-2px);
+  background: radial-gradient(closest-side, rgba(0, 0, 0, .78), rgba(0, 0, 0, .35) 60%, transparent); }
+.ub-floor { left: calc(var(--W) / -2); top: calc(var(--D) / -2); width: var(--W); height: var(--D);
+  background: radial-gradient(ellipse at 38% 42%, #1e1b18, #090807 70%); }
+.ub-floor__glow { position: absolute; inset: 0; background: radial-gradient(ellipse at 40% 45%, rgba(201, 175, 126, .34), transparent 62%); opacity: 0; transition: opacity 1.6s ease .4s; }
+.unbox:not([data-state='closed']):not([data-state='box']) .ub-floor__glow { opacity: 1; }
+
+/* linen walls */
+.ub-wall { background-color: #131211;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .07), transparent 55%), repeating-linear-gradient(0deg, rgba(255, 255, 255, .03) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(0, 0, 0, .25) 0 1px, transparent 1px 4px);
+  box-shadow: inset 0 0 0 1px rgba(201, 175, 126, .16); }
+.ub-wall--front { left: calc(var(--W) / -2); top: calc(var(--D) / 2 - var(--H)); width: var(--W); height: var(--H); transform-origin: 50% 100%; transform: rotateX(-90deg); }
+.ub-wall--back { left: calc(var(--W) / -2); top: calc(var(--D) / -2); width: var(--W); height: var(--H); transform-origin: 50% 0; transform: rotateX(90deg); }
+.ub-wall--left { left: calc(var(--W) / -2); top: calc(var(--D) / -2); width: var(--H); height: var(--D); transform-origin: 0 50%; transform: rotateY(-90deg); }
+.ub-wall--right { left: calc(var(--W) / 2 - var(--H)); top: calc(var(--D) / -2); width: var(--H); height: var(--D); transform-origin: 100% 50%; transform: rotateY(90deg); }
+.ub-divider { left: calc(var(--W) * .105); top: calc(var(--D) * -.46); width: calc(var(--H) * .7); height: calc(var(--D) * .92); transform-origin: 0 50%; transform: rotateY(-90deg); background: #0d0c0b; box-shadow: inset 0 0 0 1px rgba(201, 175, 126, .12); }
+
+/* garment and woven label */
+.ub-garment { left: calc(var(--W) * -.46); top: calc(var(--D) * -.42); width: calc(var(--W) * .54); height: calc(var(--D) * .84); transform: translateZ(calc(var(--H) * .42)); box-shadow: 0 0 0 1px rgba(201, 175, 126, .2); }
+.ub-garment svg { display: block; width: 100%; height: 100%; }
+.ub-label { position: absolute; left: 41%; top: 9%; width: 18%; height: 6.5%; background: #0E0D0C; color: #C9AF7E; display: grid; place-items: center; box-shadow: 0 0 0 .5px rgba(201, 175, 126, .5); transition: box-shadow 1s ease .8s; }
+.ub-label svg { width: 80%; height: 70%; }
+.unbox[data-state='label'] .ub-label { box-shadow: 0 0 0 .5px #C9AF7E, 0 0 6px 1px rgba(201, 175, 126, .6); }
+
+/* tissue leaves */
+.ub-tissue { top: calc(var(--D) * -.42); width: calc(var(--W) * .27); height: calc(var(--D) * .84);
+  background-color: rgba(244, 240, 231, .93);
+  background-image: linear-gradient(160deg, rgba(255, 255, 255, .5), transparent 40%, rgba(0, 0, 0, .05) 80%), repeating-linear-gradient(115deg, rgba(0, 0, 0, .03) 0 2px, transparent 2px 8px), repeating-linear-gradient(28deg, rgba(0, 0, 0, .02) 0 1px, transparent 1px 11px);
+  transition: transform 1.5s cubic-bezier(.6, 0, .2, 1), opacity .9s ease; }
+.ub-tissue--l { left: calc(var(--W) * -.46); transform-origin: 0 50%; transform: translateZ(calc(var(--H) * .47)) rotateY(var(--tl, 0deg)); }
+.ub-tissue--r { left: calc(var(--W) * -.19); transform-origin: 100% 50%; transform: translateZ(calc(var(--H) * .48)) rotateY(var(--tr, 0deg)); transition-delay: .12s; }
+/* the tissue leaves fold outward and dissolve, leaving the garment clear */
+.unbox:is([data-state='garment'], [data-state='label']) .ub-tissue--l { --tl: -150deg; opacity: 0; transition-delay: 0s, .75s; }
+.unbox:is([data-state='garment'], [data-state='label']) .ub-tissue--r { --tr: 150deg; opacity: 0; transition-delay: .12s, .85s; }
+.ub-wafer { position: absolute; left: 0; top: 50%; width: calc(var(--W) * .075); aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #E9D7AE, #C9AF7E 45%, #8E7444); display: grid; place-items: center; color: #3a2d17; box-shadow: 0 1px 2px rgba(0, 0, 0, .35); }
+.ub-wafer svg { width: 66%; }
+
+/* story card */
+.ub-story { left: calc(var(--W) * .155); top: calc(var(--D) * -.29); width: calc(var(--W) * .28); height: calc(var(--D) * .62); transform: translateZ(calc(var(--H) * .34)) rotateZ(-2deg);
+  background: linear-gradient(170deg, #F7F4EE, #E6DDCC); box-shadow: 0 0 0 1px rgba(117, 90, 42, .35); padding: 12% 10%; display: flex; flex-direction: column; gap: 7%; }
+.ub-story__k { font: italic 300 calc(var(--W) * .021)/1.2 var(--serif); color: #4C1722; }
+.ub-story__l { display: block; height: 1px; background: rgba(117, 90, 42, .45); }
+.ub-story__l--s { width: 60%; }
+
+/* verification card: lifts out, turns to camera, flips */
+.ub-vcard { left: calc(var(--W) * .17); top: calc(var(--D) * -.02); width: calc(var(--W) * .26); height: calc(var(--W) * .164);
+  transform: translateZ(calc(var(--H) * .42)) rotateZ(3deg);
+  transition: transform 1.9s cubic-bezier(.62, 0, .18, 1); }
+.unbox[data-state='card'] .ub-vcard { transform: translate3d(calc(var(--W) * -.3), calc(var(--D) * -.062), calc(var(--H) * 2.2)) rotateX(-14deg) scale(2.1); }
+.unbox[data-state='card'][data-flip='true'] .ub-vcard { transform: translate3d(calc(var(--W) * -.3), calc(var(--D) * -.062), calc(var(--H) * 2.2)) rotateX(-14deg) scale(2.1) rotateY(180deg); transition-duration: 1.2s; }
+.ub-vcard__face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; border-radius: calc(var(--W) * .006);
+  background: linear-gradient(140deg, #1b1916, #0B0A09 70%); box-shadow: 0 0 0 .5px rgba(201, 175, 126, .55); color: #C9AF7E; }
+.ub-vcard__face--back { transform: rotateY(180deg); }
+.ub-vcard__seal { position: absolute; left: 7%; top: 12%; width: 17%; }
+.ub-vcard__wm { position: absolute; right: 7%; top: 15%; width: 40%; color: #F7F4EE; }
+.ub-vcard__k { position: absolute; left: 7%; bottom: 30%; font: 400 calc(var(--W) * .0105)/1 var(--sans); letter-spacing: .2em; color: #ACA498; }
+.ub-vcard__n { position: absolute; left: 7%; bottom: 12%; font: italic 400 calc(var(--W) * .02)/1 var(--serif); color: #F7F4EE; }
+.ub-vcard__face--back .ub-vcard__k { bottom: auto; top: 16%; }
+.ub-vcard__face--back .ub-vcard__n { bottom: auto; top: 34%; font-style: normal; font-family: var(--sans); font-size: calc(var(--W) * .014); letter-spacing: .16em; color: #C9AF7E; }
+.ub-vcard__t { position: absolute; left: 7%; bottom: 12%; width: 52%; font: italic 300 calc(var(--W) * .013)/1.25 var(--serif); color: #ACA498; }
+.ub-vcard__qr { position: absolute; right: 8%; top: 50%; width: 26%; aspect-ratio: 1; transform: translateY(-50%); background:
+  conic-gradient(from 0deg at 50% 50%, transparent 0 0) , repeating-linear-gradient(0deg, #C9AF7E 0 2px, transparent 2px 4px), repeating-linear-gradient(90deg, #0B0A09 0 3px, transparent 3px 5px); box-shadow: 0 0 0 1px #C9AF7E; opacity: .85; }
+.ub-vcard__sheen { position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255, 238, 200, .28) 48%, transparent 64%); background-size: 260% 100%; background-position: 130% 0; }
+.unbox[data-state='card'] .ub-vcard__sheen { animation: ubSheen 2.4s ease 1.6s 1 both; }
+
+/* the two magnetic doors */
+.ub-door { top: calc(var(--D) / -2); height: var(--D); transition: transform 1.7s cubic-bezier(.66, 0, .2, 1); }
+.ub-door--l { left: calc(var(--W) / -2); width: calc(var(--W) * .6); transform-origin: 0 50%; transform: translateZ(var(--H)) rotateY(var(--dl, 0deg)); }
+.ub-door--r { left: calc(var(--W) * .1); width: calc(var(--W) * .4); transform-origin: 100% 50%; transform: translateZ(var(--H)) rotateY(var(--dr, 0deg)); transition-delay: .16s; }
+.unbox:is([data-state='open'], [data-state='garment'], [data-state='label'], [data-state='card']) .ub-door--l { --dl: -112deg; }
+.unbox:is([data-state='open'], [data-state='garment'], [data-state='label'], [data-state='card']) .ub-door--r { --dr: 112deg; }
+.ub-door__out, .ub-door__in { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; display: grid; place-items: center; }
+.ub-door__out { transform: translateZ(1px); background-color: #151413;
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, .07), transparent 55%), repeating-linear-gradient(0deg, rgba(255, 255, 255, .028) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(0, 0, 0, .22) 0 1px, transparent 1px 4px);
+  box-shadow: inset 0 0 0 1px rgba(201, 175, 126, .28); }
+.ub-door__in { transform: rotateY(180deg) translateZ(1px); background: radial-gradient(ellipse at 50% 40%, #5a1d29, #3a1019 75%); box-shadow: inset 0 0 0 1px rgba(201, 175, 126, .3); }
+.ub-door__wm { width: 62%; color: #C9AF7E; }
+.ub-door__seal { width: 46%; color: #C9AF7E; }
+.ub-door__seal--in { width: 26%; color: rgba(247, 244, 238, .75); }
+.ub-door__slogan { font: italic 300 calc(var(--W) * .028)/1.2 var(--serif); color: #F7F4EE; opacity: .9; text-align: center; padding: 0 10%; }
+.ub-door__sheen { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 32%, rgba(255, 236, 196, .16) 50%, transparent 68%); background-size: 260% 100%; background-position: 130% 0; animation: ubSheen 7s ease-in-out infinite; }
+.ub-door--r .ub-door__sheen { animation-delay: .5s; }
+.unbox[data-state='box'] .ub-door__sheen { animation-duration: 3.2s; }
+@keyframes ubSheen { 0%, 55% { background-position: 130% 0; } 100% { background-position: -30% 0; } }
+
+/* film framing: letterbox bars while the camera travels, and a caption */
+.unbox::before, .unbox::after { content: ''; position: absolute; left: 0; right: 0; height: 0; background: var(--obsidian-void, #0E0D0C); z-index: 3; transition: height .8s cubic-bezier(.6, 0, .2, 1); pointer-events: none; }
+.unbox::before { top: 0; } .unbox::after { bottom: 0; }
+.unbox.is-moving::before, .unbox.is-moving::after { height: 7%; }
+.unbox__cap { position: absolute; left: 0; right: 0; bottom: 3%; z-index: 4; margin: 0; text-align: center; font: italic 300 clamp(.8rem, 3.4cqw, 1.2rem)/1.3 var(--serif); color: #d6d1c5; opacity: 0; transform: translateY(6px); transition: opacity .9s ease, transform .9s ease; pointer-events: none; padding: 0 16px; }
+.unbox__cap.is-on { opacity: 1; transform: none; }
+.unbox__cap b { font: 400 11px/1 var(--sans); letter-spacing: .2em; color: #C9AF7E; margin-right: 10px; font-style: normal; }
+.unbox__cap { bottom: 2%; }
+@container (max-width: 480px) { .unbox__cap b { display: none; } }
+.unbox__ctl { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.unbox__ctl .btn[aria-pressed='true'] { border-color: #C9AF7E; }
+.unbox:focus-visible { outline: 1px solid #C9AF7E; outline-offset: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .unbox__cam, .ub-door, .ub-tissue, .ub-vcard, .ub-floor__glow, .unbox::before, .unbox::after, .unbox__cap { transition-duration: .01s !important; transition-delay: 0s !important; }
+  .ub-door__sheen, .ub-vcard__sheen { animation: none !important; }
+}
+
+/* Interior pieces are hidden once the doors have closed, so no browser can sort them above a closed door.
+   They reappear the moment the doors start to open. */
+.ub-garment, .ub-tissue, .ub-story, .ub-vcard, .ub-divider { visibility: visible; }
+.unbox:is([data-state='closed'], [data-state='box']) :is(.ub-garment, .ub-tissue, .ub-story, .ub-vcard, .ub-divider) { visibility: hidden; transition-property: transform, visibility; transition-duration: 1.5s, 0s; transition-delay: 0s, 1.85s; }
+
+/* the ritual stacks on tablets and phones: the box first, full width, then the list of objects */
+@media (max-width: 899px) {
+  .ritual__grid { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+  .unbox { max-width: none; }
+}
