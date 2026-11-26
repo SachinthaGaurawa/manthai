@@ -423,6 +423,7 @@
       '<div class="panel-body"><p class="lede lede--dark">Every MANTHAI piece carries an NFC tag in its label. Hold a phone to it and the piece proves where and how it was made.</p>' +
       '<div class="phone" id="phone"><div class="nfc">' + NFC + '</div><p id="phoneMsg" class="fine-print">Hold your phone near the woven label.</p>' +
       '<div class="passport" id="passportOut" hidden aria-live="polite">' +
+        '<svg class="seal-mark seal-mark--record" viewBox="0 0 1000 860" aria-hidden="true"><use href="#spiral-seal"/></svg>' +
         '<span class="verified"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>Authenticated by the House</span>' +
         '<dl><div><dt>Piece</dt><dd>' + esc(p.name) + '</dd></div>' +
         '<div><dt>Edition</dt><dd>' + (p.edition ? 'Piece ' + pad(n) + ' of ' + p.edition : 'Atelier series') + '</dd></div>' +

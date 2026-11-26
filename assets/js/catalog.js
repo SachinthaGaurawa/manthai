@@ -263,16 +263,16 @@
     { title: 'Hand-Finished Wearable Art', text: 'Painted, beaded and scalloped by hand in numbered atelier editions.', product: 'alstroemeria-gown', action: 'filter:Limited Atelier', link: 'Explore limited editions' }
   ];
 
-  /* ---------- The Sovereign Meridian Seal: the four meanings shown in the decoder ---------- */
+  /* ---------- The Unbounded Spiral Seal: the four meanings shown in the decoder (group ids in index.html) ---------- */
   M.SEAL_PARTS = [
-    { key: 'arcs', title: 'The Unbounded Drape', paths: ['outer-arc-left', 'outer-arc-right', 'inner-arc-left', 'inner-arc-right'],
-      text: 'Open at the crown and base rather than closed inside a circle, our twin tapered arcs embody fluid silk movement and fashion liberated from conventional limits.' },
-    { key: 'diamonds', title: 'The Atelier Needle', paths: ['diamond-outer', 'diamond-inner'],
-      text: 'Rising sharply through the open arcs, the nested vertical diamond represents sculptural tailoring precision, the couturier\u2019s needle apex, and enduring structural poise.' },
-    { key: 'bridges', title: 'Warp & Weft', paths: ['meridian-bridge-left', 'meridian-bridge-right'],
-      text: 'The horizontal meridian axis unites fluid artistry with architectural discipline \u2014 mirroring the crossing of warp and weft at the foundation of every fine textile.' },
-    { key: 'star', title: 'The Meridian Star', paths: ['meridian-star'],
-      text: 'Anchored at the exact intersection of every line, our four-pointed star marks all four global directions and serves as our north star of timeless taste.' }
+    { key: 'core', title: 'The Origin Thread', group: 'spiral-core',
+      text: 'Rooted in the logarithmic curve mathematician Jakob Bernoulli named Spira Mirabilis \u2014 \u201cThough changed, I shall arise the same\u201d \u2014 this unbroken central coil embodies the single thread of craft discipline that anchors every MANTHAI silhouette, however boldly the house evolves.' },
+    { key: 'foundation', title: 'Chambers of Mastery', group: 'chambers-foundation',
+      text: 'Like nature\u2019s chambered shells that perfect each space before expanding into the next, these foundational arcs represent quiet atelier patience \u2014 textile curation, structural pattern work, and finishing built to outlive seasonal noise.' },
+    { key: 'crescendo', title: 'The Crescendo', group: 'chambers-crescendo',
+      text: 'Rising progressively wider in measured proportion, the upper chambers express sculptural volume, architectural pleating, and a house that refuses stagnation \u2014 outgrowing yesterday\u2019s ceiling with every collection.' },
+    { key: 'arch', title: 'The Unbounded Horizon', group: 'unbounded-arch',
+      text: 'Deliberately open rather than closed into a circle, the sweeping outer arch flows like liquid silk in motion \u2014 declaring our founding conviction that true fashion has no cage, no border, and no final limit.' }
   ];
 
   /* ---------- Lookbook stills (campaign media slots) ---------- */
@@ -295,7 +295,7 @@
      parts = which drawn objects light up in the exploded view */
   M.RITUAL = [
     { id: 'box',     name: 'Rigid Linen Apparel Box', spec: 'Matte black linen, 2.5 mm board', parts: ['box', 'seal'],
-      text: 'A rigid apparel box wrapped in matte black linen and stamped in burnished gold with the Sovereign Meridian Seal and the MANTHAI wordmark. It closes on hidden magnets, and it is made to be kept.' },
+      text: 'A rigid apparel box wrapped in matte black linen and stamped in burnished gold with the Unbounded Spiral Seal and the MANTHAI wordmark. It closes on hidden magnets, and it is made to be kept.' },
     { id: 'garment', name: 'Couture Garment Bag and Tissue', spec: 'Breathable cotton, acid-free tissue', parts: ['garment'],
       text: 'Your piece rests inside a breathable cotton garment bag, folded in acid-free Alabaster tissue and sealed with a small gold wafer bearing the Seal. Keep the bag: it is how the piece should always be stored.' },
     { id: 'label',   name: 'Woven Silk-Damask Neck Label', spec: '65 mm × 24 mm', parts: ['label'],

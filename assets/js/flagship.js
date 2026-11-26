@@ -1,5 +1,5 @@
 /* ==========================================================================
-   MANTHAI  |  flagship: curtain reveal, Sovereign Meridian Seal decoder,
+   MANTHAI  |  flagship: curtain reveal, Unbounded Spiral Seal decoder,
    editorial pillars, silk-curtain image reveals, smooth scroll, cursor,
    verification card tilt. Loaded with defer, after the core scripts.
    ========================================================================== */
@@ -56,7 +56,7 @@
   $$('.look__frame').forEach(function (f) { f.classList.add('reveal'); f.setAttribute('data-cursor', 'View'); });
   observeReveals();
 
-  /* ---------------- Sovereign Meridian Seal decoder ---------------- */
+  /* ---------------- Unbounded Spiral Seal decoder ---------------- */
   var stage = $('#decoderStage'), partsBox = $('#decoderParts'), meaning = $('#decoderMeaning');
   if (stage && partsBox) {
     var current = null;
