@@ -139,7 +139,7 @@
         '<div class="pdp__acc">' +
           '<details><summary>Fabric &amp; atelier craft</summary><p>' + esc(p.story) + '</p><p><b>Materials.</b> ' + esc(p.materials) + '</p><p><b>Provenance.</b> ' + esc(p.provenance) + '.</p></details>' +
           '<details><summary>Garment care</summary><p>' + esc(p.care) + '</p><ul class="care-list">' + M.CARE.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul></details>' +
-          '<details><summary>Packaging &amp; verification card</summary><p>Your piece arrives in a rigid black linen box stamped with the Sovereign Meridian Seal, folded in acid-free tissue inside a cotton garment bag. A Story Card and a micro-foil Verification Card with your edition number travel with it; tap the card or scan its code to open the authenticity record.</p><button class="link-btn" type="button" data-passport="' + p.id + '">Open a sample record</button></details>' +
+          '<details><summary>Packaging &amp; verification card</summary><p>Your piece arrives in a rigid black linen box stamped with the Unbounded Spiral Seal, folded in acid-free tissue inside a cotton garment bag. A Story Card and a micro-foil Verification Card with your edition number travel with it; tap the card or scan its code to open the authenticity record.</p><button class="link-btn" type="button" data-passport="' + p.id + '">Open a sample record</button></details>' +
         '</div>' +
         (pairs.length ? '<section class="pairing" aria-labelledby="pairTitle"><h3 id="pairTitle">Complete the silhouette</h3><div class="pairing__list">' + pairs.map(function (q) {
           return '<button class="pair" type="button" data-pair="' + q.id + '"><span class="pair__plate">' + C.plateHTML(q, 'form') + '</span><span class="pair__name">' + esc(q.short) + '</span><span class="pair__price">' + P(q.price) + '</span></button>';
@@ -429,7 +429,7 @@
       : o.method === 'lankaqr' ? '<p class="notice"><strong>LankaQR.</strong> In the live store, a LankaQR code appears here to scan with your banking app.</p>'
       : '<p class="notice"><strong>Card payment.</strong> In the live store, you complete payment on PayHere’s secure page and return here.</p>';
     panel.innerHTML = bagHead() +
-      '<div class="confirm"><h3>Thank you, ' + esc(first) + '.</h3><p class="order-ref" aria-label="Order reference">' + esc(o.ref) + '</p>' +
+      '<div class="confirm"><svg class="seal-mark seal-mark--record" viewBox="0 0 1000 860" aria-hidden="true"><use href="#spiral-seal"/></svg><h3>Thank you, ' + esc(first) + '.</h3><p class="order-ref" aria-label="Order reference">' + esc(o.ref) + '</p>' +
       '<p><b>' + esc(C.DELIVERY[o.ship].label) + '</b><br>' + esc(o.when) + '</p>' + payNote +
       (o.gift ? '<p class="fine-print">Prepared as a gift, with your note written by hand on the card.</p>' : '') +
       '<div><p class="search-hint">Authenticity records</p><div class="pass-list">' + o.items.map(function (it) { return '<div class="pass-item"><span>' + esc(it.short) + ' · ' + esc(it.size) + '</span><button class="link-btn" type="button" data-passport-open="' + esc(it.passport) + '">View record</button></div>'; }).join('') + '</div></div>' +

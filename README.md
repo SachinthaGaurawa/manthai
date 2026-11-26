@@ -26,7 +26,7 @@ assets/js/shop.js     collection, product drawer, loupe, size guide, bag, checko
 assets/js/maison.js   navigation, search, hero film, Private Circle, Stylist, Passport
 assets/js/flagship.js curtain reveal, Seal decoder, silk-curtain reveals, Lenis smooth scroll, custom cursor, card tilt
 assets/vendor/        Lenis 1.1.13 (MIT), self-hosted
-assets/brand/         official wordmark, Sovereign Meridian Seal master SVG, favicon (the Seal)
+assets/brand/         official wordmark, Unbounded Spiral Seal master SVG, favicon (the Seal)
 assets/media/         drop-in folders for real photography and film
 ```
 
