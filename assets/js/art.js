@@ -52,6 +52,25 @@
   }
 
   var forms = {
+    /* Meridian Silk Charmeuse Column Shirt */
+    shirt: function (id, p, r) {
+      var s = '<defs>' + grad(id + 'c', '#efe2c6', '#a8916a', { x1: 0, y1: 0, x2: 1, y2: 1 }) + grad(id + 'h', '#fff6e2', '#cdb78e') + '</defs>';
+      s += '<path d="M150 96 L104 140 L70 330 L104 338 L134 196 Z M250 96 L296 140 L330 330 L296 338 L266 196 Z" fill="url(#' + id + 'c)" stroke="#8f7a55" stroke-opacity=".45"/>';
+      s += '<path d="M150 96 L200 84 L250 96 L270 196 L282 430 L118 430 L130 196 Z" fill="url(#' + id + 'c)"/>';
+      s += '<path d="M176 88 L200 124 L224 88 L212 80 L200 96 L188 80 Z" fill="url(#' + id + 'h)" stroke="' + G + '" stroke-opacity=".55"/>';
+      s += '<path d="M200 124 L200 430" stroke="#8f7a55" stroke-opacity=".45"/><path d="M150 200 C170 280 160 360 150 430 M250 200 C232 280 242 360 252 430" stroke="#fff6e2" stroke-opacity=".45" stroke-width="5" fill="none"/>';
+      s += '<path d="M70 330 L104 338 L102 350 L68 342 Z M330 330 L296 338 L298 350 L332 342 Z" fill="#fff6e2" opacity=".7"/>';
+      return s;
+    },
+    /* Mantai Wide-Leg Liquid Silk Trouser */
+    trouser: function (id, p, r) {
+      var s = '<defs>' + grad(id + 't', '#3a3a40', '#08080a', { x1: 0, y1: 0, x2: 1, y2: 1 }) + '</defs>';
+      s += '<path d="M138 70 L262 70 L266 110 L134 110 Z" fill="#1c1c20" stroke="' + G + '" stroke-opacity=".5"/>';
+      s += '<path d="M134 110 L266 110 L330 484 L212 484 L200 230 L188 484 L70 484 Z" fill="url(#' + id + 't)"/>';
+      s += '<path d="M170 110 C176 220 150 360 120 484 M230 110 C224 220 250 360 280 484" stroke="#5a5a62" stroke-opacity=".6" stroke-width="2" fill="none"/>';
+      s += '<path d="M100 300 C110 380 96 440 84 484 M300 300 C292 380 306 440 316 484" stroke="#d8d2c4" stroke-opacity=".12" stroke-width="6" fill="none"/>';
+      return s;
+    },
     /* Alstroemeria Hand-Painted Velvet Couture Gown */
     gown: function (id, p, r) {
       var s = '<defs>' + grad(id + 'v', '#8a2236', '#2a070c') + grad(id + 'v2', '#5d1524', '#1b0508', { x1: 1, y1: 0, x2: 0, y2: 1 }) + '</defs>';
@@ -163,6 +182,15 @@
   }
 
   var details = {
+    shirt: function (id) {
+      var s = satin(id, '#efe2c6', '#b59d74', '#fff8e8');
+      for (var i = 0; i < 4; i++) s += '<circle cx="200" cy="' + (110 + i * 90) + '" r="9" fill="#f6efe2" stroke="' + G + '" stroke-opacity=".7"/>';
+      return s + '<path d="M200 0 L200 500" stroke="#8f7a55" stroke-opacity=".5" stroke-width="2"/>';
+    },
+    trouser: function (id) {
+      var s = satin(id, '#2c2c31', '#09090b', '#4a4a52');
+      return s + '<path d="M150 0 C160 160 140 330 120 500 M250 0 C240 160 262 330 282 500" stroke="#000" stroke-opacity=".45" stroke-width="6" fill="none"/>';
+    },
     gown: function (id, p, r) {
       var s = '<defs>' + grad(id + 'v', '#8a2236', '#240709', { x1: 0, y1: 0, x2: 1, y2: 1 }) + '</defs><rect width="400" height="500" fill="url(#' + id + 'v)"/>';
       for (var i = 0; i < 26; i++) { var y = r() * 520; s += '<path d="M-20 ' + y.toFixed(0) + ' C120 ' + (y - 40 + r() * 80).toFixed(0) + ' 260 ' + (y + 30).toFixed(0) + ' 430 ' + (y - 20 + r() * 40).toFixed(0) + '" stroke="#b8344c" stroke-opacity=".12" stroke-width="' + (1 + r() * 3).toFixed(1) + '" fill="none"/>'; }
@@ -214,6 +242,8 @@
   };
 
   var fineLayer = {
+    shirt: function (id) { return '<pattern id="' + id + 'f" width="5" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(80)"><path d="M0 0 L0 12" stroke="#fff" stroke-opacity=".3" stroke-width=".8"/></pattern>'; },
+    trouser: function (id) { return '<pattern id="' + id + 'f" width="4" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(75)"><path d="M0 0 L0 12" stroke="#b3b6c2" stroke-opacity=".2" stroke-width=".8"/></pattern>'; },
     gown: function (id) { return '<pattern id="' + id + 'f" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(25)"><path d="M0 0 L0 9" stroke="#e98aa0" stroke-opacity=".28" stroke-width=".8"/><path d="M4.5 0 L4.5 9" stroke="#000" stroke-opacity=".22" stroke-width=".8"/></pattern>'; },
     lace: function (id) { return '<pattern id="' + id + 'f" width="5" height="5" patternUnits="userSpaceOnUse"><circle cx="2.5" cy="2.5" r=".7" fill="' + G2 + '" opacity=".55"/></pattern>'; },
     mullet: function (id) { return '<pattern id="' + id + 'f" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(30)"><path d="M0 0 L0 6" stroke="#fff" stroke-opacity=".35" stroke-width=".8"/></pattern>'; },
@@ -259,10 +289,6 @@
 
   /* ---------------- navigation panel and lookbook scenes ---------------- */
   function panel(item) {
-    if (item.kind === 'crest') {
-      var id = 'c' + (++n) + '_';
-      return wrap('<defs>' + grad(id, '#1c1c1f', '#0b0b0c') + beam(id + 'b', .16) + '</defs><rect width="400" height="500" fill="url(#' + id + ')"/><polygon points="0,0 220,0 400,300 400,500" fill="url(#' + id + 'b)"/><g color="' + G + '" transform="translate(112 112) scale(.095)"><use href="#crest-path"/></g>', item.image);
-    }
     var prod = M.PRODUCTS.filter(function (x) { return item.product ? x.id === item.product : x.kind === item.kind; })[0];
     return plate(prod, item.view || 'form');
   }
