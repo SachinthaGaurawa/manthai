@@ -196,7 +196,7 @@
   M.NAV = [
     { key: 'new', label: 'New Arrivals', action: 'filter:All' },
     { key: 'collections', label: 'Collections', title: 'Ladies ready-to-wear, cut in the Colombo atelier.',
-      product: 'aurelia-gown', image: 'Aurelia Silk-Velvet Gown',
+      product: 'aurelia-gown', image: 'Aurelia, Meridian and Alabaster', src: 'assets/media/editorial/temp/collections-panel.webp', /* TEMPORARY reference photos */
       groups: [
         { title: 'Categories', links: [
           { label: 'Evening & Gala Gowns', action: 'filter:Evening Gowns' },

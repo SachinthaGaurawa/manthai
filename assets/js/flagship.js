@@ -60,7 +60,7 @@
     }).join('');
   }
   var mp = $('#maisonPlate');
-  if (mp) mp.innerHTML = '<span class="maison__plate-inner reveal">' + M.Art.look(M.LOOKBOOK.filter(function (l) { return l.id === 'atelier'; })[0]) + '</span><figcaption>In the Colombo atelier.</figcaption>';
+  if (mp) mp.innerHTML = '<span class="maison__plate-inner reveal">' + '<img src="assets/media/editorial/temp/maison-atelier.webp" alt="A hand-embroidered bodice on the stand in the atelier" loading="lazy" decoding="async">' + '</span><figcaption>In the Colombo atelier.</figcaption>';
 
   /* ---------------- silk-curtain reveals ---------------- */
   function observeReveals() {
