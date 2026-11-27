@@ -55,12 +55,12 @@
     pl.innerHTML = M.PILLARS.map(function (x, i) {
       var p = C.product(x.product);
       return '<article class="pillar pillar--' + (i + 1) + '">' +
-        '<button class="pillar__frame reveal" type="button" data-go="' + esc(x.action) + '" data-cursor="Explore" aria-label="' + esc(x.link) + '">' + C.plateHTML(p, i === 1 ? 'form' : 'move') + '</button>' +
+        '<button class="pillar__frame reveal" type="button" data-go="' + esc(x.action) + '" data-cursor="Explore" aria-label="' + esc(x.link) + '">' + C.plateHTML(p, 'form') + '</button>' +
         '<div class="pillar__copy"><h3 class="pillar__title">' + esc(x.title) + '</h3><p>' + esc(x.text) + '</p><button class="link-btn" type="button" data-go="' + esc(x.action) + '">' + esc(x.link) + '</button></div></article>';
     }).join('');
   }
   var mp = $('#maisonPlate');
-  if (mp) mp.innerHTML = '<span class="maison__plate-inner reveal">' + M.Art.look(M.LOOKBOOK.filter(function (l) { return l.id === 'atelier'; })[0]) + '</span><figcaption>In the Colombo atelier.</figcaption>';
+  if (mp) mp.innerHTML = '<span class="maison__plate-inner reveal">' + '<img src="assets/media/editorial/temp/maison-atelier.webp" alt="A hand-embroidered bodice on the stand in the atelier" loading="lazy" decoding="async">' + '</span><figcaption>In the Colombo atelier.</figcaption>';
 
   /* ---------------- silk-curtain reveals ---------------- */
   function observeReveals() {

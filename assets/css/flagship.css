@@ -108,12 +108,12 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select { cursor
 /* ---------------- pillars: 60/40 editorial ---------------- */
 .pillars { background: var(--bg); color: var(--text); padding: var(--section) 0 calc(var(--section) * .6); }
 .pillars__list { display: grid; gap: clamp(72px, 10vw, 160px); }
-.pillar { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: clamp(32px, 6vw, 112px); align-items: end; }
-.pillar--2 { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
+.pillar { display: grid; grid-template-columns: minmax(0, 520px) minmax(0, 1fr); gap: clamp(32px, 7vw, 140px); align-items: end; }
+.pillar--2 { grid-template-columns: minmax(0, 1fr) minmax(0, 520px); }
 .pillar--2 .pillar__frame { order: 2; }
 .pillar--2 .pillar__copy { order: 1; justify-self: end; }
-.pillar__frame { display: block; width: 100%; aspect-ratio: 5 / 4; overflow: hidden; background: var(--mannar-pearl); }
-.pillar--2 .pillar__frame { aspect-ratio: 1 / 1; }
+.pillar__frame { display: block; width: 100%; aspect-ratio: 4 / 5; overflow: hidden; background: var(--mannar-pearl); }
+/* the whole piece is shown: the editorial frames are portrait, like the photographs */
 .pillar__frame svg, .pillar__frame img { width: 100%; height: 100%; display: block; object-fit: cover; }
 .pillar__frame:hover svg { transform: scale(1.03); }
 .pillar__copy { display: grid; gap: 20px; max-width: 40ch; padding-bottom: clamp(8px, 3vw, 48px); justify-items: start; }

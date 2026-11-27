@@ -79,7 +79,7 @@
       $('#apLinks').innerHTML = item.groups.map(function (g) {
         return '<li class="ap-group"><p class="ap-group__title">' + esc(g.title) + '</p><ul>' + g.links.map(function (l) { return '<li><button type="button" data-go="' + esc(l.action) + '">' + esc(l.label) + '</button></li>'; }).join('') + '</ul></li>';
       }).join('');
-      $('#apFigure').innerHTML = M.Art.panel(item) + '<figcaption>' + esc(item.image) + '</figcaption>';
+      $('#apFigure').innerHTML = (item.src ? '<img src="' + esc(item.src) + '" alt="' + esc(item.image) + '" decoding="async">' : M.Art.panel(item)) + '<figcaption>' + esc(item.image) + '</figcaption>';
     }
     curKey = key; panelOpen = true;
     $$('.nav-item').forEach(function (b) { b.setAttribute('aria-expanded', String(b.getAttribute('data-nav') === key)); });

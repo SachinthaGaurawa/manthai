@@ -196,7 +196,7 @@
   M.NAV = [
     { key: 'new', label: 'New Arrivals', action: 'filter:All' },
     { key: 'collections', label: 'Collections', title: 'Ladies ready-to-wear, cut in the Colombo atelier.',
-      product: 'aurelia-gown', image: 'Aurelia Silk-Velvet Gown',
+      product: 'aurelia-gown', image: 'Aurelia, Meridian and Alabaster', src: 'assets/media/editorial/temp/collections-panel.webp', /* TEMPORARY reference photos */
       groups: [
         { title: 'Categories', links: [
           { label: 'Evening & Gala Gowns', action: 'filter:Evening Gowns' },
@@ -237,18 +237,19 @@
 
   /* ---------- Lookbook stills (campaign media slots) ---------- */
   M.LOOKBOOK = [
-    { id: 'emporium', title: 'The Great Emporium', filter: 'Evening Gowns', kind: 'courtyard',
-      caption: 'The Aurelia gown and the Nocturne cape in a sandstone courtyard at dusk.',
-      prompt: 'Ultra-luxury Parisian-Ceylonese haute couture campaign film still, dramatic chiaroscuro warm golden sunset beam inside a minimalist dark architectural travertine pavilion, two poised South Asian and international high-fashion women wearing a liquid silk-velvet evening gown with an asymmetric neckline and a sheer hand-beaded organza cape top, fluid fabric motion, 35mm anamorphic film grain, Vogue Italia editorial aesthetic, obsidian black, alabaster ivory, burnished antique gold, deep garnet' },
-    { id: 'studio', title: 'Sculpted Tailoring', filter: 'Tailoring', kind: 'studio',
-      caption: 'The Meridian blazer on the stand, the wide silk trousers falling beside it.',
-      prompt: 'Museum-grade luxury womenswear photography, a structured ivory wool-silk blazer with a sharp shoulder on a dress form, high-waist wide silk trousers beside it, dark wet basalt floor, subtle golden rim lighting, razor-sharp macro focus' },
-    { id: 'atelier', title: 'The Atelier', filter: 'Limited Editions', kind: 'table',
-      caption: 'A couturier’s hands setting tonal beads onto silk organza.',
-      prompt: 'Intimate editorial close-up of a master couturier’s hands setting tonal glass beads one at a time onto sheer silk organza with a fine needle on a sunlit wooden atelier table, antique brass scissors and tiny glass beads beside the fabric, warm chiaroscuro shadows' },
-    { id: 'label', title: 'The Label', filter: 'Tailoring', kind: 'damask',
-      caption: 'The woven damask neck label, bearing only the MANTHAI wordmark.',
-      prompt: 'Extreme macro light sweep across a black woven damask label revealing the gold MANTHAI wordmark, deep obsidian silk folds' }
+    /* src: TEMPORARY reference photos for the test build (assets/media/lookbook/temp). Replace with the MANTHAI campaign shoot before launch. */
+    { id: 'emporium', title: 'The Great Hall', filter: 'Evening Gowns', kind: 'courtyard', src: 'assets/media/lookbook/temp/emporium.webp',
+      caption: 'Ivory tailoring and a hand-worked column skirt under a travertine arch.',
+      prompt: 'Ultra-luxury haute couture campaign still, ivory tailoring in a minimalist travertine hall with soft directional light' },
+    { id: 'studio', title: 'Sculpted Tailoring', filter: 'Tailoring', kind: 'studio', src: 'assets/media/lookbook/temp/studio.webp',
+      caption: 'Black tailoring cut with an ivory silk drape, high above the city.',
+      prompt: 'Luxury womenswear editorial, black tailored jacket with an ivory silk drape, wide trousers, penthouse window light' },
+    { id: 'atelier', title: 'On the Stand', filter: 'Limited Editions', kind: 'table', src: 'assets/media/lookbook/temp/atelier.webp',
+      caption: 'A hand-embroidered bodice and a full silk skirt, finished on the stand.',
+      prompt: 'Hand-embroidered bodice and silk skirt on a dress form in a sunlit atelier' },
+    { id: 'ivory', title: 'Ivory Hour', filter: 'Tailoring', kind: 'damask', src: 'assets/media/lookbook/temp/ivory.webp',
+      caption: 'A wrap jacket embroidered by hand, worn with wide ivory trousers.',
+      prompt: 'Ivory wrap jacket with hand embroidery and wide trousers, soft morning light through sheer curtains' }
   ];
 
   /* ---------- Unboxing and authenticity ritual: four objects ----------
