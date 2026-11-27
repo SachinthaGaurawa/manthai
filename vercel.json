@@ -62,6 +62,14 @@
     {
       "source": "/pieces/:slug",
       "destination": "/"
+    },
+    {
+      "source": "/checkout",
+      "destination": "/"
+    },
+    {
+      "source": "/checkout/confirmed",
+      "destination": "/"
     }
   ]
 }

@@ -135,11 +135,11 @@
   C.DELIVERY = {
     colombo: { label: 'Complimentary White-Glove Colombo Delivery', days: 2 },
     island: { label: 'Islandwide Insured Courier', days: 4 },
-    atelier: { label: 'Private Atelier Collection', days: 1, atelier: true }
+    atelier: { label: 'Private Colombo Collection', days: 1, atelier: true }
   };
   C.deliveryWhen = function (key) {
     var o = C.DELIVERY[key] || C.DELIVERY.colombo;
-    if (o.atelier) return 'Ready tomorrow, 2:00 PM';
+    if (o.atelier) return 'Ready ' + C.fmtDay(C.addBusinessDays(o.days)) + ', 2:00 PM IST';
     return 'Arrives by ' + C.fmtDay(C.addBusinessDays(o.days));
   };
 
