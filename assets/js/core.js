@@ -151,6 +151,26 @@
     return 'Arrives by ' + C.fmtDay(C.addBusinessDays(o.days));
   };
 
+  /* ---------- older saved orders: renamed pieces keep their link, and every order carries a delivery date ---------- */
+  var RENAMED = { 'meridian-blazer': 'vespera-blazer', 'meridian-trousers': 'vespera-trousers' };
+  (C.state.wishlist || []).forEach(function (id, i, a) { if (RENAMED[id]) a[i] = RENAMED[id]; });
+  (C.state.orders || []).forEach(function (o) {
+    (o.items || []).forEach(function (it) {
+      if (!RENAMED[it.id]) return;
+      it.id = RENAMED[it.id];
+      var np = M.PRODUCTS.filter(function (x) { return x.id === it.id; })[0];
+      if (np) { it.name = np.name; it.short = np.short; }
+    });
+    if (!C.DELIVERY[o.ship]) o.ship = 'colombo';
+    if (!o.arrive || isNaN(new Date(o.arrive).getTime())) o.arrive = C.addBusinessDays(C.DELIVERY[o.ship].days, o.date || Date.now()).toISOString();
+  });
+  /* a piece from an earlier collection, no longer in the catalogue: the House Seal stands in for its photograph */
+  C.archivePlate = function () { return '<span class="plate-archive" aria-hidden="true"><svg viewBox="0 0 1000 860"><use href="#spiral-seal"/></svg></span>'; };
+  /* the passport still opens for such a piece, from what its order recorded */
+  C.archivedProduct = function (it) {
+    return { id: it.id, name: it.name, short: it.short || it.name, archived: true, media: {}, materials: 'Recorded in the House archive', provenance: 'Cut and hand-finished in Colombo', care: 'Follow the care notes on the Story Card that came with the piece.' };
+  };
+
   /* ---------- plate html (real photo wins over placeholder) ---------- */
   /* product photos ship at 600, 900 and 1200 wide; the browser picks the one the frame needs */
   C.srcset = function (src) {
@@ -160,6 +180,7 @@
   };
   C.SIZES = { card: '(max-width: 768px) 92vw, 30vw', thumb: '160px', full: '100vw', pdp: '(max-width: 768px) 92vw, 52vw', pair: '(max-width: 768px) 46vw, 30vw', pillar: '(max-width: 768px) 94vw, 38vw' };
   C.plateHTML = function (p, view, sizes) {
+    if (p && p.archived) return C.archivePlate();
     var src = p.media && p.media[view];
     var ss = src ? C.srcset(src) : '';
     if (src) return '<img src="' + C.esc(src) + '"' + (ss ? ' srcset="' + ss + '" sizes="' + (C.SIZES[sizes] || sizes || '(max-width: 768px) 92vw, 40vw') + '" width="1200" height="1500"' : '') + ' alt="' + C.esc(p.name) + '" loading="lazy" decoding="async" data-ph-id="' + C.esc(p.id) + '" data-ph-view="' + C.esc(view) + '">';

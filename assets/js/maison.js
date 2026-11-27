@@ -556,7 +556,7 @@
     return found;
   }
   ui.openPassport = function (pid, code) {
-    var hit = code && findItem(code), p = (hit && C.product(hit.it.id)) || (pid && C.product(pid)) || M.PRODUCTS[0];
+    var hit = code && findItem(code), p = (hit && (C.product(hit.it.id) || C.archivedProduct(hit.it))) || (pid && C.product(pid)) || M.PRODUCTS[0];
     var id = code || ('MNT-' + hash(p.id)), n = pieceNo(p) + (hit ? hit.ordinal : 0);
     /* the owner, signed in, sees their own name; anyone else who scans the piece sees it registered, never to whom */
     var me = C.state.member, mine = hit && me && String(me.email || '').toLowerCase() === String(hit.o.email || '').toLowerCase();

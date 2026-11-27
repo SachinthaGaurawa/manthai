@@ -146,7 +146,7 @@
     var pre = !o.cancelled && !o.request && s < 2;
     var h = '<article class="acct-order" id="ord-' + esc(o.ref) + '">' +
       '<header class="acct-order__head"><div><p class="acct-order__ref">' + esc(o.ref) + '</p><p class="acct-order__date">' + esc(longDate(o.date)) + '</p></div><span class="acct-pill ' + st[1] + '">' + esc(st[0]) + '</span></header>' +
-      '<div class="acct-order__body"><div class="acct-order__thumb">' + (p ? C.plateHTML(p, 'form', 'thumb') : '') + '</div>' +
+      '<div class="acct-order__body"><div class="acct-order__thumb">' + (p ? C.plateHTML(p, 'form', 'thumb') : C.archivePlate()) + '</div>' +
         '<div class="acct-order__info"><p class="acct-order__name">' + esc(first.name) + (o.items.length > 1 ? ' <span>and ' + (o.items.length - 1) + ' more</span>' : '') + '</p>' +
         '<p class="acct-order__meta">Size ' + esc(first.size) + (o.items.length > 1 ? ' · ' + o.items.length + ' pieces' : '') + '</p>' +
         '<p class="acct-order__when">' + (o.cancelled ? 'Cancellation confirmation sent to ' + esc(o.email) : esc(expected(o))) + '</p></div>' +
@@ -211,7 +211,7 @@
     return head('Wardrobe &amp; Digital Vault', 'Every piece you own, with its NFC-verified Digital Product Passport.' + C.dref(6), verify) + banner() + form +
       (items.length ? '<ul class="acct-vault">' + items.map(function (x) {
         var p = C.product(x.it.id);
-        return '<li class="acct-vcard"><div class="acct-vcard__thumb">' + (p ? C.plateHTML(p, 'form', 'thumb') : '') + '</div>' +
+        return '<li class="acct-vcard"><div class="acct-vcard__thumb">' + (p ? C.plateHTML(p, 'form', 'thumb') : C.archivePlate()) + '</div>' +
           '<div class="acct-vcard__info"><p class="acct-vcard__name">' + esc(x.it.name) + '</p>' +
           '<dl class="acct-vcard__meta"><div><dt>Size</dt><dd>' + esc(x.it.size) + '</dd></div><div><dt>Edition</dt><dd>' + (p && p.edition ? 'Numbered, of ' + p.edition : 'Atelier series') + '</dd></div>' +
           '<div><dt>Passport ID</dt><dd class="acct-serial">' + esc(x.it.passport) + '</dd></div><div><dt>Registered</dt><dd>' + esc(shortDate(x.o.date)) + '</dd></div></dl>' +
