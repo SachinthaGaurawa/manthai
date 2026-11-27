@@ -47,6 +47,14 @@
   function toggle(name, label, on, hint) {
     return '<label class="cx-toggle acct-toggle"><input type="checkbox" name="' + name + '"' + (on ? ' checked' : '') + '><span class="cx-toggle__ui" aria-hidden="true"></span><span>' + label + (hint ? '<small>' + hint + '</small>' : '') + '</span></label>';
   }
+  /* date of birth: typed as DD / MM / YYYY, stored as YYYY-MM-DD, never in the future */
+  function todayISO() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  function dobShow(iso) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return m ? m[3] + ' / ' + m[2] + ' / ' + m[1] : ''; }
+  function dobISO(v) {
+    var m = /^(\d{2})\D*(\d{2})\D*(\d{4})$/.exec(String(v || '').trim()); if (!m) return '';
+    var d = new Date(+m[3], +m[2] - 1, +m[1]); if (d.getDate() !== +m[1] || d.getMonth() !== +m[2] - 1) return '';
+    return m[3] + '-' + m[2] + '-' + m[1];
+  }
   var SEAL = '<svg viewBox="0 0 1000 860" aria-hidden="true"><use href="#spiral-seal"/></svg>';
   var WA = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19z" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>';
 
@@ -93,15 +101,7 @@
 
   /* ======================= signed out: the sign-in view ======================= */
   function signInView() {
-    return '<div class="acct-in"><div class="acct-in__card">' +
-      '<span class="acct-in__seal">' + SEAL + '</span><p class="eyebrow">The Private Circle</p>' +
-      '<h1 class="acct-in__title" id="acctTitle" tabindex="-1">Enter the Private Circle</h1>' +
-      '<p class="acct-in__lede">Your acquisitions, Digital Vault, saved silhouettes and your Colombo stylist, in one quiet place. No password is ever needed.</p>' +
-      '<button class="google-btn acct-in__google" type="button" data-acct-google>Continue with Google</button>' +
-      '<p class="acct-in__sep"><span>or with a one-time email link</span></p>' +
-      '<form class="acct-in__form" id="acctSignIn" novalidate>' + field('ai-email', req('Email Address'), input('ai-email', 'email', 'type="email" autocomplete="email" inputmode="email" placeholder="name@example.com" required')) +
-      '<button class="btn btn--solid btn--block btn--sheen" type="submit"><span class="btn__label">Send My Private Link</span></button></form>' +
-      '<p class="acct-in__note">Guest checkout is always available. You never need an account to acquire a piece.</p></div></div>';
+    return '<div class="acct-in"><div class="acct-in__card">' + M.auth.cardHTML({ p: 'ai', titleId: 'acctTitle', level: 1 }) + '</div></div>';
   }
 
   /* ======================= signed in: the portal ======================= */
@@ -187,7 +187,7 @@
   }
   function receipt(o) {
     return '<section class="acct-receipt" id="receipt-' + esc(o.ref) + '" aria-label="Digital receipt ' + esc(o.ref) + '">' +
-      '<header class="acct-receipt__head"><svg class="wordmark" viewBox="120 30 796 120" aria-hidden="true"><use href="#wm-paths"/></svg><p>House of MANTHAI · Colombo, Sri Lanka · concierge@manthai.lk</p></header>' +
+      '<header class="acct-receipt__head"><svg class="wordmark" viewBox="120 30 796 120" aria-hidden="true"><use href="#wm-paths"/></svg></header>' + C.issuerHTML() +
       '<dl class="acct-receipt__meta"><div><dt>Receipt</dt><dd>' + esc(o.ref) + '</dd></div><div><dt>Date</dt><dd>' + esc(longDate(o.date)) + '</dd></div><div><dt>Client</dt><dd>' + esc(o.name) + '</dd></div><div><dt>Payment</dt><dd>' + esc({ payhere: 'PayHere Secure Card', lankaqr: 'LankaQR Instant Pay', bank: 'Private Bank Transfer' }[o.method] || 'PayHere Secure Card') + '</dd></div></dl>' +
       '<table class="acct-receipt__table"><thead><tr><th scope="col">Piece</th><th scope="col">Size</th><th scope="col">Passport ID</th><th scope="col">Amount</th></tr></thead><tbody>' +
         o.items.map(function (it) { return '<tr><td>' + esc(it.name) + '</td><td>' + esc(it.size) + '</td><td>' + esc(it.passport) + '</td><td>' + P(it.price) + '</td></tr>'; }).join('') +
@@ -259,10 +259,10 @@
     var phone = pr.phone || (orders()[0] && orders()[0].phone ? orders()[0].phone.replace(/^\+94\s?/, '') : '');
     var personal = '<section class="acct-sec" aria-labelledby="acctPersonal"><h2 class="acct-h2" id="acctPersonal">Personal Details</h2>' +
       '<form class="acct-form" id="profileForm" novalidate>' +
-      '<div class="row-2">' + field('pf-title', opt('Title'), select('pf-title', 'title', ['Ms.', 'Mrs.', 'Miss', 'Mx.'], pr.title, '', 'Choose')) + field('pf-name', req('Full Name'), input('pf-name', 'name', 'autocomplete="name" required', m.name)) + '</div>' +
+      '<div class="row-2">' + field('pf-title', opt('Title'), select('pf-title', 'title', ['Mr.', 'Ms.', 'Mrs.', 'Miss', 'Dr.', 'Prof.', 'Mx.', 'Prefer not to say'], pr.title, 'class="acct-select"', 'Choose')) + field('pf-name', req('Full Name'), input('pf-name', 'name', 'autocomplete="name" required', m.name)) + '</div>' +
       '<div class="field"><span class="field__label-static">Email Address</span><p class="field__static acct-email">' + esc(m.email) + '<span class="acct-badge">' + (m.provider === 'google' ? 'Signed in with Google' : 'Signed in with a private link') + '</span></p></div>' +
       '<div class="row-2"><div class="field field--phone"><label for="pf-phone">' + opt('Mobile Number (+94)') + '</label><div class="phone-wrap"><span class="phone-cc" aria-hidden="true">+94</span><input id="pf-phone" name="phone" type="tel" autocomplete="tel-national" inputmode="numeric" placeholder="77 123 4567" maxlength="13" value="' + esc(phone) + '" aria-describedby="pf-phone-e"></div><span class="field__error" id="pf-phone-e" role="alert"></span></div>' +
-        field('pf-dob', opt('Date of Birth'), input('pf-dob', 'dob', 'type="date" autocomplete="bday"', pr.dob), 'For private Maison gestures only.') + '</div>' +
+        field('pf-dob', opt('Date of Birth'), input('pf-dob', 'dob', 'type="text" inputmode="numeric" autocomplete="bday" placeholder="DD / MM / YYYY" maxlength="14" data-dob data-max="' + todayISO() + '"', dobShow(pr.dob)), 'For private Maison gestures only.') + '</div>' +
       '<fieldset class="cx-fs"><legend class="cx-fs__legend">Preferred Size <span class="opt">(optional)</span></legend><div class="acct-sizes acct-sizes--pref" role="radiogroup" aria-label="Preferred size">' + M.SIZECHART.sizes.map(function (z) {
         return '<button type="button" role="radio" class="size" data-pref="' + z + '" aria-checked="' + (z === C.state.fitSize) + '">' + z + '</button>';
       }).join('') + '</div><p class="acct-fine">Preselected for you on every piece.</p></fieldset>' +
@@ -275,10 +275,7 @@
           '<button class="acct-link acct-link--quiet" type="button" data-addr-remove="' + esc(a.id) + '">Remove</button></div></li>';
       }).join('') + '</ul>' : '<p class="acct-fine">No saved addresses yet. Your delivery address is saved from your first acquisition, or add one now.</p>') +
       (ui$.editAddr === 'new' ? addrForm() : '<button class="acct-add" type="button" data-addr-new>+ Add New Address</button>') + '</section>';
-    var security = '<section class="acct-sec" aria-labelledby="acctSecH"><h2 class="acct-h2" id="acctSecH">Security &amp; Preferences</h2><div class="acct-prefs">' +
-      toggle('twofa', 'Two-Factor Verification', !!sec.twofa, 'A one-time code each time you sign in.') +
-      (sec.twofa ? '<div class="acct-inline" role="radiogroup" aria-label="Send codes by">' + ['Email', 'SMS'].map(function (k) { return '<label class="acct-radio"><input type="radio" name="twofaBy" value="' + k + '"' + ((sec.by || 'Email') === k ? ' checked' : '') + '><span>' + k + '</span></label>'; }).join('') + '</div>' : '') +
-      '<p class="acct-fine">Active session: this browser, signed in ' + esc(shortDate(m.since || Date.now())) + '. Sign out below to end it.</p>' +
+    var security = M.auth.securityHTML(m) + '<section class="acct-sec" aria-labelledby="acctPrefH"><h2 class="acct-h2" id="acctPrefH">Communication Preferences</h2><div class="acct-prefs">' +
       toggle('archive', 'Private archive and new edition previews', !!n.archive) +
       toggle('restock', 'Saved silhouette stock alerts', !!n.restock) +
       '<div class="acct-inline" role="radiogroup" aria-label="Preferred channel"><span class="acct-inline__k">Preferred channel</span>' + ['Email', 'WhatsApp'].map(function (k) { return '<label class="acct-radio"><input type="radio" name="channel" value="' + k + '"' + ((n.channel || 'Email') === k ? ' checked' : '') + '><span>' + k + '</span></label>'; }).join('') + '</div>' +
@@ -324,11 +321,13 @@
     /* on a phone the tab bar scrolls sideways: keep the current tab in view */
     var cur = root.querySelector('.acct-nav [aria-current]'), bar = cur && cur.closest('ul');
     if (bar && bar.scrollWidth > bar.clientWidth) bar.scrollLeft += cur.getBoundingClientRect().left - bar.getBoundingClientRect().left - 20;
+    if (tab === 'profile') M.auth.armSecurity();
   };
   function rerender(focusSel) {
     var main = $('#acctMain'), m = C.state.member;
     if (!main || !m) { acct.render(tab); return; }
     main.innerHTML = workspace(m);
+    if (tab === 'profile') M.auth.armSecurity();
     if (focusSel) { var f = $(focusSel); if (f) { try { f.focus({ preventScroll: false }); } catch (e) { f.focus(); } } }
   }
   function go(t, then) {
@@ -405,6 +404,12 @@
     if ((t = e.target.closest('[data-resched]'))) { ui$.form = { kind: 'resched', id: t.getAttribute('data-resched') }; rerender('#rs-date'); return; }
     if ((t = e.target.closest('[data-consult-cancel]'))) { var cid = t.getAttribute('data-consult-cancel'); C.state.consults = (C.state.consults || []).filter(function (c) { return c.id !== cid; }); C.save(); ui$.banner = 'Your consultation has been cancelled.'; rerender('.acct-banner'); }
   });
+  /* the date of birth types itself into DD / MM / YYYY */
+  page.addEventListener('input', function (e) {
+    var t = e.target; if (!t.hasAttribute || !t.hasAttribute('data-dob') || (e.inputType && e.inputType.indexOf('delete') === 0)) return;
+    var d = t.value.replace(/\D/g, '').slice(0, 8);
+    t.value = d.length > 4 ? d.slice(0, 2) + ' / ' + d.slice(2, 4) + ' / ' + d.slice(4) : d.length > 2 ? d.slice(0, 2) + ' / ' + d.slice(2) : d;
+  });
   page.addEventListener('change', function (e) {
     var t = e.target, m = C.state.member; if (!m) return;
     var n = C.state.notify || (C.state.notify = {}), sec = C.state.security || (C.state.security = {});
@@ -443,9 +448,10 @@
     if (f.id === 'profileForm') {
       need('name', function (v) { return v.trim().length > 1; }, 'Enter your full name.');
       need('phone', function (v) { return !v.trim() || /^7\d{8}$/.test(v.replace(/\D/g, '').replace(/^(94|0)/, '')); }, 'Enter a Sri Lankan mobile number, such as 77 123 4567.');
+      need('dob', function (v) { return !v.trim() || (dobISO(v) && dobISO(v) <= todayISO() && dobISO(v) >= '1900-01-01'); }, 'Enter your date of birth as DD / MM / YYYY, such as 14 / 02 / 1992.');
       if (bad) { bad.focus(); return; }
       var pr = C.state.profile || (C.state.profile = {});
-      pr.title = f.elements.title.value; pr.phone = f.elements.phone.value.trim(); pr.dob = f.elements.dob.value;
+      pr.title = f.elements.title.value; pr.phone = f.elements.phone.value.trim(); pr.dob = dobISO(f.elements.dob.value);
       var pref = $('[data-pref][aria-checked="true"]', f); C.state.fitSize = pref ? pref.getAttribute('data-pref') : '';
       m.name = f.elements.name.value.trim();
       var ac = C.state.accounts && C.state.accounts[String(m.email).toLowerCase()]; if (ac) ac.name = m.name;

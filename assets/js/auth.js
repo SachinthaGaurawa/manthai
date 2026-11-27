@@ -1,0 +1,249 @@
+/* =========================================================================
+   House of MANTHAI · Private Circle sign-in
+   Three ways in, and only three: a passwordless Private Access Key by email
+   (link, plus a 6-digit code where code delivery is active), Continue with
+   Google, and a Face ID / Touch ID passkey (WebAuthn) linked from the
+   Private Circle. There is no Apple, Facebook, Instagram or X sign-in.
+
+   Modes for the Private Access Key:
+   - live:    Firebase email-link sign-in (M.CONFIG.firebase). A link is sent;
+              no code, because Firebase does not send one-time codes.
+   - code:    M.CONFIG.auth.codeEndpoint set. POST {email} sends link + code,
+              POST {email, code} to the same endpoint verifies it.
+   - preview: no mail service, or ?authpreview=1. Nothing is sent; the code
+              is shown on screen so the flow can be reviewed end to end.
+   Passkeys are created on this device with WebAuthn and listed in
+   C.state.passkeys. Server-side verification of the assertion belongs to
+   the future backend; until then this static build trusts the platform
+   authenticator's user verification.
+   ========================================================================= */
+(function () {
+  'use strict';
+  var M = window.MANTHAI, C = M.core, ui = M.ui, esc = C.esc, $ = C.$;
+  var CFG = M.CONFIG.auth || {};
+  var SEAL = '<svg viewBox="0 0 1000 860" aria-hidden="true" focusable="false"><use href="#spiral-seal"/></svg>';
+  var G = '<svg class="pc-btn__g" viewBox="0 0 48 48" width="18" height="18" aria-hidden="true" focusable="false"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
+  var PK = '<svg class="pc-btn__pk" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M4 8V6a2 2 0 012-2h2M16 4h2a2 2 0 012 2v2M20 16v2a2 2 0 01-2 2h-2M8 20H6a2 2 0 01-2-2v-2" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M9.5 9.5v1M14.5 9.5v1M12 9.5v3.2l-1 .6M9.6 15.2c1.4 1 3.4 1 4.8 0" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>';
+
+  /* ---------- state ---------- */
+  var st = { view: 'email', email: '', mode: 'preview', code: '', msg: '', pkMsg: '', resendAt: 0, busy: false };
+  var tick = 0;
+  function preview() { return /[?&]authpreview=1\b/.test(location.search); }
+  function modeNow() { return preview() ? 'preview' : CFG.codeEndpoint ? 'code' : ui.auth && ui.auth.live() ? 'live' : 'preview'; }
+  function secsLeft() { return Math.max(0, Math.ceil((st.resendAt - Date.now()) / 1000)); }
+
+  /* ---------- markup ---------- */
+  function emailView(c) {
+    return '<span class="pc-auth__seal">' + SEAL + '</span>' +
+      '<h' + c.level + ' class="pc-auth__title" id="' + c.titleId + '" tabindex="-1">Enter the Private Circle</h' + c.level + '>' +
+      '<p class="pc-auth__sub">Passwordless access to your Wardrobe, Digital Vault, and acquisitions.</p>' +
+      (st.msg ? '<p class="pc-auth__msg" role="alert">' + esc(st.msg) + '</p>' : '') +
+      '<form class="pc-auth__form" data-auth-email novalidate>' +
+        '<div class="field"><label for="' + c.p + '-email">Email address <span class="req" aria-hidden="true">*</span></label>' +
+        '<input id="' + c.p + '-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="name@example.com" required value="' + esc(st.email) + '" aria-describedby="' + c.p + '-email-e">' +
+        '<span class="field__error" id="' + c.p + '-email-e" role="alert"></span></div>' +
+        '<button class="pc-btn pc-btn--key" type="submit"' + (st.busy ? ' disabled' : '') + '>' + (st.busy ? 'Sending your key…' : 'Send Private Access Key') + '</button>' +
+      '</form>' +
+      '<p class="pc-auth__or"><span>Or continue instantly</span></p>' +
+      '<div class="pc-auth__stack">' +
+        '<button class="pc-btn pc-btn--google" type="button" data-auth-google>' + G + '<span>Continue with Google</span></button>' +
+        '<button class="pc-btn pc-btn--passkey" type="button" data-auth-passkey>' + PK + '<span>Unlock with Face ID / Touch ID Passkey</span></button>' +
+      '</div>' +
+      '<p class="pc-auth__pk" role="status" aria-live="polite">' + esc(st.pkMsg) + '</p>' +
+      '<p class="pc-auth__guest">Prefer not to create an account? Guest checkout is always available on every acquisition.</p>';
+  }
+  function otpBoxes(c) {
+    var h = '<fieldset class="pc-otp"><legend class="sr-only">Your 6-digit code</legend><div class="pc-otp__row">';
+    for (var i = 0; i < 6; i++) h += '<input class="pc-otp__d" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" ' + (i === 0 ? 'autocomplete="one-time-code"' : 'autocomplete="off"') + ' aria-label="Digit ' + (i + 1) + ' of 6" data-otp="' + i + '"' + (i === 0 ? ' id="' + c.p + '-otp"' : '') + '>';
+    return h + '</div><p class="field__error pc-otp__e" role="alert"></p></fieldset>';
+  }
+  function verifyView(c) {
+    var s = secsLeft(), withCode = st.mode !== 'live';
+    return '<span class="pc-auth__seal">' + SEAL + '</span>' +
+      '<h' + c.level + ' class="pc-auth__title" id="' + c.titleId + '" tabindex="-1">Your Private Access Key</h' + c.level + '>' +
+      '<p class="pc-auth__sub pc-auth__sub--wide">' + (withCode
+        ? 'We have sent a Private Access Link and a 6-digit code to <b>' + esc(st.email) + '</b>. Click the link on any device, or enter your 6-digit code below.'
+        : 'We have sent a Private Access Link to <b>' + esc(st.email) + '</b>. Click the link on any device to enter the Private Circle.') + '</p>' +
+      (st.msg ? '<p class="pc-auth__msg" role="alert">' + esc(st.msg) + '</p>' : '') +
+      (withCode ? '<form class="pc-auth__form" data-auth-code novalidate>' + otpBoxes(c) +
+        '<button class="pc-btn pc-btn--key" type="submit"' + (st.busy ? ' disabled' : '') + '>Enter the Private Circle</button></form>' : '') +
+      (st.mode === 'preview' ? '<p class="pc-auth__demo"><b>Preview.</b> No email is sent in preview. Your code is <span class="pc-auth__democode">' + esc(st.code.replace(/(\d{3})/, '$1 ')) + '</span>.</p>' : '') +
+      '<p class="pc-auth__links"><button class="pc-link" type="button" data-auth-resend' + (s ? ' disabled' : '') + '>' + (s ? 'Resend key (' + s + 's)' : 'Resend key') + '</button>' +
+      '<span aria-hidden="true">&middot;</span><button class="pc-link" type="button" data-auth-reset>Use a different email</button></p>' +
+      (withCode ? '' : '<p class="pc-auth__guest">Nothing yet? Look in your spam or promotions folder. The link works once and expires soon.</p>');
+  }
+  function inner(c) { return st.view === 'verify' ? verifyView(c) : emailView(c); }
+  function ctxOf(el) { return { p: el.getAttribute('data-p'), titleId: el.getAttribute('data-title'), level: el.getAttribute('data-level') }; }
+  function paint(focusSel) {
+    C.$$('.pc-auth').forEach(function (el) { el.innerHTML = inner(ctxOf(el)); });
+    if (focusSel) { var f = C.$$(focusSel).filter(function (x) { return x.offsetParent; })[0]; if (f) f.focus(); }
+  }
+
+  /* ---------- the code: six boxes that behave like one field ---------- */
+  function boxes(el) { return C.$$('.pc-otp__d', el.closest('.pc-otp')); }
+  function fill(list, from, digits) {
+    for (var i = 0; i < digits.length && from + i < 6; i++) list[from + i].value = digits.charAt(i);
+    var next = Math.min(5, from + digits.length); list[next].focus();
+    if (list.every(function (b) { return b.value; })) submitCode(list[0].closest('form'));
+  }
+  document.addEventListener('input', function (e) {
+    var b = e.target; if (!b.classList || !b.classList.contains('pc-otp__d')) return;
+    var digits = b.value.replace(/\D/g, ''), list = boxes(b), i = +b.getAttribute('data-otp');
+    var err = b.closest('form').querySelector('.pc-otp__e'); if (err) err.textContent = '';
+    if (!digits) { b.value = ''; return; }
+    b.value = digits.charAt(0);
+    if (digits.length > 1) fill(list, i, digits); else if (i < 5) list[i + 1].focus(); else fill(list, i, '');
+  });
+  document.addEventListener('keydown', function (e) {
+    var b = e.target; if (!b.classList || !b.classList.contains('pc-otp__d')) return;
+    var list = boxes(b), i = +b.getAttribute('data-otp');
+    if (e.key === 'Backspace' && !b.value && i > 0) { e.preventDefault(); list[i - 1].value = ''; list[i - 1].focus(); }
+    else if (e.key === 'ArrowLeft' && i > 0) { e.preventDefault(); list[i - 1].focus(); }
+    else if (e.key === 'ArrowRight' && i < 5) { e.preventDefault(); list[i + 1].focus(); }
+  });
+  document.addEventListener('paste', function (e) {
+    var b = e.target; if (!b.classList || !b.classList.contains('pc-otp__d')) return;
+    var t = ((e.clipboardData || window.clipboardData).getData('text') || '').replace(/\D/g, '').slice(0, 6); if (!t) return;
+    e.preventDefault(); fill(boxes(b), t.length === 6 ? 0 : +b.getAttribute('data-otp'), t);
+  });
+
+  /* ---------- sending and checking the key ---------- */
+  function startTimer() {
+    st.resendAt = Date.now() + 45000; clearInterval(tick);
+    tick = setInterval(function () {
+      var s = secsLeft();
+      C.$$('[data-auth-resend]').forEach(function (r) { r.disabled = !!s; r.textContent = s ? 'Resend key (' + s + 's)' : 'Resend key'; });
+      if (!s) clearInterval(tick);
+    }, 1000);
+  }
+  function post(body) {
+    return fetch(CFG.codeEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { if (!r.ok) throw new Error('auth ' + r.status); return r.json().catch(function () { return {}; }); });
+  }
+  function send(email) {
+    st.email = email; st.msg = ''; st.mode = modeNow();
+    var done = function () { st.busy = false; st.view = 'verify'; startTimer(); paint('.pc-otp__d[data-otp="0"], .pc-auth [data-auth-resend]'); };
+    var fail = function (e) { st.busy = false; st.msg = st.mode === 'live' ? ui.auth.errText(e) : 'We could not send your key just now. Please try again, or continue with Google.'; paint(); };
+    if (st.mode === 'preview') { st.code = String(Math.floor(100000 + Math.random() * 900000)); done(); return; }
+    st.busy = true; paint();
+    (st.mode === 'code' ? post({ email: email }) : ui.auth.sendLink(email)).then(done, fail);
+  }
+  function submitCode(form) {
+    if (!form || st.busy) return;
+    var list = C.$$('.pc-otp__d', form), code = list.map(function (b) { return b.value; }).join(''), err = form.querySelector('.pc-otp__e');
+    if (!/^\d{6}$/.test(code)) { err.textContent = 'Enter all six digits of your code.'; (list.filter(function (b) { return !b.value; })[0] || list[0]).focus(); return; }
+    var ok = function () { var em = st.email; reset(); ui.auth.complete({ email: em }, 'email'); };
+    var bad = function () { st.busy = false; err.textContent = 'That code does not match. Check the latest email from the House, or resend your key.'; list.forEach(function (b) { b.value = ''; }); list[0].focus(); };
+    if (st.mode === 'preview') { if (code === st.code) ok(); else bad(); return; }
+    st.busy = true; post({ email: st.email, code: code }).then(function (r) { st.busy = false; if (r && r.ok !== false) ok(); else bad(); }, bad);
+  }
+  function reset() { st.view = 'email'; st.code = ''; st.msg = ''; st.pkMsg = ''; st.busy = false; clearInterval(tick); st.resendAt = 0; }
+
+  /* ---------- passkeys (WebAuthn) ---------- */
+  function b64u(buf) { var s = '', b = new Uint8Array(buf); for (var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+  function unb64u(s) { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; var r = atob(s), a = new Uint8Array(r.length); for (var i = 0; i < r.length; i++) a[i] = r.charCodeAt(i); return a.buffer; }
+  function rand(n) { var a = new Uint8Array(n); crypto.getRandomValues(a); return a; }
+  function supported() { return !!(window.PublicKeyCredential && navigator.credentials && navigator.credentials.create && window.isSecureContext); }
+  function platformReady() {
+    if (!supported()) return Promise.resolve(false);
+    try { return PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().catch(function () { return false; }); } catch (e) { return Promise.resolve(false); }
+  }
+  function keys() { return C.state.passkeys || (C.state.passkeys = {}); }
+  function keyFor(email) { return keys()[String(email || '').toLowerCase()] || null; }
+  function deviceLabel() {
+    var u = navigator.userAgent, os = /iPhone/.test(u) ? 'iPhone' : /iPad/.test(u) ? 'iPad' : /Android/.test(u) ? 'Android' : /Mac OS X/.test(u) ? 'Mac' : /Windows/.test(u) ? 'Windows PC' : /CrOS/.test(u) ? 'Chromebook' : 'This device';
+    var br = /Edg\//.test(u) ? 'Edge' : /OPR\//.test(u) ? 'Opera' : /Firefox\//.test(u) ? 'Firefox' : /CriOS|Chrome\//.test(u) ? 'Chrome' : /Safari\//.test(u) ? 'Safari' : 'Browser';
+    var bio = os === 'iPhone' || os === 'iPad' ? 'Face ID' : os === 'Mac' ? 'Touch ID' : os === 'Windows PC' ? 'Windows Hello' : 'Device biometrics';
+    return os + ' · ' + br + ' · ' + bio;
+  }
+  function pkSignIn() {
+    var list = Object.keys(keys()).map(function (k) { return keys()[k]; });
+    var say = function (t) { st.pkMsg = t; C.$$('.pc-auth__pk').forEach(function (p) { p.textContent = t; }); };
+    if (!supported()) { say('This browser does not support passkeys. Continue with Google or your Private Access Key.'); return; }
+    if (!list.length) { say('No passkey is linked on this device yet. Sign in with Google or your Private Access Key first, then enable Face ID / Touch ID in Profile, Addresses & Security.'); return; }
+    say('');
+    navigator.credentials.get({ publicKey: { challenge: rand(32), rpId: location.hostname, userVerification: 'required', timeout: 60000,
+      allowCredentials: list.map(function (k) { return { type: 'public-key', id: unb64u(k.id) }; }) } })
+      .then(function (cred) {
+        var id = cred && b64u(cred.rawId), k = list.filter(function (x) { return x.id === id; })[0];
+        if (!k) { say('That passkey is not linked to a Private Circle account on this device.'); return; }
+        k.lastUsed = new Date().toISOString(); C.save(); reset();
+        ui.auth.complete({ email: k.email, name: k.name }, k.provider || 'email');
+      })
+      .catch(function (e) { say(e && e.name === 'NotAllowedError' ? 'Face ID / Touch ID was cancelled. Try again, or choose another way in.' : 'Your passkey could not be used just now. Continue with Google or your Private Access Key.'); });
+  }
+  function pkEnable(btn) {
+    var m = C.state.member; if (!m) return;
+    var note = $('#pkNote');
+    btn.disabled = true;
+    navigator.credentials.create({ publicKey: {
+      challenge: rand(32), rp: { name: 'House of MANTHAI', id: location.hostname },
+      user: { id: new TextEncoder().encode(m.id || m.email), name: m.email, displayName: m.name || m.email },
+      pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
+      authenticatorSelection: { authenticatorAttachment: 'platform', residentKey: 'preferred', userVerification: 'required' },
+      timeout: 60000, attestation: 'none' } })
+      .then(function (cred) {
+        keys()[String(m.email).toLowerCase()] = { id: b64u(cred.rawId), email: m.email, name: m.name, provider: m.provider, label: deviceLabel(), added: new Date().toISOString() };
+        C.save(); C.toast('Face ID / Touch ID is now linked to your Private Circle on this device.');
+        if (M.account) M.account.render('profile');
+      })
+      .catch(function (e) { btn.disabled = false; if (note) note.textContent = e && e.name === 'NotAllowedError' ? 'Setup was cancelled. You can enable it at any time.' : 'Your passkey could not be created on this device just now.'; });
+  }
+
+  /* ---------- the security section inside Profile, Addresses & Security ---------- */
+  function securityHTML(m) {
+    var k = keyFor(m.email), google = m.provider === 'google';
+    var row = function (name, sub, on, action) { return '<li class="pc-method"><div><p class="pc-method__n">' + name + '</p><p class="pc-method__s">' + sub + '</p></div>' + (on ? '<span class="acct-pill is-on">Connected</span>' : action) + '</li>'; };
+    return '<section class="acct-sec" id="acctSecurity" aria-labelledby="acctSecH"><h2 class="acct-h2" id="acctSecH">Sign-In &amp; Biometric Security</h2>' +
+      '<p class="acct-fine">Connected sign-in methods. The Private Circle never uses a password.</p>' +
+      '<ul class="pc-methods">' +
+        row('Google', google ? esc(m.email) : 'One tap with your Google account', google, '<button class="acct-link" type="button" data-auth-google>Link Google</button>') +
+        row('Email Private Key', esc(m.email) + (google ? '' : ' · link and code by email'), !google, '<span class="acct-pill">Available</span>') +
+      '</ul>' +
+      '<div class="pc-passkey"><div class="pc-passkey__head">' + PK + '<p class="pc-passkey__t">Biometric Passkey (Face ID / Touch ID)</p></div>' +
+        '<p class="pc-passkey__d">Link Face ID, Touch ID, or device biometrics directly to your Google or Email Private Circle account. Unlock your Wardrobe and Digital Vault on this device with a single glance or touch. No passwords required.</p>' +
+        (k ? '<dl class="pc-passkey__meta"><div><dt>Device</dt><dd>' + esc(k.label) + '</dd></div><div><dt>Added</dt><dd>' + esc(new Date(k.added).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })) + '</dd></div></dl>' +
+          '<div class="pc-passkey__row"><span class="acct-pill is-on">Enabled on this device</span><button class="acct-link acct-link--quiet" type="button" data-pk-remove>Remove Passkey</button></div>'
+          : '<div class="pc-passkey__row"><button class="btn btn--ghost btn--sm" type="button" data-pk-enable disabled>Enable Face ID / Touch ID Passkey</button></div>') +
+        '<p class="acct-fine" id="pkNote" role="status" aria-live="polite"></p>' +
+      '</div>' +
+      '<p class="acct-fine">Active session: this browser, signed in ' + esc(new Date(m.since || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })) + '. Sign out below to end it.</p></section>';
+  }
+  /* once the section is on the page, ask the device whether it can hold a passkey */
+  function armSecurity() {
+    var b = $('[data-pk-enable]'); if (!b) return;
+    platformReady().then(function (ok) {
+      b.disabled = !ok;
+      var n = $('#pkNote'); if (n && !ok) n.textContent = supported() ? 'This device has no Face ID, Touch ID or fingerprint sensor available to the browser. You can enable a passkey from your phone or laptop.' : 'This browser does not support passkeys. Try Safari, Chrome or Edge on a recent device.';
+    });
+  }
+
+  /* ---------- events ---------- */
+  document.addEventListener('submit', function (e) {
+    var f = e.target;
+    if (f.hasAttribute('data-auth-email')) {
+      e.preventDefault();
+      var i = f.elements.email;
+      if (!C.validEmail(i.value)) { C.setError(i, 'Enter a valid email address, such as name@example.com.'); i.focus(); return; }
+      C.setError(i, ''); send(i.value.trim().toLowerCase());
+    } else if (f.hasAttribute('data-auth-code')) { e.preventDefault(); submitCode(f); }
+  });
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest && e.target.closest('[data-auth-google], [data-auth-passkey], [data-auth-resend], [data-auth-reset], [data-pk-enable], [data-pk-remove]');
+    if (!t) return;
+    if (t.hasAttribute('data-auth-google')) { ui.googleSignIn(function () { if (M.account && ui.curRoute() === 'account') M.account.render(ui.curSlug() || 'overview'); }); }
+    else if (t.hasAttribute('data-auth-passkey')) pkSignIn();
+    else if (t.hasAttribute('data-auth-resend')) { if (!secsLeft()) send(st.email); }
+    else if (t.hasAttribute('data-auth-reset')) { var em = st.email; reset(); st.email = em; paint('.pc-auth input[type=email]'); }
+    else if (t.hasAttribute('data-pk-enable')) pkEnable(t);
+    else if (t.hasAttribute('data-pk-remove')) { var m = C.state.member; if (m) { delete keys()[String(m.email).toLowerCase()]; C.save(); C.toast('The passkey is removed from this device.'); if (M.account) M.account.render('profile'); } }
+  });
+  C.on('member', function () { if (C.state.member) reset(); });
+
+  M.auth = {
+    /* ctx: { p: id prefix, titleId, level: heading level } */
+    cardHTML: function (c) { return '<div class="pc-auth" data-p="' + c.p + '" data-title="' + c.titleId + '" data-level="' + (c.level || 2) + '">' + inner({ p: c.p, titleId: c.titleId, level: c.level || 2 }) + '</div>'; },
+    securityHTML: securityHTML,
+    armSecurity: armSecurity
+  };
+})();
