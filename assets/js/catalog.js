@@ -84,7 +84,7 @@
       care: 'Silk-velvet crushes under pressure: never iron or press the pile. Steam from the reverse at a distance and store hanging in the supplied garment bag.',
       palette: ['#3a2618', '#100b08', '#C9AF7E'],
       occasions: ['Evening & Gala'], fit: 1, pairs: ['nocturne-cape-top', 'meridian-blazer'],
-      media: { form: '', back: '', detail: '', move: '' },
+      media: { form: 'assets/media/products/temp/aurelia-gown-form.webp', back: '', detail: 'assets/media/products/temp/aurelia-gown-detail.webp', move: 'assets/media/products/temp/aurelia-gown-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
       prompt: 'Liquid silk-velvet evening gown with a sculpted asymmetric neckline, deep warm sheen, chiaroscuro golden light, 35mm editorial photography'
     },
     {
@@ -103,7 +103,7 @@
       care: 'Satin twill waterspots: keep dry and blot at once. Steam on the reverse.',
       palette: ['#4C1722', '#1d070c', '#8a2a3a'],
       occasions: ['Cocktail & Private Dinner', 'Modern Reception'], fit: 1, pairs: ['meridian-blazer', 'nocturne-cape-top'],
-      media: { form: '', back: '', detail: '', move: '' },
+      media: { form: 'assets/media/products/temp/solstice-midi-form.webp', back: '', detail: 'assets/media/products/temp/solstice-midi-detail.webp', move: 'assets/media/products/temp/solstice-midi-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
       prompt: 'Velvet-garnet satin twill midi dress with a sculpted waist twist and fluid hem, soft window light on ivory, editorial womenswear'
     },
     {
@@ -122,7 +122,7 @@
       care: 'Brush gently with a soft garment brush after wearing. Steam, never press the lapel roll flat.',
       palette: ['#2a2018', '#0E0D0C', '#C9AF7E'],
       occasions: ['Elevated Day-to-Evening', 'Cocktail & Private Dinner'], fit: 1, pairs: ['meridian-trousers', 'alabaster-slip'],
-      media: { form: '', back: '', detail: '', move: '' },
+      media: { form: 'assets/media/products/temp/meridian-blazer-form.webp', back: '', detail: 'assets/media/products/temp/meridian-blazer-detail.webp', move: 'assets/media/products/temp/meridian-blazer-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
       prompt: 'Structured ivory tailored blazer in tropical wool-silk with a sharp shoulder and concealed horn clasp, soft window light, editorial womenswear'
     },
     {
@@ -141,7 +141,7 @@
       care: 'Hang by the waistband on a padded clip hanger. Steam on the reverse; never press the pleat flat.',
       palette: ['#26262a', '#0E0D0C', '#C9AF7E'],
       occasions: ['Elevated Day-to-Evening'], fit: 0.9, pairs: ['meridian-blazer', 'alabaster-slip'],
-      media: { form: '', back: '', detail: '', move: '' },
+      media: { form: 'assets/media/products/temp/meridian-trousers-form.webp', back: '', detail: 'assets/media/products/temp/meridian-trousers-detail.webp', move: 'assets/media/products/temp/meridian-trousers-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
       prompt: 'High-waist wide-leg double-faced crepe trousers with a tailored pleat, fluid motion, soft light on an ivory wall'
     },
     {
@@ -160,7 +160,7 @@
       care: 'Mulberry silk waterspots: keep dry and blot at once. Steam on the reverse at a distance.',
       palette: ['#2a2018', '#0E0D0C', '#C9AF7E'],
       occasions: ['Modern Reception', 'Cocktail & Private Dinner'], fit: 1.1, pairs: ['meridian-blazer', 'nocturne-cape-top'],
-      media: { form: '', back: '', detail: '', move: '' },
+      media: { form: 'assets/media/products/temp/alabaster-slip-form.webp', back: '', detail: 'assets/media/products/temp/alabaster-slip-detail.webp', move: 'assets/media/products/temp/alabaster-slip-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
       prompt: 'Ivory bias-cut mulberry silk slip dress, liquid pearl sheen, hand-rolled seams, soft window light, editorial womenswear'
     },
     {
@@ -179,7 +179,7 @@
       care: 'Beadwork snags easily: remove rings when dressing. Steam at a distance, never press, and store flat in tissue.',
       palette: ['#16110a', '#0E0D0C', '#C9AF7E'],
       occasions: ['Evening & Gala', 'Modern Reception'], fit: 1, pairs: ['aurelia-gown', 'meridian-trousers'],
-      media: { form: '', back: '', detail: '', move: '' },
+      media: { form: 'assets/media/products/temp/nocturne-cape-top-form.webp', back: '', detail: 'assets/media/products/temp/nocturne-cape-top-detail.webp', move: 'assets/media/products/temp/nocturne-cape-top-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
       prompt: 'Sheer silk organza cape top with tonal hand-beading catching the light, numbered atelier edition, dark warm chiaroscuro'
     }
   ];
