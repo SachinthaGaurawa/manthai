@@ -292,17 +292,18 @@
     insert:  ['V', 'Beneath the piece, a velvet insert cut to hold the Private Circle Presentation Case.'],
     elite:   ['VI', 'The Private Circle Presentation Case. Crafted to Endure.'],
     card:    ['VII', 'The black metal Verification Card. Select it to turn it over.'],
-    story:   ['VIII', 'Beneath the case, cut to its exact size, the Story Card of your piece.']
+    story:   ['VIII', 'Beneath the case, cut to its exact size, the Story Card of your piece.'],
+    cert:    ['IX', 'Beneath it, the Certificate of Authenticity, made to be kept.']
   };
-  var ORDER = ['closed', 'open', 'garment', 'label', 'insert', 'elite', 'card', 'story'];
-  var PART_SHOT = { box: 'closed', garment: 'garment', label: 'label', elite: 'elite', card: 'card', story: 'story' };
-  var moveT = 0, capT = 0, cutT = 0, chainT = 0, playT = [], playing = false;
+  var ORDER = ['closed', 'open', 'garment', 'label', 'insert', 'elite', 'card', 'story', 'cert'];
+  var PART_SHOT = { box: 'closed', garment: 'garment', label: 'label', elite: 'elite', card: 'card', story: 'story', cert: 'cert' };
+  var moveT = 0, capT = 0, cutT = 0, chainT = 0, chain2T = 0, playT = [], playing = false;
   $('#partsList').innerHTML = M.RITUAL.map(function (r) {
     return '<li><button class="part-btn" type="button" data-part="' + r.id + '" aria-pressed="false"><span class="part-btn__name">' + esc(r.name) + '</span><span class="part-btn__spec">' + esc(r.spec) + '</span></button></li>';
   }).join('');
   $('#partDetail').textContent = 'Select a part to see what it is made of.';
-  /* the woven label, the Verification Card and the Story Card are shown at screen scale: note 2 says so */
-  var SCALE_NOTE = { label: 1, card: 1, story: 1 };
+  /* the woven label, the Verification Card, the Story Card and the certificate are shown at screen scale: note 2 says so */
+  var SCALE_NOTE = { label: 1, card: 1, story: 1, cert: 1 };
   function detailHTML(r) { return r ? esc(r.name + '. ' + r.text) + (SCALE_NOTE[r.id] ? C.dref(2) : '') : 'Select a part to see what it is made of.'; }
   /* The detail line changes length with every shot. Reserve the height of the longest one so the
      column never resizes, and the box beside it (centred in the same grid row) never shifts. */
@@ -317,14 +318,23 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(holdDetail);
   /* Moving between the tissue layer and the Presentation Case layer is a cinematic cut:
      a short dip to black hides the swap, so no two layers ever cross in 3D. */
-  var TOP = { open: 1, garment: 1, label: 1 }, CASE = { insert: 1, elite: 1, card: 1, story: 1 };
+  var TOP = { open: 1, garment: 1, label: 1 }, CASE = { insert: 1, elite: 1, card: 1, story: 1, cert: 1 };
   function shot(name, opts) {
     opts = opts || {};
     var cur = ub.getAttribute('data-state');
-    clearTimeout(chainT);
+    /* a viewer's own choice cancels any move still queued; a queued step (keep) leaves the queue alone */
+    if (!opts.keep) { clearTimeout(chainT); clearTimeout(chain2T); }
     if (cur === name && !opts.force) return;
+    /* the layers are lifted one at a time: the certificate is only reached through the Story Card,
+       and leaving it the Story Card is laid back down first */
+    if (name === 'cert' && cur !== 'story') {
+      shot('story', { keep: 1 });
+      chain2T = setTimeout(function () { shot('cert', { keep: 1 }); }, C.reduced() ? 0 : (cur === 'card' ? 7200 : 4900));
+      return;
+    }
+    if (cur === 'cert' && name !== 'story') { shot('story', { keep: 1 }); chain2T = setTimeout(function () { shot(name, { keep: 1 }); }, C.reduced() ? 0 : 3300); return; }
     /* the Verification Card goes home and the camera settles on the case before the lid shuts and the case rises */
-    if (cur === 'card' && name === 'story') { shot('elite'); chainT = setTimeout(function () { shot('story'); }, C.reduced() ? 0 : 2300); return; }
+    if (cur === 'card' && name === 'story') { shot('elite', { keep: 1 }); chainT = setTimeout(function () { shot('story', { keep: 1 }); }, C.reduced() ? 0 : 2300); return; }
     clearTimeout(cutT); ub.classList.remove('is-swap');
     var cut = !C.reduced() && ((TOP[cur] && CASE[name]) || (CASE[cur] && (TOP[name] || name === 'closed')));
     if (!cut) { ub.classList.remove('is-cut'); apply(name); return; }
@@ -344,7 +354,7 @@
     if (!C.reduced()) { ub.classList.add('is-moving'); clearTimeout(moveT); moveT = setTimeout(function () { ub.classList.remove('is-moving'); }, 2200); }
     ubCap.classList.remove('is-on'); clearTimeout(capT);
     capT = setTimeout(function () { var c = SHOTS[name]; ubCap.innerHTML = '<b>' + c[0] + '</b>' + esc(c[1]); ubCap.classList.add('is-on'); }, C.reduced() ? 0 : 700);
-    var part = { closed: 'box', garment: 'garment', label: 'label', insert: 'elite', elite: 'elite', card: 'card', story: 'story' }[name];
+    var part = { closed: 'box', garment: 'garment', label: 'label', insert: 'elite', elite: 'elite', card: 'card', story: 'story', cert: 'cert' }[name];
     $$('.part-btn').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-part') === part)); });
     var r = part && M.RITUAL.filter(function (x) { return x.id === part; })[0];
     $('#partDetail').innerHTML = detailHTML(r);
@@ -352,7 +362,7 @@
   function stopPlay() { playing = false; rewinding = false; playT.forEach(clearTimeout); playT = []; playBtn.textContent = 'Play the ritual'; }
   /* Closing never jumps: the film runs backwards, one shot at a time, from wherever the viewer is,
      until the doors meet again. */
-  var PREV = { story: 'elite', card: 'elite', elite: 'insert', insert: 'label', label: 'garment', garment: 'open', open: 'closed' };
+  var PREV = { cert: 'story', story: 'elite', card: 'elite', elite: 'insert', insert: 'label', label: 'garment', garment: 'open', open: 'closed' };
   var rewinding = false;
   function rewind() {
     var st = ub.getAttribute('data-state');
@@ -364,7 +374,8 @@
     while (PREV[cur]) {
       var nx = PREV[cur], crossing = (TOP[cur] && CASE[nx]) || (CASE[cur] && TOP[nx]);
       steps.push([nx, t]);
-      t += C.reduced() ? 900 : (crossing ? 2300 : nx === 'open' ? 1900 : 1700);
+      /* laying the Story Card back over the certificate takes longer than any other step */
+      t += C.reduced() ? 900 : (cur === 'cert' ? 3300 : crossing ? 2300 : nx === 'open' ? 1900 : 1700);
       cur = nx;
     }
     steps.forEach(function (s, i) {
@@ -377,7 +388,7 @@
   function play() {
     if (playing) { stopPlay(); return; }
     playing = true; playBtn.textContent = 'Stop';
-    var seq = [['closed', 0], ['open', 1600], ['garment', 5000], ['label', 8400], ['insert', 12000], ['elite', 15600], ['card', 19200], ['flip', 22800], ['story', 26000], ['elite', 34500]];
+    var seq = [['closed', 0], ['open', 1600], ['garment', 5000], ['label', 8400], ['insert', 12000], ['elite', 15600], ['card', 19200], ['flip', 22800], ['story', 26000], ['cert', 33000], ['elite', 42500]];
     if (C.reduced()) seq = seq.map(function (s, i) { return [s[0], i * 2600]; });
     seq.forEach(function (s, i) {
       playT.push(setTimeout(function () {
@@ -397,7 +408,8 @@
     stopPlay();
     var h = e.target.closest('[data-hit]'), st = ub.getAttribute('data-state'), k = h && h.getAttribute('data-hit');
     if (st === 'closed') { shot('open'); return; }
-    if (st === 'story') { shot('elite'); return; }
+    if (st === 'cert') { shot('story'); return; }
+    if (st === 'story') { shot(k === 'story' ? 'cert' : 'elite'); return; }
     if (k === 'story') { shot('story'); return; }
     if (k === 'vcard') { if (st === 'card') ub.setAttribute('data-flip', String(ub.getAttribute('data-flip') !== 'true')); else shot(st === 'elite' ? 'card' : 'elite'); return; }
     if (k === 'case') { shot(st === 'elite' ? 'card' : 'elite'); return; }
