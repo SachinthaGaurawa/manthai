@@ -296,7 +296,7 @@
   };
   var ORDER = ['closed', 'open', 'garment', 'label', 'insert', 'elite', 'card', 'story'];
   var PART_SHOT = { box: 'closed', garment: 'garment', label: 'label', elite: 'elite', card: 'card', story: 'story' };
-  var moveT = 0, capT = 0, cutT = 0, playT = [], playing = false;
+  var moveT = 0, capT = 0, cutT = 0, chainT = 0, playT = [], playing = false;
   $('#partsList').innerHTML = M.RITUAL.map(function (r) {
     return '<li><button class="part-btn" type="button" data-part="' + r.id + '" aria-pressed="false"><span class="part-btn__name">' + esc(r.name) + '</span><span class="part-btn__spec">' + esc(r.spec) + '</span></button></li>';
   }).join('');
@@ -318,7 +318,10 @@
   function shot(name, opts) {
     opts = opts || {};
     var cur = ub.getAttribute('data-state');
+    clearTimeout(chainT);
     if (cur === name && !opts.force) return;
+    /* the Verification Card goes home and the camera settles on the case before the lid shuts and the case rises */
+    if (cur === 'card' && name === 'story') { shot('elite'); chainT = setTimeout(function () { shot('story'); }, C.reduced() ? 0 : 2300); return; }
     clearTimeout(cutT); ub.classList.remove('is-swap');
     var cut = !C.reduced() && ((TOP[cur] && CASE[name]) || (CASE[cur] && (TOP[name] || name === 'closed')));
     if (!cut) { ub.classList.remove('is-cut'); apply(name); return; }
@@ -330,6 +333,7 @@
     }, 420);
   }
   function apply(name) {
+    ub.setAttribute('data-prev', ub.getAttribute('data-state') || '');
     ub.setAttribute('data-state', name);
     if (name !== 'card') ub.setAttribute('data-flip', 'false');
     var open = name !== 'closed';
@@ -370,7 +374,7 @@
   function play() {
     if (playing) { stopPlay(); return; }
     playing = true; playBtn.textContent = 'Stop';
-    var seq = [['closed', 0], ['open', 1600], ['garment', 5000], ['label', 8400], ['insert', 12000], ['elite', 15600], ['card', 19200], ['flip', 22800], ['story', 26000], ['elite', 31000]];
+    var seq = [['closed', 0], ['open', 1600], ['garment', 5000], ['label', 8400], ['insert', 12000], ['elite', 15600], ['card', 19200], ['flip', 22800], ['story', 26000], ['elite', 34500]];
     if (C.reduced()) seq = seq.map(function (s, i) { return [s[0], i * 2600]; });
     seq.forEach(function (s, i) {
       playT.push(setTimeout(function () {
