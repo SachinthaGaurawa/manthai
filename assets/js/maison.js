@@ -301,6 +301,17 @@
     return '<li><button class="part-btn" type="button" data-part="' + r.id + '" aria-pressed="false"><span class="part-btn__name">' + esc(r.name) + '</span><span class="part-btn__spec">' + esc(r.spec) + '</span></button></li>';
   }).join('');
   $('#partDetail').textContent = 'Select a part to see what it is made of.';
+  /* The detail line changes length with every shot. Reserve the height of the longest one so the
+     column never resizes, and the box beside it (centred in the same grid row) never shifts. */
+  function holdDetail() {
+    var d = $('#partDetail'), keep = d.textContent, max = 0;
+    d.style.minHeight = '0px';
+    ['Select a part to see what it is made of.'].concat(M.RITUAL.map(function (x) { return x.name + '. ' + x.text; })).forEach(function (t) { d.textContent = t; max = Math.max(max, d.offsetHeight); });
+    d.textContent = keep; d.style.minHeight = max + 'px';
+  }
+  holdDetail();
+  var hdT = 0; window.addEventListener('resize', function () { clearTimeout(hdT); hdT = setTimeout(holdDetail, 150); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(holdDetail);
   /* Moving between the tissue layer and the Elite Club layer is a cinematic cut:
      a short dip to black hides the swap, so no two layers ever cross in 3D. */
   var TOP = { open: 1, garment: 1, label: 1 }, CASE = { insert: 1, elite: 1, card: 1, story: 1 };
