@@ -618,6 +618,13 @@
   }
 
   shop.openBag = function () { renderBag(); C.open($('#layerBag')); };
+  /* add a piece from outside the piece page (Saved Silhouettes) */
+  shop.addPiece = function (id, size) {
+    var p = C.product(id); if (!p || C.available(p) <= 0) return false;
+    var key = C.lineKey(p.id, size), line = C.state.bag.filter(function (l) { return l.key === key; })[0];
+    if (line) line.qty += 1; else C.state.bag.push({ key: key, id: p.id, size: size, qty: 1 });
+    C.save(); C.updateBagUI(); C.emit('bag'); return true;
+  };
   /* the router asks for these; false sends the visitor home */
   shop.renderCheckoutPage = function () { if (!C.state.bag.length) return false; renderCheckoutPage(); return true; };
   shop.renderConfirmed = function () { var o = lastOrder || C.state.orders[0]; if (!o) return false; lastOrder = o; renderConfirmed(o); return true; };
