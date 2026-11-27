@@ -35,7 +35,7 @@
 }
 /* per-shot pacing: the macro on the label is a slow, deliberate push; the story shot waits for the case to clear */
 .unbox[data-state='label'] .unbox__cam { transition: transform 2.6s cubic-bezier(.6, 0, .18, 1), scale 3.3s cubic-bezier(.45, 0, .1, 1) .35s; }
-.unbox[data-state='story'] .unbox__cam { transition: transform 2.6s cubic-bezier(.6, 0, .18, 1) .45s, scale 3.2s cubic-bezier(.45, 0, .1, 1) 1.1s; }
+.unbox[data-state='story'] .unbox__cam { transition: transform 2.6s cubic-bezier(.6, 0, .18, 1) 1.2s, scale 3.2s cubic-bezier(.45, 0, .1, 1) 1.9s; }
 .unbox[data-state='closed'] .unbox__cam { transition: transform 2.4s cubic-bezier(.65, 0, .2, 1), scale 2.4s cubic-bezier(.6, 0, .2, 1); }
 /* camera shots: each one frames a single object, and none of them pushes a large layer far off-screen */
 .unbox[data-state='open'] .unbox__cam { --s: .86; --rx: 48deg; --rz: -14deg; --ty: calc(var(--D) * -.02); --tz: calc(var(--H) * -.6); }
@@ -92,7 +92,7 @@
    It is only revealed when the case is lifted away (the 'story' shot). */
 .ub-story { left: calc(var(--W) * -.28); top: calc(var(--D) * -.01 - var(--W) * .18665); width: calc(var(--W) * .56); height: calc(var(--W) * .3733); transform: translateZ(calc(var(--zr) + 1px)); visibility: hidden; transition: transform .8s cubic-bezier(.5, 0, .3, 1), visibility 0s 3.2s; }
 /* once the case has gone, the card rises to the rim of the insert, into the light */
-.unbox[data-state='story'] .ub-story { visibility: visible; transform: translateZ(calc(var(--zi) + var(--H) * .18)); transition: transform 1.5s cubic-bezier(.45, 0, .2, 1) 1.5s, visibility 0s; }
+.unbox[data-state='story'] .ub-story { visibility: visible; transform: translateZ(calc(var(--zi) + var(--H) * .18)); transition: transform 1.5s cubic-bezier(.45, 0, .2, 1) 3s, visibility 0s; }
 .ub-story__face { background: linear-gradient(170deg, #F7F4EE, #E9E1D2); box-shadow: inset 0 0 0 3px rgba(117, 90, 42, .28), inset 0 0 0 14px #F4F0E8, inset 0 0 0 15px rgba(117, 90, 42, .35); padding: 9% 12%; display: flex; flex-direction: column; justify-content: center; gap: 4.2%; }
 .ub-story__p { font: italic 400 calc(var(--W) * .0126)/1.6 var(--serif); color: #59534B; margin: 0; max-width: 88%; }
 .ub-story__f { display: flex; justify-content: space-between; align-items: baseline; margin-top: 3%; font: 400 calc(var(--W) * .0076)/1 var(--sans); letter-spacing: .22em; text-transform: uppercase; color: #755A2A; }
@@ -108,7 +108,7 @@
   transition: translate 1.1s cubic-bezier(.55, 0, .25, 1) .7s, transform .9s cubic-bezier(.5, 0, .3, 1) 1.7s; }
 /* the story shot: the case rises clear of the walls, then glides up and away over the back of the box (an L path, never through a wall) */
 .unbox[data-state='story'] .ub-case { translate: 0 calc(var(--D) * -1.1) 0; transform: translateZ(calc(var(--zr) + var(--H) * 1.7));
-  transition: transform 1s cubic-bezier(.5, 0, .3, 1), translate 1.3s cubic-bezier(.55, 0, .25, 1) .7s; }
+  transition: transform 1s cubic-bezier(.5, 0, .3, 1) 1.5s, translate 1.3s cubic-bezier(.55, 0, .25, 1) 2.2s; }
 .ub-cbase { left: 0; top: 0; width: var(--cw); height: var(--cd); background: var(--navy-deep); }
 .ub-cw { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), inset 0 0 0 1px rgba(255, 255, 255, .06); }
 .ub-cw--front { left: 0; top: calc(var(--cd) - var(--ch)); width: var(--cw); height: var(--ch); transform-origin: 50% 100%; transform: rotateX(-90deg); background-color: var(--navy-hi); }
@@ -130,6 +130,9 @@
 /* the lid hinges at the back edge and stands open, its lining facing the camera */
 .ub-lid { left: 0; top: 0; width: var(--cw); height: var(--cd); transform-origin: 50% 0; transform: translateZ(var(--ch)) rotateX(var(--lid, 0deg)); transition: transform 1.6s cubic-bezier(.62, 0, .2, 1); }
 .unbox:is([data-state='elite'], [data-state='card']) .ub-lid { --lid: 104deg; transition-delay: .5s; }
+/* order of events: the lid only closes once the card is home, the case only rises once the lid is shut,
+   and coming back from the Story Card the lid only opens once the case has landed */
+.unbox[data-state='elite'][data-prev='story'] .ub-lid { transition-delay: 2.7s; }
 .ub-lid__out, .ub-lid__in { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
 .ub-lid__out { transform: translateZ(1px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); }
 .ub-lid__o { display: grid; place-items: center; }
