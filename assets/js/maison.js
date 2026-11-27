@@ -331,7 +331,31 @@
     var r = part && M.RITUAL.filter(function (x) { return x.id === part; })[0];
     $('#partDetail').textContent = r ? r.name + '. ' + r.text : 'Select a part to see what it is made of.';
   }
-  function stopPlay() { playing = false; playT.forEach(clearTimeout); playT = []; playBtn.textContent = 'Play the ritual'; }
+  function stopPlay() { playing = false; rewinding = false; playT.forEach(clearTimeout); playT = []; playBtn.textContent = 'Play the ritual'; }
+  /* Closing never jumps: the film runs backwards, one shot at a time, from wherever the viewer is,
+     until the doors meet again. */
+  var PREV = { story: 'elite', card: 'elite', elite: 'insert', insert: 'label', label: 'garment', garment: 'open', open: 'closed' };
+  var rewinding = false;
+  function rewind() {
+    var st = ub.getAttribute('data-state');
+    if (st === 'closed' || rewinding) return;
+    stopPlay(); rewinding = true;
+    var t = 0, steps = [];
+    if (st === 'card' && ub.getAttribute('data-flip') === 'true') { steps.push(['flip', 0]); t = 1300; }
+    var cur = st;
+    while (PREV[cur]) {
+      var nx = PREV[cur], crossing = (TOP[cur] && CASE[nx]) || (CASE[cur] && TOP[nx]);
+      steps.push([nx, t]);
+      t += C.reduced() ? 900 : (crossing ? 2300 : nx === 'open' ? 1900 : 1700);
+      cur = nx;
+    }
+    steps.forEach(function (s, i) {
+      playT.push(setTimeout(function () {
+        if (s[0] === 'flip') ub.setAttribute('data-flip', 'false'); else shot(s[0]);
+        if (i === steps.length - 1) { rewinding = false; playT = []; }
+      }, s[1]));
+    });
+  }
   function play() {
     if (playing) { stopPlay(); return; }
     playing = true; playBtn.textContent = 'Stop';
@@ -367,11 +391,11 @@
   ub.setAttribute('aria-label', 'Interactive MANTHAI box. Use the arrow keys, the list of parts or the buttons below to move the camera.');
   ub.addEventListener('keydown', function (e) {
     var i = ORDER.indexOf(ub.getAttribute('data-state'));
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); stopPlay(); shot(i === 0 ? 'open' : 'closed'); }
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (i === 0) { stopPlay(); shot('open'); } else rewind(); }
     else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); stopPlay(); shot(ORDER[Math.min(i + 1, ORDER.length - 1)]); }
     else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); stopPlay(); shot(ORDER[Math.max(i - 1, 0)]); }
   });
-  boxBtn.addEventListener('click', function () { stopPlay(); var st = ub.getAttribute('data-state'); shot(st === 'closed' ? 'open' : 'closed'); });
+  boxBtn.addEventListener('click', function () { var st = ub.getAttribute('data-state'); if (st === 'closed') { stopPlay(); shot('open'); } else rewind(); });
   playBtn.addEventListener('click', function () { if (!playing) frameBox(); play(); });
   /* a gentle hand-held drift that follows the pointer */
   if (!C.reduced() && window.matchMedia('(hover: hover)').matches) {
