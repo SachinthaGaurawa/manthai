@@ -263,8 +263,10 @@
       text: 'Inside the back neck, under the facing, sits a woven silk-damask label with the MANTHAI wordmark in gold. Beneath it, a soft satin label gives the size and the words Crafted in Sri Lanka. Both are woven in proportion to the garment and stitched into the neck seam, so nothing rests against the skin.' },
     { id: 'elite',   name: 'MANTHAI Elite Club Case', spec: 'Magnetic lid, velvet tray, domed resin Seal', parts: ['card'],
       text: 'Under the piece, a velvet insert holds the MANTHAI Elite Club case. Its lid closes on magnets and is lined with the words Sovereignty in Every Detail. Step Into Privilege. Inside, a velvet tray holds your Verification Card and the Seal, cast in gold under a clear resin dome.' },
-    { id: 'card',    name: 'Verification Card and Story Card', spec: 'Black metal, QR and NFC; thick cotton', parts: ['card'],
-      text: 'The Verification Card is cut from black brushed metal and carries the Seal, your edition number and an NFC and QR link to the authenticity record. Under the case lies a thick cotton Story Card that tells the provenance of your piece.' }
+    { id: 'card',    name: 'Verification Card', spec: 'Brushed black metal, QR and NFC', parts: ['card'],
+      text: 'The Verification Card is cut from brushed black metal with gold edge plates. Its face carries only the Seal; its back carries your edition number and an NFC and QR link to the authenticity record.' },
+    { id: 'story',   name: 'Story Card', spec: 'Thick cotton, cut to the case', parts: ['card'],
+      text: 'Beneath the Elite Club case lies a thick cotton Story Card, cut to exactly the same size as the case so that nothing shifts in transit. It records where, and by whose hands, your piece was made.' }
   ];
 
   /* ---------- Short policy texts for the footer info layer ---------- */

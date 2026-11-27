@@ -291,10 +291,11 @@
     label:   ['IV', 'The woven label and its origin and size label, set under the back facing.'],
     insert:  ['V', 'Beneath the piece, a velvet insert cut to hold the Elite Club case.'],
     elite:   ['VI', 'MANTHAI Elite Club. Sovereignty in Every Detail.'],
-    card:    ['VII', 'The black metal Verification Card. Select it to turn it over.']
+    card:    ['VII', 'The black metal Verification Card. Select it to turn it over.'],
+    story:   ['VIII', 'Beneath the case, cut to its exact size, the Story Card of your piece.']
   };
-  var ORDER = ['closed', 'open', 'garment', 'label', 'insert', 'elite', 'card'];
-  var PART_SHOT = { box: 'closed', garment: 'garment', label: 'label', elite: 'elite', card: 'card' };
+  var ORDER = ['closed', 'open', 'garment', 'label', 'insert', 'elite', 'card', 'story'];
+  var PART_SHOT = { box: 'closed', garment: 'garment', label: 'label', elite: 'elite', card: 'card', story: 'story' };
   var moveT = 0, capT = 0, cutT = 0, playT = [], playing = false;
   $('#partsList').innerHTML = M.RITUAL.map(function (r) {
     return '<li><button class="part-btn" type="button" data-part="' + r.id + '" aria-pressed="false"><span class="part-btn__name">' + esc(r.name) + '</span><span class="part-btn__spec">' + esc(r.spec) + '</span></button></li>';
@@ -302,7 +303,7 @@
   $('#partDetail').textContent = 'Select a part to see what it is made of.';
   /* Moving between the tissue layer and the Elite Club layer is a cinematic cut:
      a short dip to black hides the swap, so no two layers ever cross in 3D. */
-  var TOP = { open: 1, garment: 1, label: 1 }, CASE = { insert: 1, elite: 1, card: 1 };
+  var TOP = { open: 1, garment: 1, label: 1 }, CASE = { insert: 1, elite: 1, card: 1, story: 1 };
   function shot(name, opts) {
     opts = opts || {};
     var cur = ub.getAttribute('data-state');
@@ -325,7 +326,7 @@
     if (!C.reduced()) { ub.classList.add('is-moving'); clearTimeout(moveT); moveT = setTimeout(function () { ub.classList.remove('is-moving'); }, 2200); }
     ubCap.classList.remove('is-on'); clearTimeout(capT);
     capT = setTimeout(function () { var c = SHOTS[name]; ubCap.innerHTML = '<b>' + c[0] + '</b>' + esc(c[1]); ubCap.classList.add('is-on'); }, C.reduced() ? 0 : 700);
-    var part = { closed: 'box', garment: 'garment', label: 'label', insert: 'elite', elite: 'elite', card: 'card' }[name];
+    var part = { closed: 'box', garment: 'garment', label: 'label', insert: 'elite', elite: 'elite', card: 'card', story: 'story' }[name];
     $$('.part-btn').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-part') === part)); });
     var r = part && M.RITUAL.filter(function (x) { return x.id === part; })[0];
     $('#partDetail').textContent = r ? r.name + '. ' + r.text : 'Select a part to see what it is made of.';
@@ -334,7 +335,7 @@
   function play() {
     if (playing) { stopPlay(); return; }
     playing = true; playBtn.textContent = 'Stop';
-    var seq = [['closed', 0], ['open', 1600], ['garment', 5000], ['label', 8400], ['insert', 12000], ['elite', 15600], ['card', 19200], ['flip', 22800], ['elite', 26000]];
+    var seq = [['closed', 0], ['open', 1600], ['garment', 5000], ['label', 8400], ['insert', 12000], ['elite', 15600], ['card', 19200], ['flip', 22800], ['story', 26000], ['elite', 31000]];
     if (C.reduced()) seq = seq.map(function (s, i) { return [s[0], i * 2600]; });
     seq.forEach(function (s, i) {
       playT.push(setTimeout(function () {
@@ -354,8 +355,10 @@
     stopPlay();
     var h = e.target.closest('[data-hit]'), st = ub.getAttribute('data-state'), k = h && h.getAttribute('data-hit');
     if (st === 'closed') { shot('open'); return; }
+    if (st === 'story') { shot('elite'); return; }
+    if (k === 'story') { shot('story'); return; }
     if (k === 'vcard') { if (st === 'card') ub.setAttribute('data-flip', String(ub.getAttribute('data-flip') !== 'true')); else shot(st === 'elite' ? 'card' : 'elite'); return; }
-    if (k === 'case' || k === 'story') { shot(st === 'elite' ? 'card' : 'elite'); return; }
+    if (k === 'case') { shot(st === 'elite' ? 'card' : 'elite'); return; }
     if (k === 'label') { shot('label'); return; }
     if (k === 'garment') { shot(st === 'garment' || st === 'label' ? 'insert' : 'garment'); return; }
     shot(st === 'open' ? 'closed' : 'open');
