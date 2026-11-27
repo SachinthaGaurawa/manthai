@@ -300,13 +300,16 @@
     return '<li><button class="part-btn" type="button" data-part="' + r.id + '" aria-pressed="false"><span class="part-btn__name">' + esc(r.name) + '</span><span class="part-btn__spec">' + esc(r.spec) + '</span></button></li>';
   }).join('');
   $('#partDetail').textContent = 'Select a part to see what it is made of.';
+  /* the woven label, the Verification Card and the Story Card are shown at screen scale: note 2 says so */
+  var SCALE_NOTE = { label: 1, card: 1, story: 1 };
+  function detailHTML(r) { return r ? esc(r.name + '. ' + r.text) + (SCALE_NOTE[r.id] ? C.dref(2) : '') : 'Select a part to see what it is made of.'; }
   /* The detail line changes length with every shot. Reserve the height of the longest one so the
      column never resizes, and the box beside it (centred in the same grid row) never shifts. */
   function holdDetail() {
-    var d = $('#partDetail'), keep = d.textContent, max = 0;
+    var d = $('#partDetail'), keep = d.innerHTML, max = 0;
     d.style.minHeight = '0px';
-    ['Select a part to see what it is made of.'].concat(M.RITUAL.map(function (x) { return x.name + '. ' + x.text; })).forEach(function (t) { d.textContent = t; max = Math.max(max, d.offsetHeight); });
-    d.textContent = keep; d.style.minHeight = max + 'px';
+    ['Select a part to see what it is made of.'].concat(M.RITUAL.map(detailHTML)).forEach(function (t) { d.innerHTML = t; max = Math.max(max, d.offsetHeight); });
+    d.innerHTML = keep; d.style.minHeight = max + 'px';
   }
   holdDetail();
   var hdT = 0; window.addEventListener('resize', function () { clearTimeout(hdT); hdT = setTimeout(holdDetail, 150); });
@@ -343,7 +346,7 @@
     var part = { closed: 'box', garment: 'garment', label: 'label', insert: 'elite', elite: 'elite', card: 'card', story: 'story' }[name];
     $$('.part-btn').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-part') === part)); });
     var r = part && M.RITUAL.filter(function (x) { return x.id === part; })[0];
-    $('#partDetail').textContent = r ? r.name + '. ' + r.text : 'Select a part to see what it is made of.';
+    $('#partDetail').innerHTML = detailHTML(r);
   }
   function stopPlay() { playing = false; rewinding = false; playT.forEach(clearTimeout); playT = []; playBtn.textContent = 'Play the ritual'; }
   /* Closing never jumps: the film runs backwards, one shot at a time, from wherever the viewer is,
@@ -567,7 +570,7 @@
           '<p class="cert__ok"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>Verified Authentic</p>' +
         '</div>' +
         '<div class="cert__main">' +
-          '<p class="cert__k">Museum Provenance Certificate</p>' +
+          '<p class="cert__k">Museum Provenance Certificate<span class="cert__scale">Simulated preview, not shown at 1:1 scale' + C.dref(2) + '</span></p>' +
           '<dl class="cert__table">' +
             '<div><dt>Piece</dt><dd>' + esc(p.name) + '</dd></div>' +
             '<div><dt>Edition number</dt><dd>' + (p.edition ? 'Piece ' + pad(n) + ' of ' + p.edition : 'Atelier series') + '</dd></div>' +
@@ -848,21 +851,27 @@
   ROUTES.checkout = { path: '/checkout', title: 'Secure Acquisition | House of MANTHAI', og: 'Secure Acquisition | House of MANTHAI', desc: 'Complete your acquisition from House of MANTHAI, with complimentary insured delivery across Sri Lanka.' };
   ROUTES.confirmed = { path: '/checkout/confirmed', title: 'Acquisition Confirmed | House of MANTHAI', og: 'Acquisition Confirmed | House of MANTHAI', desc: 'Your Digital Acquisition Record from House of MANTHAI.' };
   ROUTES.account = { path: '/account', title: 'Private Circle | House of MANTHAI', og: 'Private Circle | House of MANTHAI', desc: 'The Private Circle of House of MANTHAI: your acquisitions, Digital Vault, saved silhouettes, addresses and Colombo stylist concierge.' };
+  ROUTES.legal = { path: '/legal/' };
+  var LEGAL_DOCS = ['terms', 'shipping-exchanges', 'privacy', 'authenticity'];
+  function docFromPath(p) { var m = /\/legal\/([a-z-]+)\/?$/.exec(p || location.pathname); return m && LEGAL_DOCS.indexOf(m[1]) > -1 ? m[1] : null; }
   var ACCOUNT_TABS = ['overview', 'orders', 'vault', 'saved', 'profile', 'concierge'];
   function tabFromPath(p) { var m = /\/account(?:\/([a-z-]+))?\/?$/.exec(p || location.pathname); return m ? (ACCOUNT_TABS.indexOf(m[1]) > -1 ? m[1] : 'overview') : null; }
   var robots = document.querySelector('meta[name="robots"]'), robotsBase = robots && robots.content;
   var canon = document.querySelector('link[rel="canonical"]'), curSlug = null;
   function slugFromPath(p) { var m = /\/pieces\/([a-z0-9-]+)\/?$/.exec(p || location.pathname); return m && C.product(m[1]) ? m[1] : null; }
-  function routeFromPath(p) { p = p || location.pathname; return /\/the-maison\/?$/.test(p) ? 'maison' : /\/checkout\/confirmed\/?$/.test(p) ? 'confirmed' : /\/checkout\/?$/.test(p) ? 'checkout' : tabFromPath(p) ? 'account' : slugFromPath(p) ? 'piece' : 'home'; }
+  function routeFromPath(p) { p = p || location.pathname; return /\/the-maison\/?$/.test(p) ? 'maison' : /\/checkout\/confirmed\/?$/.test(p) ? 'confirmed' : /\/checkout\/?$/.test(p) ? 'checkout' : docFromPath(p) ? 'legal' : tabFromPath(p) ? 'account' : slugFromPath(p) ? 'piece' : 'home'; }
   function curRoute() { return document.documentElement.getAttribute('data-route') || 'home'; }
-  function pathFor(name, slug) { return name === 'piece' ? '/pieces/' + slug : name === 'account' ? '/account' + (slug && slug !== 'overview' ? '/' + slug : '') : (ROUTES[name] || ROUTES.home).path; }
-  function slugFor(name, p) { return name === 'account' ? tabFromPath(p) : slugFromPath(p); }
+  function pathFor(name, slug) { return name === 'piece' ? '/pieces/' + slug : name === 'legal' ? '/legal/' + slug : name === 'account' ? '/account' + (slug && slug !== 'overview' ? '/' + slug : '') : (ROUTES[name] || ROUTES.home).path; }
+  function slugFor(name, p) { return name === 'account' ? tabFromPath(p) : name === 'legal' ? docFromPath(p) : slugFromPath(p); }
   function applyRoute(name, slug) {
     var r = ROUTES[name] || ROUTES.home, title = r.title, d = r.desc, og = r.og;
     if (name === 'piece') {
       var p = C.product(slug); curSlug = slug;
       title = p.name + ' | House of MANTHAI'; og = p.name + ' | House of MANTHAI'; d = p.name + '. ' + p.summary + ' ' + C.price(p.price) + ', complimentary insured delivery across Sri Lanka.';
       M.shop.renderPiece(slug);
+    } else if (name === 'legal') {
+      var L = M.legal.render(slug); curSlug = slug;
+      title = L.title + ' | House of MANTHAI'; og = title; d = L.desc;
     } else if (name === 'account') { slug = ACCOUNT_TABS.indexOf(slug) > -1 ? slug : 'overview'; curSlug = slug; if (M.account) M.account.render(slug); }
     else curSlug = null;
     /* an empty bag has nothing to acquire, and a record needs an order: both fall back to the home shell */
@@ -881,9 +890,9 @@
   }
   function scrollTopNow() { if (C.lenis) C.lenis.scrollTo(0, { immediate: true }); window.scrollTo(0, 0); }
   ui.route = function (name, target, push, slug) {
-    if (!ROUTES[name] || (name === 'piece' && !C.product(slug))) name = 'home';
+    if (!ROUTES[name] || (name === 'piece' && !C.product(slug)) || (name === 'legal' && LEGAL_DOCS.indexOf(slug) < 0)) name = 'home';
     if (name === 'account' && ACCOUNT_TABS.indexOf(slug) < 0) slug = 'overview';
-    var same = name === curRoute() && ((name !== 'piece' && name !== 'account') || slug === curSlug);
+    var same = name === curRoute() && ((name !== 'piece' && name !== 'account' && name !== 'legal') || slug === curSlug);
     var finish = function () {
       if (target && document.getElementById(target)) C.scrollTo(target); else if (!same) scrollTopNow();
     };
@@ -894,7 +903,7 @@
     var swap = function () {
       applyRoute(name, slug); scrollTopNow();
       requestAnimationFrame(function () { requestAnimationFrame(function () { finish(); if (veil) veil.classList.remove('is-on'); }); });
-      var h = name === 'maison' ? $('#maisonPageTitle') : name === 'piece' ? $('#pdpTitle') : name === 'checkout' ? $('#cxTitle') : name === 'confirmed' ? $('#recTitle') : name === 'account' ? $('#acctTitle') : $('#hero h1');
+      var h = name === 'maison' ? $('#maisonPageTitle') : name === 'piece' ? $('#pdpTitle') : name === 'checkout' ? $('#cxTitle') : name === 'confirmed' ? $('#recTitle') : name === 'account' ? $('#acctTitle') : name === 'legal' ? $('#legalTitle') : $('#hero h1');
       if (h) { h.setAttribute('tabindex', '-1'); try { h.focus({ preventScroll: true }); } catch (e) { h.focus(); } }
     };
     if (veil && !C.reduced()) { veil.classList.add('is-on'); setTimeout(swap, 280); } else swap();
@@ -912,7 +921,7 @@
   };
   window.addEventListener('popstate', function () {
     var name = routeFromPath(), slug = slugFor(name);
-    if (name !== curRoute() || ((name === 'piece' || name === 'account') && slug !== curSlug) || name === 'checkout') { applyRoute(name, slug); scrollTopNow(); }
+    if (name !== curRoute() || ((name === 'piece' || name === 'account' || name === 'legal') && slug !== curSlug) || name === 'checkout') { applyRoute(name, slug); scrollTopNow(); }
     var id = location.hash.slice(1);
     if (id && document.getElementById(id)) requestAnimationFrame(function () { baseScrollTo(id); });
   });
@@ -935,6 +944,7 @@
     var t;
     if ((t = e.target.closest('[data-go]'))) { e.preventDefault(); go(t.getAttribute('data-go')); return; }
     if ((t = e.target.closest('[data-info]'))) { ui.openInfo(t.getAttribute('data-info')); return; }
+    if ((t = e.target.closest('[data-legal]'))) { e.preventDefault(); var dlg = t.closest('dialog'); if (dlg && dlg.open) C.close(dlg); ui.route('legal', null, true, t.getAttribute('data-legal')); return; }
     if ((t = e.target.closest('[data-action]'))) {
       var a = t.getAttribute('data-action');
       if (a === 'scroll-collection') { e.preventDefault(); C.scrollTo('collection'); }

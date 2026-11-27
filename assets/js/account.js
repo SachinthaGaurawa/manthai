@@ -208,7 +208,7 @@
     var verify = '<button class="btn btn--ghost btn--sm" type="button" data-verify-open>Verify Another Piece (NFC / Serial)</button>';
     var form = ui$.verify ? '<form class="acct-form acct-verify" id="verifyForm" novalidate><h2 class="acct-h3">Verify a Piece</h2><p class="acct-fine">Hold your phone to the woven label or the Verification Card, or enter the serial printed on the card.</p>' +
       '<div class="acct-form__row acct-form__row--field">' + field('vf-code', req('Passport ID'), input('vf-code', 'code', 'autocomplete="off" placeholder="MNT-XXXXXXX" required')) + '<button class="btn btn--solid" type="submit"><span class="btn__label">Verify</span></button></div></form>' : '';
-    return head('Wardrobe &amp; Digital Vault', 'Every piece you own, with its verified Digital Product Passport.', verify) + banner() + form +
+    return head('Wardrobe &amp; Digital Vault', 'Every piece you own, with its NFC-verified Digital Product Passport.' + C.dref(6), verify) + banner() + form +
       (items.length ? '<ul class="acct-vault">' + items.map(function (x) {
         var p = C.product(x.it.id);
         return '<li class="acct-vcard"><div class="acct-vcard__thumb">' + (p ? C.plateHTML(p, 'form') : '') + '</div>' +

@@ -103,7 +103,7 @@
     return out;
   }
   function crumbFor(p) { var t = (p.tabs || [])[0] || 'All'; return { tab: t, label: p.collection || t }; }
-  function editionLine(p) { return (p.edition ? 'Edition of ' + p.edition : 'Small-Batch Release of ' + p.crafted) + ' · Cut & Hand-Finished in Colombo'; }
+  function editionLine(p) { return esc(p.edition ? 'Edition of ' + p.edition : 'Small-Batch Release of ' + p.crafted) + C.dref(6) + ' · Cut &amp; Hand-Finished in Colombo'; }
   function wishLabel(on) { return on ? 'Silhouette Saved' : 'Save Silhouette'; }
 
   function pdpHTML(p) {
@@ -130,10 +130,10 @@
         '<div class="pdp__details">' +
           '<nav class="crumb" aria-label="Breadcrumb"><a href="/" data-crumb="All">Collections</a><span aria-hidden="true">/</span><a href="/" data-crumb="' + esc(cr.tab) + '">' + esc(cr.label) + '</a></nav>' +
           '<h1 class="pdp__name" id="pdpTitle">' + esc(p.name) + '</h1>' +
-          '<p class="pdp__edition">' + esc(editionLine(p)) + '</p>' +
+          '<p class="pdp__edition">' + editionLine(p) + '</p>' +
           '<p class="pdp__price">' + P(p.price) + '</p>' +
           '<p class="pdp__summary">' + esc(p.summary) + '</p>' +
-          '<div class="pdp__size"><div class="opt-label"><span id="sizeLabel">Size</span><button class="link-btn" type="button" data-sizeguide>Size &amp; Fit Guide</button></div>' +
+          '<div class="pdp__size"><div class="opt-label"><span id="sizeLabel">Size</span><span class="opt-label__guide"><button class="link-btn" type="button" data-sizeguide>Size &amp; Fit Guide</button>' + C.dref(4) + '</span></div>' +
             '<div class="sizes" role="radiogroup" aria-labelledby="sizeLabel" id="sizes">' + sizes + '</div>' +
             '<p class="field__error" id="sizeError" role="alert"></p>' +
             '<p class="stock-cue" id="stockCue" aria-live="polite"></p>' +
@@ -150,15 +150,15 @@
             '</div>' +
           '</div>' +
           '<div class="clarity">' +
-            '<p><b>Total: ' + P(p.price) + '</b> · Complimentary Insured Delivery <span id="pdpWhen"></span></p>' +
+            '<p><b>Total: ' + P(p.price) + '</b> · Complimentary Insured Delivery <span id="pdpWhen"></span>' + C.dref(5) + '</p>' +
             '<p><b>Gifting included.</b> Complimentary sealed lacquered gift presentation and a handwritten calligraphy note, available at checkout. Prices are omitted on gift receipts.</p>' +
             '<p><b>Risk-free stewardship.</b> 14-day complimentary size exchange, or a transparent refund to your original payment method.</p>' +
           '</div>' +
-          (feel.fabric ? '<div class="feel"><p class="feel__k">Feel &amp; Drape</p><p class="feel__v">' + esc(feel.fabric) + ' · ' + esc(feel.hand) + ' · ' + feel.gsm + ' GSM</p></div>' : '') +
+          (feel.fabric ? '<div class="feel"><p class="feel__k">Feel &amp; Drape' + C.dref(3) + '</p><p class="feel__v">' + esc(feel.fabric) + ' · ' + esc(feel.hand) + ' · ' + feel.gsm + ' GSM</p></div>' : '') +
           '<div class="pdp__acc">' +
             '<details><summary>Atelier Craft &amp; Textile Provenance</summary><p>' + esc(p.story) + '</p><p><b>Materials.</b> ' + esc(p.materials) + '</p><p><b>Weight.</b> ' + esc(p.weight || '') + '</p><p><b>Drape and lining.</b> ' + esc(p.drape || '') + '</p><p><b>Provenance.</b> ' + esc(p.provenance) + '.</p></details>' +
             '<details><summary>Garment Care</summary><p>' + esc(p.care) + '</p><ul class="care-list">' + M.CARE.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul></details>' +
-            '<details><summary>Packaging &amp; Verification Card</summary><p>Your piece arrives in a rigid gatefold box in high-gloss midnight navy lacquer, lined in velvet garnet and stamped in gold foil with the Unbounded Spiral Seal. Inside, it rests folded in acid-free tissue under a gold wafer, with a woven silk neck label. Beneath it, the Private Circle Presentation Case holds a brushed black metal Verification Card with NFC and QR, and under the case lies a thick cotton Story Card. Tap the card or scan its code to open the authenticity record.</p><button class="link-btn" type="button" data-passport="' + p.id + '">Open a sample record</button></details>' +
+            '<details><summary>Packaging &amp; Verification Card</summary><p>Your piece arrives in a rigid gatefold box in high-gloss midnight navy lacquer, lined in velvet garnet and stamped in gold foil with the Unbounded Spiral Seal.' + C.dref(1) + ' Inside, it rests folded in acid-free tissue under a gold wafer, with a woven silk neck label. Beneath it, the Private Circle Presentation Case holds a brushed black metal Verification Card with NFC and QR, and under the case lies a thick cotton Story Card. Tap the card or scan its code to open the authenticity record.</p><p>For couriered orders across Sri Lanka, your signature midnight-navy lacquered presentation box arrives safeguarded inside an unbranded, reinforced protective outer shipping carton.</p><button class="link-btn" type="button" data-passport="' + p.id + '">Open a sample record</button></details>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -362,7 +362,7 @@
     function row(label, arr) { return '<tr><th scope="row">' + label + '</th>' + arr.map(function (v) { return '<td>' + gv(v) + '</td>'; }).join('') + '</tr>'; }
     $('#sizePanel').setAttribute('data-product', p.id);
     $('#sizePanel').innerHTML =
-      '<div class="panel-head"><h2 id="sizeTitle">Size &amp; Fit Guide</h2><button class="icon-btn" type="button" data-close aria-label="Close size guide">' + X + '</button></div>' +
+      '<div class="panel-head"><h2 id="sizeTitle">Size &amp; Fit Guide' + C.dref(4) + '</h2><button class="icon-btn" type="button" data-close aria-label="Close size guide">' + X + '</button></div>' +
       '<div class="panel-body">' +
         '<p class="sg-lede">' + esc(p.short) + '. Garment-specific measurements in ' + (guideUnit === 'in' ? 'inches' : 'centimetres') + '.</p>' +
         '<p class="sg-model">Model is ' + md.height + ' · Bust ' + md.bust + ' cm · Waist ' + md.waist + ' cm · wears Size ' + md.size + '</p>' +
@@ -455,7 +455,7 @@
         '<label class="gift"><input type="checkbox" data-gift' + (g.on ? ' checked' : '') + '><span><b>Prepare as a gift</b><span>Hand-wrapped, with a complimentary calligraphy card inside the lacquered box.</span></span></label>' +
         '<div class="field gift-note"' + (g.on ? '' : ' hidden') + '><label for="giftNote">' + opt('Your note') + '</label><textarea id="giftNote" data-gift-note maxlength="' + NOTE_MAX + '" rows="2" placeholder="Written by hand on the card">' + esc(g.note) + '</textarea></div>' +
         '<div class="totals"><span>Subtotal</span><output>' + P(C.bagTotalLKR()) + '</output></div>' +
-        '<p class="fine-print">Complimentary insured delivery across Sri Lanka. ' + C.deliveryWhen('colombo') + ' in Colombo.</p>' +
+        '<p class="fine-print">Complimentary insured delivery across Sri Lanka. ' + C.deliveryWhen('colombo') + ' in Colombo.' + C.dref(5) + '</p>' +
         '<button class="btn btn--gold btn--block" type="button" data-checkout>Proceed to Acquisition</button>' +
         '<button class="link-btn" type="button" data-browse style="justify-self:center">Continue browsing</button></div>';
   }
@@ -508,7 +508,7 @@
     var d = co.d, len = (d.giftNote || '').length;
     return '<form class="cx-form" id="coStep2" novalidate><fieldset class="cx-fs"><legend class="cx-fs__legend">Delivery Method</legend><div class="choices cx-ship">' + shipOptions().map(function (k) {
         var o = C.DELIVERY[k];
-        return '<label class="choice cx-choice"><input type="radio" name="ship" value="' + k + '"' + (d.ship === k ? ' checked' : '') + '><span><b>' + esc(o.label) + '</b><span class="when">' + esc(C.deliveryWhen(k)) + '</span><span>' + SHIP_TEXT[k] + '</span></span><span class="cx-choice__price">Complimentary</span></label>';
+        return '<label class="choice cx-choice"><input type="radio" name="ship" value="' + k + '"' + (d.ship === k ? ' checked' : '') + '><span><b>' + esc(o.label) + '</b><span class="when">' + esc(C.deliveryWhen(k)) + C.dref(5) + '</span><span>' + SHIP_TEXT[k] + '</span></span><span class="cx-choice__price">Complimentary</span></label>';
       }).join('') + '</div>' +
       (inColombo(d) ? '' : '<p class="cx-note">' + esc(d.district || 'Your district') + ' is served by Complimentary Insured Courier Delivery. Colombo 01 to 15 receive Priority Colombo Delivery.</p>') + '</fieldset>' +
       '<fieldset class="cx-fs"><legend class="cx-fs__legend">Gifting</legend>' +
@@ -533,6 +533,7 @@
       }).join('') + '</div></fieldset>' +
       '<p class="cx-ssl">' + ICON.lock + '<span>256-bit SSL encryption. Card payments are processed by PayHere, a licensed Sri Lankan gateway; MANTHAI never sees or stores your card number.</span></p>' +
       '<button class="btn btn--solid btn--block btn--sheen cx-submit" type="submit"><span class="btn__label">Complete Acquisition · ' + P(C.bagTotalLKR()) + '</span></button>' +
+      '<p class="cx-consent">By completing your acquisition you agree to our <a href="/legal/terms" data-legal="terms">Terms &amp; Conditions of Sale</a>, <a href="/legal/shipping-exchanges" data-legal="shipping-exchanges">Shipping &amp; Exchange Policy</a> and <a href="/legal/privacy" data-legal="privacy">Privacy Policy</a>.</p>' +
       '<p class="cx-demo">Demonstration storefront: no payment is taken and no email is sent.</p></form>';
   }
   function summaryHTML() {
@@ -547,7 +548,7 @@
       '<dl class="cx-rows"><div><dt>Subtotal</dt><dd>' + total + '</dd></div><div><dt>Delivery</dt><dd>Complimentary</dd></div>' +
         '<div><dt>Gift Presentation</dt><dd>' + (d.gift ? 'Prepared as a gift' : 'Not selected') + '</dd></div>' +
         '<div class="cx-rows__total"><dt>Total</dt><dd>' + total + '</dd></div></dl>' +
-      '<p class="cx-sum__note"><span class="cx-sum__seal">' + SEAL + '</span><span>Every piece arrives sealed in our lacquered gatefold box, with its own numbered Verification Card.</span></p></div></section>';
+      '<p class="cx-sum__note"><span class="cx-sum__seal">' + SEAL + '</span><span>Every piece arrives sealed in our lacquered gatefold box, with its own numbered Verification Card. For couriered orders across Sri Lanka, your signature midnight-navy lacquered presentation box arrives safeguarded inside an unbranded, reinforced protective outer shipping carton.</span></p></div></section>';
   }
   function renderCheckoutPage() {
     var root = $('#cxPanel'); if (!root) return;
