@@ -9,6 +9,8 @@
   C.$ = function (s, el) { return (el || document).querySelector(s); };
   C.$$ = function (s, el) { return Array.prototype.slice.call((el || document).querySelectorAll(s)); };
   C.esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  /* a numbered disclosure reference: a quiet superscript that leads to note N in the Maison Notes band */
+  C.dref = function (n) { return '<a class="dref" href="#maison-disclosure-' + n + '" data-dref="' + n + '" aria-label="Read disclosure note ' + n + '">' + n + '</a>'; };
   C.reduced = function () { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; };
   C.product = function (id) { return M.PRODUCTS.filter(function (p) { return p.id === id; })[0]; };
 

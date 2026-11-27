@@ -55,12 +55,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@600&family=Tenor+Sans&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/tokens.css?v=20261128b">
-<link rel="stylesheet" href="/assets/css/site.css?v=20261128b">
-<link rel="stylesheet" href="/assets/css/flagship.css?v=20261128b">
-<link rel="stylesheet" href="/assets/css/gallery.css?v=20261128b">
-<link rel="stylesheet" href="/assets/css/unbox.css?v=20261128b">
-<link rel="stylesheet" href="/assets/css/cipher.css?v=20261128b">
+<link rel="stylesheet" href="/assets/css/tokens.css?v=20261128c">
+<link rel="stylesheet" href="/assets/css/site.css?v=20261128c">
+<link rel="stylesheet" href="/assets/css/flagship.css?v=20261128c">
+<link rel="stylesheet" href="/assets/css/gallery.css?v=20261128c">
+<link rel="stylesheet" href="/assets/css/unbox.css?v=20261128c">
+<link rel="stylesheet" href="/assets/css/cipher.css?v=20261128c">
 </head>
 <body>
 
@@ -183,6 +183,7 @@
       <header class="collection__head">
         <h2 class="display" id="collectionTitle">New arrivals, Edition 01</h2>
         <p class="lede">Six pieces of ladies ready-to-wear from the Colombo atelier, released in small numbered batches and made to be kept.</p>
+        <p class="gallery-note">Silk luster and colour are shown as faithfully as screens allow.<a class="dref" href="#maison-disclosure-3" data-dref="3" aria-label="Read disclosure note 3">3</a></p>
       </header>
       <div class="tabs" role="tablist" aria-label="Filter the collection" id="filterTabs"></div>
       <div class="collection__status"><p class="collection__count" id="collectionCount" aria-live="polite"></p><div id="occasionChip"></div></div>
@@ -194,6 +195,7 @@
   <section class="campaign on-light" id="campaign" data-view="home" aria-labelledby="campaignTitle">
     <div class="wrap">
       <h2 class="display" id="campaignTitle">The Lookbook</h2>
+      <p class="gallery-note">Silk luster and colour are shown as faithfully as screens allow.<a class="dref" href="#maison-disclosure-3" data-dref="3" aria-label="Read disclosure note 3">3</a></p>
     </div>
     <!-- MEDIA SLOTS: lookbook stills. Add file paths in assets/js/catalog.js (M.LOOKBOOK[].src) or replace the figure contents. -->
     <div class="rail" id="rail" tabindex="0" role="region" aria-label="Campaign stills, scroll horizontally"></div>
@@ -207,7 +209,7 @@
       <div class="teaser__lines">
         <p>Named for Mantai, where silk and distant cultures met without borders.</p>
         <p>Cut, finished and numbered by hand in our Colombo atelier.</p>
-        <p>Delivered in a sealed lacquered box, with a card that proves it is yours.</p>
+        <p>Delivered in a sealed lacquered box, with a card that proves it is yours.<a class="dref" href="#maison-disclosure-1" data-dref="1" aria-label="Read disclosure note 1">1</a></p>
       </div>
       <a class="link-btn link-btn--light teaser__cta" href="/the-maison" data-route="maison">Explore The Maison &amp; The Meaning of Our Seal <span aria-hidden="true">→</span></a>
     </div>
@@ -519,14 +521,15 @@
       <div class="ritual__copy">
         <p class="eyebrow eyebrow--dark">Chapter V &middot; The Ritual</p>
         <h2 class="display display--light" id="ritualTitle">The Unboxing &amp; Verification Ritual</h2>
-        <p class="lede lede--dark">What arrives at your door, in the order you meet it. Play the ritual, or select an object and the camera will take you to it.</p>
+        <p class="lede lede--dark">What arrives at your door, in the order you meet it. Play the ritual, or select an object and the camera will take you to it.<a class="dref" href="#maison-disclosure-1" data-dref="1" aria-label="Read disclosure note 1">1</a></p>
+        <p class="ritual__carton">For couriered orders across Sri Lanka, your signature midnight-navy lacquered presentation box arrives safeguarded inside an unbranded, reinforced protective outer shipping carton.</p>
         <ol class="parts" id="partsList"></ol>
         <p class="parts__detail" id="partDetail" role="status" aria-live="polite"></p>
       </div>
     </div>
     <div class="wrap vcard-row">
       <div class="vcard-copy">
-        <h3 class="vcard-copy__title">The Verification Card</h3>
+        <h3 class="vcard-copy__title">The Verification Card &middot; NFC Digital Passport<a class="dref" href="#maison-disclosure-6" data-dref="6" aria-label="Read disclosure note 6">6</a></h3>
         <p class="lede lede--dark">A brushed black metal card, edged in gold, carrying the Seal on its face and the number of your piece on its back. Tap it with a phone, or scan its code, to open the authenticity record the House keeps for it.</p>
         <button class="btn btn--ghost btn--sm" type="button" data-action="passport">Open a sample record</button>
       </div>
@@ -558,7 +561,26 @@
   <section class="cx on-light" id="checkoutPage" data-view="checkout" aria-labelledby="cxTitle"><div id="cxPanel"></div></section>
   <section class="cx cx--done on-light" id="confirmPage" data-view="confirmed" aria-labelledby="recTitle"><div id="cxDone"></div></section>
   <section class="cx acct on-light" id="accountPage" data-view="account" aria-labelledby="acctTitle"><div id="acctPanel"></div></section>
+  <section class="legal on-light" id="legalPage" data-view="legal" aria-labelledby="legalTitle"><div id="legalPanel"></div></section>
 </main>
+
+<!-- ==================== MAISON NOTES & DISCLOSURES (pre-footer, every page) ==================== -->
+<aside class="mnotes" id="maisonNotes" aria-labelledby="mnotesTitle">
+  <div class="mnotes__in">
+    <h2 class="mnotes__head" id="mnotesTitle"><span class="mnotes__label">Maison Notes &amp; Disclosures</span><button class="mnotes__toggle" type="button" aria-expanded="false" aria-controls="mnotesBody">Maison Notes &amp; Disclosures <span class="mnotes__range">(1–6)</span><svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true"><path d="M2 4.5l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></button></h2>
+    <div class="mnotes__body" id="mnotesBody">
+      <ol class="mnotes__list">
+        <li class="mnotes__item" id="maison-disclosure-1" tabindex="-1"><span class="mnotes__n">1.</span><p>Interactive 3D unboxing previews, packaging renders, and ritual illustrations are digital representations created for illustrative purposes. While our midnight-navy lacquered presentation box is the House standard across eligible acquisitions, exact box dimensions, interior layout, folding architecture, and presentation components may vary depending on garment silhouette, fabric volume, and edition. Couriered orders are enclosed within an unbranded, reinforced protective outer shipping carton to safeguard the presentation box during transit.</p></li>
+        <li class="mnotes__item" id="maison-disclosure-2" tabindex="-1"><span class="mnotes__n">2.</span><p>On-screen depictions of the Verification Card, Story Card, Woven Silk-Damask Neck Label, and Digital Product Passport are simulated digital previews and are not displayed at 1:1 actual physical scale. Actual dimensions, metallic foil reflectance, embossing depth, material grain, and serial formatting may differ slightly from screen visualizations depending on device display size and resolution.</p></li>
+        <li class="mnotes__item" id="maison-disclosure-3" tabindex="-1"><span class="mnotes__n">3.</span><p>Every effort is made to photograph garments accurately; however, actual silk luster, fabric texture, and color tones may vary subtly in person due to individual monitor or mobile display calibration and ambient lighting. Because House of MANTHAI pieces utilize natural luxury textiles and artisanal hand-finishing, minor organic variations are natural hallmarks of authentic craft rather than defects.</p></li>
+        <li class="mnotes__item" id="maison-disclosure-4" tabindex="-1"><span class="mnotes__n">4.</span><p>Measurements listed in the Size &amp; Fit Guide are approximate garment or body guidelines and remain subject to standard tailoring tolerances of ±1–1.5 cm depending on textile drape and silhouette construction. Model heights and sizes worn are stated strictly for visual styling reference.</p></li>
+        <li class="mnotes__item" id="maison-disclosure-5" tabindex="-1"><span class="mnotes__n">5.</span><p>Displayed delivery dates are good-faith estimates for standard Phase 1 fulfillment within Sri Lanka (Colombo 01–15 Priority Delivery and Islandwide Insured Courier) and may vary due to public holidays, weather conditions, payment verification, or courier routing. Complimentary insured transit covers verified loss or physical damage prior to signed delivery; signature confirmation is required upon receipt.</p></li>
+        <li class="mnotes__item" id="maison-disclosure-6" tabindex="-1"><span class="mnotes__n">6.</span><p>Small-batch edition numbers indicate the planned production quantity for that specific release. Direct NFC tap verification requires an NFC-compatible smartphone; clients without NFC hardware may verify garment authenticity at any time using the unique serial code on their Verification Card or through Colombo Client Care. Digital Product Passport screens shown prior to purchase are illustrative and subject to periodic platform updates.</p></li>
+      </ol>
+      <p class="mnotes__gen">* Phase 1 availability and displayed LKR pricing apply exclusively to domestic orders within Sri Lanka. Availability of specific editions, sizes, and payment methods is subject to stock confirmation and verification. All acquisitions are governed by our <a href="/legal/terms" data-legal="terms">Terms &amp; Conditions of Sale</a>, <a href="/legal/shipping-exchanges" data-legal="shipping-exchanges">Shipping &amp; Exchange Policy</a>, and <a href="/legal/privacy" data-legal="privacy">Privacy Policy</a>. Operated by House of Manthai (Private) Limited, a wholly owned subsidiary of Avantio Ventures (Private) Limited (Colombo, Sri Lanka). The MANTHAI wordmark and the Unbounded Spiral Seal are proprietary marks of House of Manthai (Private) Limited.</p>
+    </div>
+  </div>
+</aside>
 
 <!-- =============================== FOOTER =============================== -->
 <footer class="site-footer">
@@ -595,8 +617,8 @@
   </div>
   <p class="wrap footer__future">Future Chapters: Menswear &amp; Maison Objects to Follow.</p>
   <div class="wrap footer__legal">
-    <p>&copy; <span id="year">2026</span> House of MANTHAI. Colombo.</p>
-    <p class="footer__links"><button type="button" data-info="privacy">Privacy</button><button type="button" data-info="terms">Terms of sale</button></p>
+    <p class="footer__copy">&copy; <span id="year">2026</span> HOUSE OF MANTHAI (PRIVATE) LIMITED. All rights reserved. <span aria-hidden="true">&middot;</span> An Avantio Ventures Company</p>
+    <nav class="footer__links" aria-label="Legal"><a href="/legal/terms" data-legal="terms">Terms of Sale</a><a href="/legal/shipping-exchanges" data-legal="shipping-exchanges">Shipping &amp; Exchanges</a><a href="/legal/privacy" data-legal="privacy">Privacy</a><a href="/legal/authenticity" data-legal="authenticity">Authenticity &amp; IP</a></nav>
   </div>
 </footer>
 
@@ -680,13 +702,14 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="/assets/js/catalog.js?v=20261128b"></script>
-<script src="/assets/js/art.js?v=20261128b"></script>
-<script src="/assets/js/core.js?v=20261128b"></script>
-<script src="/assets/js/shop.js?v=20261128b"></script>
-<script src="/assets/js/maison.js?v=20261128b"></script>
-<script src="/assets/js/account.js?v=20261128b"></script>
-<script src="/assets/vendor/lenis.min.js?v=20261128b" defer></script>
-<script src="/assets/js/flagship.js?v=20261128b" defer></script>
+<script src="/assets/js/catalog.js?v=20261128c"></script>
+<script src="/assets/js/art.js?v=20261128c"></script>
+<script src="/assets/js/core.js?v=20261128c"></script>
+<script src="/assets/js/legal.js?v=20261128c"></script>
+<script src="/assets/js/shop.js?v=20261128c"></script>
+<script src="/assets/js/maison.js?v=20261128c"></script>
+<script src="/assets/js/account.js?v=20261128c"></script>
+<script src="/assets/vendor/lenis.min.js?v=20261128c" defer></script>
+<script src="/assets/js/flagship.js?v=20261128c" defer></script>
 </body>
 </html>
