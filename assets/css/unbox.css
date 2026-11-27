@@ -1,143 +1,201 @@
 /* =====================================================================
    MANTHAI · Cinematic gatefold box (The Unboxing & Verification Ritual)
-   A rigid rectangular apparel box built in CSS 3D. Two magnetic doors
-   open from the centre; a camera rig glides between six shots:
-   closed · open · box (Seal) · garment · label · card (lift, zoom, flip).
+   A rigid apparel box in matte midnight navy linen, built in CSS 3D.
+   Two magnetic doors open from the centre. Under the folded piece, a
+   velvet insert holds the MANTHAI Elite Club case and the Story Card.
+   The camera glides between seven shots:
+   closed · open · garment · label · insert · elite · card (lift, flip).
    Geometry: --W width, --D depth, --H wall height, all in container units.
+   Every plane sits at its own depth and nothing passes through anything
+   else, so no browser has to guess which surface is in front.
    ===================================================================== */
 .ritual__stage { width: 100%; }
-.unbox { position: relative; width: 100%; max-width: 640px; aspect-ratio: 1 / .84; container-type: inline-size; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.unbox { position: relative; width: 100%; max-width: 640px; aspect-ratio: 1 / .84; container-type: inline-size; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  --navy: #1B2334; --navy-hi: #263049; --navy-lo: #121828; --navy-deep: #0B0F19; --velvet: #141A2A; --velvet-lo: #090C14; --foil: #C9AF7E; --foil-hi: #E6D3A6; }
 .unbox__view { position: absolute; inset: 0; perspective: 210cqw; perspective-origin: 50% 30%; }
 .unbox__cam {
   --W: 70cqw; --D: 47cqw; --H: 12cqw;
+  --zi: calc(var(--H) * .5);   /* top of the velvet insert */
+  --zr: calc(var(--H) * .12);  /* floor of the die-cut recess */
   --s: .9; --rx: 58deg; --rz: -24deg; --tx: 0px; --ty: 0px; --tz: calc(var(--H) * -.5);
   position: absolute; left: 50%; top: 52%; width: 0; height: 0; transform-style: preserve-3d;
   transform: scale(var(--s)) rotateX(calc(var(--rx) + var(--py, 0deg))) rotateZ(calc(var(--rz) + var(--px, 0deg))) translate3d(var(--tx), var(--ty), var(--tz));
-  transition: transform 1.9s cubic-bezier(.62, 0, .18, 1);
+  transition: transform 2.2s cubic-bezier(.65, 0, .2, 1);
 }
-/* camera shots */
-.unbox[data-state='open'] .unbox__cam { --s: .84; --rx: 50deg; --rz: -14deg; --ty: calc(var(--D) * -.02); --tz: calc(var(--H) * -.6); }
-/* Chromium clips a 3D layer that runs far off-screen, so every shot keeps the closed doors fully in frame */
-.unbox[data-state='box'] .unbox__cam { --s: 1.1; --rx: 34deg; --rz: -14deg; --tx: calc(var(--W) * -.16); --tz: calc(var(--H) * -1); }
-.unbox[data-state='garment'] .unbox__cam { --s: 1.55; --rx: 26deg; --rz: -4deg; --tx: calc(var(--W) * .19); --tz: calc(var(--H) * -.45); }
-.unbox[data-state='label'] .unbox__cam { --s: 3.1; --rx: 22deg; --rz: -2deg; --tx: calc(var(--W) * .19); --ty: calc(var(--D) * .35); --tz: calc(var(--H) * -.45); }
+/* camera shots: each one frames a single object, and none of them pushes a large layer far off-screen */
+.unbox[data-state='open'] .unbox__cam { --s: .86; --rx: 48deg; --rz: -14deg; --ty: calc(var(--D) * -.02); --tz: calc(var(--H) * -.6); }
+.unbox[data-state='garment'] .unbox__cam { --s: 1.62; --rx: 32deg; --rz: -4deg; --ty: calc(var(--D) * .02); --tz: calc(var(--H) * -.62); }
+.unbox[data-state='label'] .unbox__cam { --s: 4.4; --rx: 22deg; --rz: 0deg; --ty: calc(var(--D) * .262); --tz: calc(var(--H) * -.62); }
+.unbox[data-state='insert'] .unbox__cam { --s: 1.12; --rx: 44deg; --rz: -10deg; --ty: calc(var(--D) * .02); --tz: calc(var(--H) * -.4); }
+.unbox[data-state='elite'] .unbox__cam { --s: 1.7; --rx: 38deg; --rz: -3deg; --ty: calc(var(--D) * .14); --tz: calc(var(--H) * -.62); }
 .unbox[data-state='card'] .unbox__cam { --s: 1.3; --rx: 14deg; --rz: 0deg; --tz: calc(var(--H) * -2.2); }
 
 .ub { position: absolute; transform-style: preserve-3d; }
+.x3 { --W: 210cqw; --D: 141cqw; --H: 36cqw; position: absolute; left: 0; top: 0; width: 300%; height: 300%; transform-origin: 0 0; transform: scale(.3333); }
 
-/* ground shadow and tray */
-.ub-ground { left: calc(var(--W) * -.66); top: calc(var(--D) * -.7); width: calc(var(--W) * 1.32); height: calc(var(--D) * 1.4); transform: translateZ(-2px);
-  background: radial-gradient(closest-side, rgba(0, 0, 0, .78), rgba(0, 0, 0, .35) 60%, transparent); }
-.ub-floor { left: calc(var(--W) / -2); top: calc(var(--D) / -2); width: var(--W); height: var(--D);
-  background: radial-gradient(ellipse at 38% 42%, #1e1b18, #090807 70%); }
-.ub-floor__glow { position: absolute; inset: 0; background: radial-gradient(ellipse at 40% 45%, rgba(201, 175, 126, .34), transparent 62%); opacity: 0; transition: opacity 1.6s ease .4s; }
-.unbox:not([data-state='closed']):not([data-state='box']) .ub-floor__glow { opacity: 1; }
+/* ground shadow */
+.ub-ground { left: calc(var(--W) * -.68); top: calc(var(--D) * -.72); width: calc(var(--W) * 1.36); height: calc(var(--D) * 1.44); transform: translateZ(-2px);
+  background: radial-gradient(closest-side, rgba(0, 0, 0, .8), rgba(0, 0, 0, .36) 62%, transparent); }
 
-/* linen walls */
-.ub-wall { background-color: #131211;
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, .07), transparent 55%), repeating-linear-gradient(0deg, rgba(255, 255, 255, .03) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(0, 0, 0, .25) 0 1px, transparent 1px 4px);
-  box-shadow: inset 0 0 0 1px rgba(201, 175, 126, .16); }
-.ub-wall--front { left: calc(var(--W) / -2); top: calc(var(--D) / 2 - var(--H)); width: var(--W); height: var(--H); transform-origin: 50% 100%; transform: rotateX(-90deg); }
-.ub-wall--back { left: calc(var(--W) / -2); top: calc(var(--D) / -2); width: var(--W); height: var(--H); transform-origin: 50% 0; transform: rotateX(90deg); }
-.ub-wall--left { left: calc(var(--W) / -2); top: calc(var(--D) / -2); width: var(--H); height: var(--D); transform-origin: 0 50%; transform: rotateY(-90deg); }
+/* matte midnight navy linen */
+.ub-wall, .ub-door__out, .ub-cw, .ub-lid__out {
+  background-color: var(--navy);
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, .07), transparent 55%), repeating-linear-gradient(0deg, rgba(255, 255, 255, .026) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(0, 0, 0, .2) 0 1px, transparent 1px 4px); }
+.ub-wall { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .05); }
+.ub-wall--front { left: calc(var(--W) / -2); top: calc(var(--D) / 2 - var(--H)); width: var(--W); height: var(--H); transform-origin: 50% 100%; transform: rotateX(-90deg); background-color: var(--navy-hi); }
+.ub-wall--back { left: calc(var(--W) / -2); top: calc(var(--D) / -2); width: var(--W); height: var(--H); transform-origin: 50% 0; transform: rotateX(90deg); background-color: var(--navy-lo); }
+.ub-wall--left { left: calc(var(--W) / -2); top: calc(var(--D) / -2); width: var(--H); height: var(--D); transform-origin: 0 50%; transform: rotateY(-90deg); background-color: var(--navy-lo); }
 .ub-wall--right { left: calc(var(--W) / 2 - var(--H)); top: calc(var(--D) / -2); width: var(--H); height: var(--D); transform-origin: 100% 50%; transform: rotateY(90deg); }
-.ub-divider { left: calc(var(--W) * .105); top: calc(var(--D) * -.46); width: calc(var(--H) * .7); height: calc(var(--D) * .92); transform-origin: 0 50%; transform: rotateY(-90deg); background: #0d0c0b; box-shadow: inset 0 0 0 1px rgba(201, 175, 126, .12); }
 
-/* garment and woven label */
-/* drawn at three times its size and scaled down, so the close-up shots stay sharp instead of being upscaled */
-.ub-garment { left: calc(var(--W) * -.46); top: calc(var(--D) * -.42); width: calc(var(--W) * 1.62); height: calc(var(--D) * 2.52); transform-origin: 0 0; transform: translateZ(calc(var(--H) * .42)) scale(.3333); }
-.ub-garment svg { display: block; width: 100%; height: 100%; }
-.ub-label { position: absolute; left: 43%; top: 11.2%; width: 14%; height: 5%; background: #0E0D0C; color: #C9AF7E; display: grid; place-items: center; box-shadow: 0 0 0 1.5px rgba(201, 175, 126, .5); transition: box-shadow 1s ease .8s; }
-.ub-label svg { width: 80%; height: 70%; }
-.unbox[data-state='label'] .ub-label { box-shadow: 0 0 0 1.5px #C9AF7E, 0 0 18px 3px rgba(201, 175, 126, .6); }
+/* ---------------- the velvet insert ---------------- */
+.ub-ins, .ub-recess, .ub-tray { background-color: var(--velvet);
+  background-image: radial-gradient(ellipse at 35% 30%, rgba(120, 140, 190, .1), transparent 60%), repeating-linear-gradient(45deg, rgba(255, 255, 255, .012) 0 1px, transparent 1px 3px); }
+.ub-ins { transform: translateZ(var(--zi)); }
+.ub-ins--back { left: calc(var(--W) / -2); top: calc(var(--D) / -2); width: var(--W); height: calc(var(--D) * .18); }
+.ub-ins--front { left: calc(var(--W) / -2); top: calc(var(--D) * .3); width: var(--W); height: calc(var(--D) * .2); }
+.ub-ins--left { left: calc(var(--W) / -2); top: calc(var(--D) * -.32); width: calc(var(--W) * .21); height: calc(var(--D) * .62); }
+.ub-ins--right { left: calc(var(--W) * .29); top: calc(var(--D) * -.32); width: calc(var(--W) * .21); height: calc(var(--D) * .62); }
+/* the cut edges of the recess, in shadow */
+.ub-rw { background: linear-gradient(0deg, var(--velvet-lo), #121827); }
+.ub-rw--back { left: calc(var(--W) * -.29); top: calc(var(--D) * -.32); width: calc(var(--W) * .58); height: calc(var(--H) * .38); transform-origin: 50% 0; transform: translateZ(var(--zr)) rotateX(90deg); }
+.ub-rw--front { left: calc(var(--W) * -.29); top: calc(var(--D) * .3 - var(--H) * .38); width: calc(var(--W) * .58); height: calc(var(--H) * .38); transform-origin: 50% 100%; transform: translateZ(var(--zr)) rotateX(-90deg); }
+.ub-rw--left { left: calc(var(--W) * -.29); top: calc(var(--D) * -.32); width: calc(var(--H) * .38); height: calc(var(--D) * .62); transform-origin: 0 50%; transform: translateZ(var(--zr)) rotateY(-90deg); }
+.ub-rw--right { left: calc(var(--W) * .29 - var(--H) * .38); top: calc(var(--D) * -.32); width: calc(var(--H) * .38); height: calc(var(--D) * .62); transform-origin: 100% 50%; transform: translateZ(var(--zr)) rotateY(90deg); }
+.ub-recess { left: calc(var(--W) * -.29); top: calc(var(--D) * -.32); width: calc(var(--W) * .58); height: calc(var(--D) * .62); transform: translateZ(var(--zr)); background-color: var(--velvet-lo); }
 
-/* tissue leaves */
-.ub-tissue { top: calc(var(--D) * -.42); width: calc(var(--W) * .27); height: calc(var(--D) * .84);
-  background-color: rgba(244, 240, 231, .93);
-  background-image: linear-gradient(160deg, rgba(255, 255, 255, .5), transparent 40%, rgba(0, 0, 0, .05) 80%), repeating-linear-gradient(115deg, rgba(0, 0, 0, .03) 0 2px, transparent 2px 8px), repeating-linear-gradient(28deg, rgba(0, 0, 0, .02) 0 1px, transparent 1px 11px);
-  transition: transform 1.5s cubic-bezier(.6, 0, .2, 1), opacity .9s ease; }
-.ub-tissue--l { left: calc(var(--W) * -.46); transform-origin: 0 50%; transform: translateZ(calc(var(--H) * .47)) rotateY(var(--tl, 0deg)); }
-.ub-tissue--r { left: calc(var(--W) * -.19); transform-origin: 100% 50%; transform: translateZ(calc(var(--H) * .48)) rotateY(var(--tr, 0deg)); transition-delay: .12s; }
-/* the tissue leaves fold outward and dissolve, leaving the garment clear */
-.unbox:is([data-state='garment'], [data-state='label']) .ub-tissue--l { --tl: -150deg; opacity: 0; transition-delay: 0s, .75s; }
-.unbox:is([data-state='garment'], [data-state='label']) .ub-tissue--r { --tr: 150deg; opacity: 0; transition-delay: .12s, .85s; }
-.ub-wafer { position: absolute; left: 0; top: 50%; width: calc(var(--W) * .075); aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #E9D7AE, #C9AF7E 45%, #8E7444); display: grid; place-items: center; color: #3a2d17; box-shadow: 0 1px 2px rgba(0, 0, 0, .35); }
-.ub-wafer svg { width: 66%; }
-
-/* story card */
-/* the cards are also drawn at three times their size and scaled down, so their type stays crisp in close-up */
-.ub-story { left: calc(var(--W) * .155); top: calc(var(--D) * -.29); width: calc(var(--W) * .84); height: calc(var(--D) * 1.86); transform-origin: 0 0; transform: translateZ(calc(var(--H) * .34)) rotateZ(-2deg) scale(.3333);
-  background: linear-gradient(170deg, #F7F4EE, #E6DDCC); box-shadow: 0 0 0 3px rgba(117, 90, 42, .35); padding: 12% 10%; display: flex; flex-direction: column; gap: 7%; }
-.ub-story__k { font: italic 300 calc(var(--W) * .063)/1.2 var(--serif); color: #4C1722; }
-.ub-story__l { display: block; height: 3px; background: rgba(117, 90, 42, .45); }
+/* the Story Card lies in the recess, under the case; its title shows in front of it */
+.ub-story { left: calc(var(--W) * -.27); top: calc(var(--D) * -.3); width: calc(var(--W) * .54); height: calc(var(--D) * .58); transform: translateZ(calc(var(--zr) + 1px)); }
+.ub-story__face { background: linear-gradient(170deg, #F7F4EE, #E6DDCC); box-shadow: inset 0 0 0 3px rgba(117, 90, 42, .3); padding: 0 9% 5%; display: flex; flex-direction: column; justify-content: flex-end; gap: 4%; }
+.ub-story__k { font: italic 300 calc(var(--W) * .036)/1.2 var(--serif); color: #4C1722; }
+.ub-story__l { display: block; height: 3px; background: rgba(117, 90, 42, .4); }
 .ub-story__l--s { width: 60%; }
 
-/* verification card: lifts out, turns to camera, flips */
-.ub-vcard { left: calc(var(--W) * .17); top: calc(var(--D) * -.02); width: calc(var(--W) * .26); height: calc(var(--W) * .164);
-  transform: translateZ(calc(var(--H) * .42)) rotateZ(3deg);
-  transition: transform 1.9s cubic-bezier(.62, 0, .18, 1); }
-.unbox[data-state='card'] .ub-vcard { transform: translate3d(calc(var(--W) * -.3), calc(var(--D) * -.062), calc(var(--H) * 2.2)) rotateX(-14deg) scale(2.1); }
-.unbox[data-state='card'][data-flip='true'] .ub-vcard { transform: translate3d(calc(var(--W) * -.3), calc(var(--D) * -.062), calc(var(--H) * 2.2)) rotateX(-14deg) scale(2.1) rotateY(180deg); transition-duration: 1.2s; }
+/* ---------------- MANTHAI Elite Club case ---------------- */
+.ub-case { --cw: calc(var(--W) * .5); --cd: calc(var(--D) * .35); --ch: calc(var(--H) * .42);
+  left: calc(var(--W) * -.25); top: calc(var(--D) * -.29); width: var(--cw); height: var(--cd); transform: translateZ(calc(var(--zr) + 2px)); }
+.ub-cw { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .05); }
+.ub-cw--front { left: 0; top: calc(var(--cd) - var(--ch)); width: var(--cw); height: var(--ch); transform-origin: 50% 100%; transform: rotateX(-90deg); background-color: var(--navy-hi); }
+.ub-cw--back { left: 0; top: 0; width: var(--cw); height: var(--ch); transform-origin: 50% 0; transform: rotateX(90deg); background-color: var(--navy-lo); }
+.ub-cw--left { left: 0; top: 0; width: var(--ch); height: var(--cd); transform-origin: 0 50%; transform: rotateY(-90deg); background-color: var(--navy-lo); }
+.ub-cw--right { left: calc(var(--cw) - var(--ch)); top: 0; width: var(--ch); height: var(--cd); transform-origin: 100% 50%; transform: rotateY(90deg); }
+.ub-tray { left: 0; top: 0; width: var(--cw); height: var(--cd); transform: translateZ(calc(var(--ch) * .8)); background-color: #10151F; box-shadow: inset 0 0 0 2px #070A11; }
+.ub-tray__slot { position: absolute; background: var(--velvet-lo); box-shadow: inset 0 2px 6px rgba(0, 0, 0, .8); }
+.ub-tray__slot--card { left: 8%; top: 18%; width: 44%; height: 64%; border-radius: 3px; }
+.ub-tray__slot--card::before, .ub-tray__slot--card::after { content: ''; position: absolute; top: 34%; width: 12%; height: 32%; background: var(--velvet-lo); border-radius: 50%; }
+.ub-tray__slot--card::before { left: -6%; } .ub-tray__slot--card::after { right: -6%; }
+.ub-tray__slot--dome { left: 63%; top: 50%; width: 25%; aspect-ratio: 1; transform: translateY(-50%); border-radius: 50%; }
+/* the domed resin Seal: a clear lens over gold */
+.ub-dome { left: calc(var(--cw) * .645); top: 50%; width: calc(var(--cw) * .21); aspect-ratio: 1; margin-top: calc(var(--cw) * -.105); border-radius: 50%; transform: translateZ(calc(var(--ch) * .8 + 1px));
+  background: radial-gradient(circle at 50% 55%, #2A3245, #0F1420 72%); box-shadow: 0 0 0 1px rgba(255, 255, 255, .25), inset 0 -3px 8px rgba(0, 0, 0, .55), 0 2px 5px rgba(0, 0, 0, .6); display: grid; place-items: center; overflow: hidden; color: var(--foil); }
+.ub-dome svg { width: 62%; filter: drop-shadow(0 0 1px rgba(255, 230, 170, .4)); }
+.ub-dome__gloss { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(ellipse 46% 30% at 38% 26%, rgba(255, 255, 255, .7), rgba(255, 255, 255, .12) 55%, transparent 70%), radial-gradient(circle at 50% 50%, transparent 58%, rgba(255, 255, 255, .16) 68%, transparent 76%); }
+/* the lid hinges at the back edge and stands open, its lining facing the camera */
+.ub-lid { left: 0; top: 0; width: var(--cw); height: var(--cd); transform-origin: 50% 0; transform: translateZ(var(--ch)) rotateX(var(--lid, 0deg)); transition: transform 1.6s cubic-bezier(.62, 0, .2, 1); }
+.unbox:is([data-state='elite'], [data-state='card']) .ub-lid { --lid: 104deg; transition-delay: .5s; }
+.ub-lid__out, .ub-lid__in { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
+.ub-lid__out { transform: translateZ(1px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); }
+.ub-lid__o { display: grid; place-items: center; }
+.ub-lid__seal { width: 22%; color: var(--foil); }
+.ub-lid__in { transform: rotateX(180deg) translateZ(1px); background: linear-gradient(180deg, #121826, #0C111C); box-shadow: inset 0 0 0 1px rgba(201, 175, 126, .22); }
+.ub-lid__i { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4%; text-align: center; }
+.ub-lid__club { font: 400 calc(var(--W) * .03)/1 var(--sans); letter-spacing: .22em; color: #E8E2D4; }
+.ub-lid__tag { font: italic 300 calc(var(--W) * .022)/1.3 var(--serif); color: var(--foil); }
+
+/* black metal verification card: rests in the tray, lifts out, turns to camera, flips */
+.ub-vcard { left: calc(var(--cw) * .1); top: calc((var(--cd) - var(--W) * .126) / 2); width: calc(var(--W) * .2); height: calc(var(--W) * .126);
+  transform: translateZ(calc(var(--ch) * .8 + 1px)); transition: transform 2s cubic-bezier(.62, 0, .18, 1); }
+.unbox[data-state='card'] .ub-vcard { transform: translate3d(calc(var(--W) * .1), calc(var(--D) * .07), calc(var(--H) * 1.75)) rotateX(-14deg) scale(3); transition-delay: .2s; }
+.unbox[data-state='card'][data-flip='true'] .ub-vcard { transform: translate3d(calc(var(--W) * .1), calc(var(--D) * .07), calc(var(--H) * 1.75)) rotateX(-14deg) scale(3) rotateY(180deg); transition-duration: 1.2s; transition-delay: 0s; }
 .ub-vcard__face { --W: 210cqw; position: absolute; left: 0; top: 0; width: 300%; height: 300%; transform-origin: 0 0; transform: scale(.3333); backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; border-radius: calc(var(--W) * .006);
-  background: linear-gradient(140deg, #1b1916, #0B0A09 70%); box-shadow: 0 0 0 1.5px rgba(201, 175, 126, .55); color: #C9AF7E; }
+  background-color: #15161A; background-image: linear-gradient(140deg, rgba(255, 255, 255, .08), transparent 40%, rgba(255, 255, 255, .04) 70%, transparent), repeating-linear-gradient(90deg, rgba(255, 255, 255, .035) 0 1px, transparent 1px 3px);
+  box-shadow: inset 0 0 0 2px rgba(201, 175, 126, .45); color: var(--foil); }
 .ub-vcard__face--back { transform: translateX(33.333%) rotateY(180deg) scale(.3333); }
 .ub-vcard__seal { position: absolute; left: 7%; top: 12%; width: 17%; }
 .ub-vcard__wm { position: absolute; right: 7%; top: 15%; width: 40%; color: #F7F4EE; }
 .ub-vcard__k { position: absolute; left: 7%; bottom: 30%; font: 400 calc(var(--W) * .0105)/1 var(--sans); letter-spacing: .2em; color: #ACA498; }
 .ub-vcard__n { position: absolute; left: 7%; bottom: 12%; font: italic 400 calc(var(--W) * .02)/1 var(--serif); color: #F7F4EE; }
 .ub-vcard__face--back .ub-vcard__k { bottom: auto; top: 16%; }
-.ub-vcard__face--back .ub-vcard__n { bottom: auto; top: 34%; font-style: normal; font-family: var(--sans); font-size: calc(var(--W) * .014); letter-spacing: .16em; color: #C9AF7E; }
+.ub-vcard__face--back .ub-vcard__n { bottom: auto; top: 34%; font-style: normal; font-family: var(--sans); font-size: calc(var(--W) * .0125); letter-spacing: .1em; color: var(--foil); }
 .ub-vcard__t { position: absolute; left: 7%; bottom: 12%; width: 52%; font: italic 300 calc(var(--W) * .013)/1.25 var(--serif); color: #ACA498; }
-.ub-vcard__qr { position: absolute; right: 8%; top: 50%; width: 26%; aspect-ratio: 1; transform: translateY(-50%); background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-1 -1 27 27' shape-rendering='crispEdges'%3E%3Crect x='-1' y='-1' width='27' height='27' fill='%23F7F4EE'/%3E%3Cpath fill='%230B0A09' d='M0 0h1v1h-1zM0 1h1v1h-1zM0 2h1v1h-1zM0 3h1v1h-1zM0 4h1v1h-1zM0 5h1v1h-1zM0 6h1v1h-1zM0 16h1v1h-1zM0 18h1v1h-1zM0 19h1v1h-1zM0 20h1v1h-1zM0 21h1v1h-1zM0 22h1v1h-1zM0 23h1v1h-1zM0 24h1v1h-1zM1 0h1v1h-1zM1 6h1v1h-1zM1 9h1v1h-1zM1 14h1v1h-1zM1 15h1v1h-1zM1 16h1v1h-1zM1 18h1v1h-1zM1 24h1v1h-1zM2 0h1v1h-1zM2 2h1v1h-1zM2 3h1v1h-1zM2 4h1v1h-1zM2 6h1v1h-1zM2 8h1v1h-1zM2 9h1v1h-1zM2 11h1v1h-1zM2 13h1v1h-1zM2 18h1v1h-1zM2 20h1v1h-1zM2 21h1v1h-1zM2 22h1v1h-1zM2 24h1v1h-1zM3 0h1v1h-1zM3 2h1v1h-1zM3 3h1v1h-1zM3 4h1v1h-1zM3 6h1v1h-1zM3 11h1v1h-1zM3 12h1v1h-1zM3 16h1v1h-1zM3 18h1v1h-1zM3 20h1v1h-1zM3 21h1v1h-1zM3 22h1v1h-1zM3 24h1v1h-1zM4 0h1v1h-1zM4 2h1v1h-1zM4 3h1v1h-1zM4 4h1v1h-1zM4 6h1v1h-1zM4 10h1v1h-1zM4 11h1v1h-1zM4 12h1v1h-1zM4 14h1v1h-1zM4 15h1v1h-1zM4 16h1v1h-1zM4 18h1v1h-1zM4 20h1v1h-1zM4 21h1v1h-1zM4 22h1v1h-1zM4 24h1v1h-1zM5 0h1v1h-1zM5 6h1v1h-1zM5 8h1v1h-1zM5 11h1v1h-1zM5 12h1v1h-1zM5 14h1v1h-1zM5 15h1v1h-1zM5 18h1v1h-1zM5 24h1v1h-1zM6 0h1v1h-1zM6 1h1v1h-1zM6 2h1v1h-1zM6 3h1v1h-1zM6 4h1v1h-1zM6 5h1v1h-1zM6 6h1v1h-1zM6 8h1v1h-1zM6 10h1v1h-1zM6 12h1v1h-1zM6 14h1v1h-1zM6 16h1v1h-1zM6 18h1v1h-1zM6 19h1v1h-1zM6 20h1v1h-1zM6 21h1v1h-1zM6 22h1v1h-1zM6 23h1v1h-1zM6 24h1v1h-1zM7 11h1v1h-1zM7 13h1v1h-1zM7 15h1v1h-1zM8 0h1v1h-1zM8 1h1v1h-1zM8 6h1v1h-1zM8 7h1v1h-1zM8 8h1v1h-1zM8 9h1v1h-1zM8 13h1v1h-1zM8 15h1v1h-1zM8 16h1v1h-1zM8 18h1v1h-1zM8 19h1v1h-1zM8 20h1v1h-1zM8 21h1v1h-1zM8 22h1v1h-1zM8 23h1v1h-1zM8 24h1v1h-1zM9 0h1v1h-1zM9 1h1v1h-1zM9 2h1v1h-1zM9 3h1v1h-1zM9 4h1v1h-1zM9 9h1v1h-1zM9 13h1v1h-1zM9 14h1v1h-1zM9 17h1v1h-1zM9 20h1v1h-1zM9 21h1v1h-1zM9 22h1v1h-1zM9 24h1v1h-1zM10 1h1v1h-1zM10 4h1v1h-1zM10 6h1v1h-1zM10 7h1v1h-1zM10 9h1v1h-1zM10 10h1v1h-1zM10 11h1v1h-1zM10 12h1v1h-1zM10 13h1v1h-1zM10 14h1v1h-1zM10 15h1v1h-1zM10 19h1v1h-1zM10 20h1v1h-1zM10 22h1v1h-1zM10 23h1v1h-1zM10 24h1v1h-1zM11 0h1v1h-1zM11 1h1v1h-1zM11 2h1v1h-1zM11 10h1v1h-1zM11 12h1v1h-1zM11 13h1v1h-1zM11 14h1v1h-1zM11 15h1v1h-1zM11 17h1v1h-1zM11 19h1v1h-1zM11 22h1v1h-1zM12 3h1v1h-1zM12 4h1v1h-1zM12 5h1v1h-1zM12 6h1v1h-1zM12 10h1v1h-1zM12 11h1v1h-1zM12 15h1v1h-1zM12 16h1v1h-1zM12 18h1v1h-1zM12 19h1v1h-1zM12 20h1v1h-1zM12 22h1v1h-1zM12 23h1v1h-1zM12 24h1v1h-1zM13 0h1v1h-1zM13 1h1v1h-1zM13 2h1v1h-1zM13 4h1v1h-1zM13 8h1v1h-1zM13 9h1v1h-1zM13 11h1v1h-1zM13 20h1v1h-1zM13 21h1v1h-1zM13 22h1v1h-1zM13 24h1v1h-1zM14 0h1v1h-1zM14 1h1v1h-1zM14 2h1v1h-1zM14 3h1v1h-1zM14 5h1v1h-1zM14 6h1v1h-1zM14 8h1v1h-1zM14 9h1v1h-1zM14 10h1v1h-1zM14 11h1v1h-1zM14 14h1v1h-1zM14 15h1v1h-1zM14 16h1v1h-1zM14 19h1v1h-1zM14 20h1v1h-1zM14 24h1v1h-1zM15 2h1v1h-1zM15 3h1v1h-1zM15 5h1v1h-1zM15 7h1v1h-1zM15 9h1v1h-1zM15 10h1v1h-1zM15 11h1v1h-1zM15 13h1v1h-1zM15 15h1v1h-1zM15 16h1v1h-1zM15 18h1v1h-1zM15 21h1v1h-1zM15 22h1v1h-1zM15 23h1v1h-1zM16 0h1v1h-1zM16 2h1v1h-1zM16 3h1v1h-1zM16 4h1v1h-1zM16 6h1v1h-1zM16 8h1v1h-1zM16 9h1v1h-1zM16 10h1v1h-1zM16 16h1v1h-1zM16 17h1v1h-1zM16 18h1v1h-1zM16 19h1v1h-1zM16 20h1v1h-1zM17 8h1v1h-1zM17 10h1v1h-1zM17 11h1v1h-1zM17 16h1v1h-1zM17 19h1v1h-1zM17 20h1v1h-1zM17 21h1v1h-1zM17 22h1v1h-1zM18 0h1v1h-1zM18 1h1v1h-1zM18 2h1v1h-1zM18 3h1v1h-1zM18 4h1v1h-1zM18 5h1v1h-1zM18 6h1v1h-1zM18 8h1v1h-1zM18 10h1v1h-1zM18 11h1v1h-1zM18 12h1v1h-1zM18 13h1v1h-1zM18 14h1v1h-1zM18 15h1v1h-1zM18 16h1v1h-1zM18 18h1v1h-1zM18 19h1v1h-1zM18 20h1v1h-1zM18 21h1v1h-1zM18 22h1v1h-1zM18 24h1v1h-1zM19 0h1v1h-1zM19 6h1v1h-1zM19 8h1v1h-1zM19 9h1v1h-1zM19 10h1v1h-1zM19 16h1v1h-1zM19 20h1v1h-1zM19 22h1v1h-1zM19 23h1v1h-1zM19 24h1v1h-1zM20 0h1v1h-1zM20 2h1v1h-1zM20 3h1v1h-1zM20 4h1v1h-1zM20 6h1v1h-1zM20 8h1v1h-1zM20 9h1v1h-1zM20 10h1v1h-1zM20 12h1v1h-1zM20 14h1v1h-1zM20 16h1v1h-1zM20 17h1v1h-1zM20 18h1v1h-1zM20 19h1v1h-1zM20 20h1v1h-1zM20 22h1v1h-1zM20 24h1v1h-1zM21 0h1v1h-1zM21 2h1v1h-1zM21 3h1v1h-1zM21 4h1v1h-1zM21 6h1v1h-1zM21 9h1v1h-1zM21 10h1v1h-1zM21 11h1v1h-1zM21 12h1v1h-1zM21 14h1v1h-1zM21 16h1v1h-1zM21 17h1v1h-1zM21 19h1v1h-1zM21 21h1v1h-1zM21 22h1v1h-1zM21 24h1v1h-1zM22 0h1v1h-1zM22 2h1v1h-1zM22 3h1v1h-1zM22 4h1v1h-1zM22 6h1v1h-1zM22 8h1v1h-1zM22 9h1v1h-1zM22 10h1v1h-1zM22 12h1v1h-1zM22 17h1v1h-1zM22 20h1v1h-1zM22 21h1v1h-1zM22 24h1v1h-1zM23 0h1v1h-1zM23 6h1v1h-1zM23 8h1v1h-1zM23 10h1v1h-1zM23 11h1v1h-1zM23 12h1v1h-1zM23 13h1v1h-1zM23 15h1v1h-1zM23 17h1v1h-1zM23 20h1v1h-1zM23 23h1v1h-1zM23 24h1v1h-1zM24 0h1v1h-1zM24 1h1v1h-1zM24 2h1v1h-1zM24 3h1v1h-1zM24 4h1v1h-1zM24 5h1v1h-1zM24 6h1v1h-1zM24 8h1v1h-1zM24 10h1v1h-1zM24 12h1v1h-1zM24 13h1v1h-1zM24 15h1v1h-1zM24 17h1v1h-1zM24 18h1v1h-1zM24 21h1v1h-1zM24 22h1v1h-1zM24 23h1v1h-1zM24 24h1v1h-1z'/%3E%3C/svg%3E") center / contain no-repeat; box-shadow: 0 0 0 3px #C9AF7E; border-radius: 6px; }
-.ub-vcard__sheen { position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255, 238, 200, .28) 48%, transparent 64%); background-size: 260% 100%; background-position: 130% 0; }
-.unbox[data-state='card'] .ub-vcard__sheen { animation: ubSheen 2.4s ease 1.6s 1 both; }
+.ub-vcard__qr { position: absolute; right: 8%; top: 50%; width: 26%; aspect-ratio: 1; transform: translateY(-50%); background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-1 -1 27 27' shape-rendering='crispEdges'%3E%3Crect x='-1' y='-1' width='27' height='27' fill='%23F7F4EE'/%3E%3Cpath fill='%230B0A09' d='M0 0h1v1h-1zM0 1h1v1h-1zM0 2h1v1h-1zM0 3h1v1h-1zM0 4h1v1h-1zM0 5h1v1h-1zM0 6h1v1h-1zM0 16h1v1h-1zM0 18h1v1h-1zM0 19h1v1h-1zM0 20h1v1h-1zM0 21h1v1h-1zM0 22h1v1h-1zM0 23h1v1h-1zM0 24h1v1h-1zM1 0h1v1h-1zM1 6h1v1h-1zM1 9h1v1h-1zM1 14h1v1h-1zM1 15h1v1h-1zM1 16h1v1h-1zM1 18h1v1h-1zM1 24h1v1h-1zM2 0h1v1h-1zM2 2h1v1h-1zM2 3h1v1h-1zM2 4h1v1h-1zM2 6h1v1h-1zM2 8h1v1h-1zM2 9h1v1h-1zM2 11h1v1h-1zM2 13h1v1h-1zM2 18h1v1h-1zM2 20h1v1h-1zM2 21h1v1h-1zM2 22h1v1h-1zM2 24h1v1h-1zM3 0h1v1h-1zM3 2h1v1h-1zM3 3h1v1h-1zM3 4h1v1h-1zM3 6h1v1h-1zM3 11h1v1h-1zM3 12h1v1h-1zM3 16h1v1h-1zM3 18h1v1h-1zM3 20h1v1h-1zM3 21h1v1h-1zM3 22h1v1h-1zM3 24h1v1h-1zM4 0h1v1h-1zM4 2h1v1h-1zM4 3h1v1h-1zM4 4h1v1h-1zM4 6h1v1h-1zM4 10h1v1h-1zM4 11h1v1h-1zM4 12h1v1h-1zM4 14h1v1h-1zM4 15h1v1h-1zM4 16h1v1h-1zM4 18h1v1h-1zM4 20h1v1h-1zM4 21h1v1h-1zM4 22h1v1h-1zM4 24h1v1h-1zM5 0h1v1h-1zM5 6h1v1h-1zM5 8h1v1h-1zM5 11h1v1h-1zM5 12h1v1h-1zM5 14h1v1h-1zM5 15h1v1h-1zM5 18h1v1h-1zM5 24h1v1h-1zM6 0h1v1h-1zM6 1h1v1h-1zM6 2h1v1h-1zM6 3h1v1h-1zM6 4h1v1h-1zM6 5h1v1h-1zM6 6h1v1h-1zM6 8h1v1h-1zM6 10h1v1h-1zM6 12h1v1h-1zM6 14h1v1h-1zM6 16h1v1h-1zM6 18h1v1h-1zM6 19h1v1h-1zM6 20h1v1h-1zM6 21h1v1h-1zM6 22h1v1h-1zM6 23h1v1h-1zM6 24h1v1h-1zM7 11h1v1h-1zM7 13h1v1h-1zM7 15h1v1h-1zM8 0h1v1h-1zM8 1h1v1h-1zM8 6h1v1h-1zM8 7h1v1h-1zM8 8h1v1h-1zM8 9h1v1h-1zM8 13h1v1h-1zM8 15h1v1h-1zM8 16h1v1h-1zM8 18h1v1h-1zM8 19h1v1h-1zM8 20h1v1h-1zM8 21h1v1h-1zM8 22h1v1h-1zM8 23h1v1h-1zM8 24h1v1h-1zM9 0h1v1h-1zM9 1h1v1h-1zM9 2h1v1h-1zM9 3h1v1h-1zM9 4h1v1h-1zM9 9h1v1h-1zM9 13h1v1h-1zM9 14h1v1h-1zM9 17h1v1h-1zM9 20h1v1h-1zM9 21h1v1h-1zM9 22h1v1h-1zM9 24h1v1h-1zM10 1h1v1h-1zM10 4h1v1h-1zM10 6h1v1h-1zM10 7h1v1h-1zM10 9h1v1h-1zM10 10h1v1h-1zM10 11h1v1h-1zM10 12h1v1h-1zM10 13h1v1h-1zM10 14h1v1h-1zM10 15h1v1h-1zM10 19h1v1h-1zM10 20h1v1h-1zM10 22h1v1h-1zM10 23h1v1h-1zM10 24h1v1h-1zM11 0h1v1h-1zM11 1h1v1h-1zM11 2h1v1h-1zM11 10h1v1h-1zM11 12h1v1h-1zM11 13h1v1h-1zM11 14h1v1h-1zM11 15h1v1h-1zM11 17h1v1h-1zM11 19h1v1h-1zM11 22h1v1h-1zM12 3h1v1h-1zM12 4h1v1h-1zM12 5h1v1h-1zM12 6h1v1h-1zM12 10h1v1h-1zM12 11h1v1h-1zM12 15h1v1h-1zM12 16h1v1h-1zM12 18h1v1h-1zM12 19h1v1h-1zM12 20h1v1h-1zM12 22h1v1h-1zM12 23h1v1h-1zM12 24h1v1h-1zM13 0h1v1h-1zM13 1h1v1h-1zM13 2h1v1h-1zM13 4h1v1h-1zM13 8h1v1h-1zM13 9h1v1h-1zM13 11h1v1h-1zM13 20h1v1h-1zM13 21h1v1h-1zM13 22h1v1h-1zM13 24h1v1h-1zM14 0h1v1h-1zM14 1h1v1h-1zM14 2h1v1h-1zM14 3h1v1h-1zM14 5h1v1h-1zM14 6h1v1h-1zM14 8h1v1h-1zM14 9h1v1h-1zM14 10h1v1h-1zM14 11h1v1h-1zM14 14h1v1h-1zM14 15h1v1h-1zM14 16h1v1h-1zM14 19h1v1h-1zM14 20h1v1h-1zM14 24h1v1h-1zM15 2h1v1h-1zM15 3h1v1h-1zM15 5h1v1h-1zM15 7h1v1h-1zM15 9h1v1h-1zM15 10h1v1h-1zM15 11h1v1h-1zM15 13h1v1h-1zM15 15h1v1h-1zM15 16h1v1h-1zM15 18h1v1h-1zM15 21h1v1h-1zM15 22h1v1h-1zM15 23h1v1h-1zM16 0h1v1h-1zM16 2h1v1h-1zM16 3h1v1h-1zM16 4h1v1h-1zM16 6h1v1h-1zM16 8h1v1h-1zM16 9h1v1h-1zM16 10h1v1h-1zM16 16h1v1h-1zM16 17h1v1h-1zM16 18h1v1h-1zM16 19h1v1h-1zM16 20h1v1h-1zM17 8h1v1h-1zM17 10h1v1h-1zM17 11h1v1h-1zM17 16h1v1h-1zM17 19h1v1h-1zM17 20h1v1h-1zM17 21h1v1h-1zM17 22h1v1h-1zM18 0h1v1h-1zM18 1h1v1h-1zM18 2h1v1h-1zM18 3h1v1h-1zM18 4h1v1h-1zM18 5h1v1h-1zM18 6h1v1h-1zM18 8h1v1h-1zM18 10h1v1h-1zM18 11h1v1h-1zM18 12h1v1h-1zM18 13h1v1h-1zM18 14h1v1h-1zM18 15h1v1h-1zM18 16h1v1h-1zM18 18h1v1h-1zM18 19h1v1h-1zM18 20h1v1h-1zM18 21h1v1h-1zM18 22h1v1h-1zM18 24h1v1h-1zM19 0h1v1h-1zM19 6h1v1h-1zM19 8h1v1h-1zM19 9h1v1h-1zM19 10h1v1h-1zM19 16h1v1h-1zM19 20h1v1h-1zM19 22h1v1h-1zM19 23h1v1h-1zM19 24h1v1h-1zM20 0h1v1h-1zM20 2h1v1h-1zM20 3h1v1h-1zM20 4h1v1h-1zM20 6h1v1h-1zM20 8h1v1h-1zM20 9h1v1h-1zM20 10h1v1h-1zM20 12h1v1h-1zM20 14h1v1h-1zM20 16h1v1h-1zM20 17h1v1h-1zM20 18h1v1h-1zM20 19h1v1h-1zM20 20h1v1h-1zM20 22h1v1h-1zM20 24h1v1h-1zM21 0h1v1h-1zM21 2h1v1h-1zM21 3h1v1h-1zM21 4h1v1h-1zM21 6h1v1h-1zM21 9h1v1h-1zM21 10h1v1h-1zM21 11h1v1h-1zM21 12h1v1h-1zM21 14h1v1h-1zM21 16h1v1h-1zM21 17h1v1h-1zM21 19h1v1h-1zM21 21h1v1h-1zM21 22h1v1h-1zM21 24h1v1h-1zM22 0h1v1h-1zM22 2h1v1h-1zM22 3h1v1h-1zM22 4h1v1h-1zM22 6h1v1h-1zM22 8h1v1h-1zM22 9h1v1h-1zM22 10h1v1h-1zM22 12h1v1h-1zM22 17h1v1h-1zM22 20h1v1h-1zM22 21h1v1h-1zM22 24h1v1h-1zM23 0h1v1h-1zM23 6h1v1h-1zM23 8h1v1h-1zM23 10h1v1h-1zM23 11h1v1h-1zM23 12h1v1h-1zM23 13h1v1h-1zM23 15h1v1h-1zM23 17h1v1h-1zM23 20h1v1h-1zM23 23h1v1h-1zM23 24h1v1h-1zM24 0h1v1h-1zM24 1h1v1h-1zM24 2h1v1h-1zM24 3h1v1h-1zM24 4h1v1h-1zM24 5h1v1h-1zM24 6h1v1h-1zM24 8h1v1h-1zM24 10h1v1h-1zM24 12h1v1h-1zM24 13h1v1h-1zM24 15h1v1h-1zM24 17h1v1h-1zM24 18h1v1h-1zM24 21h1v1h-1zM24 22h1v1h-1zM24 23h1v1h-1zM24 24h1v1h-1z'/%3E%3C/svg%3E") center / contain no-repeat; box-shadow: 0 0 0 3px var(--foil); border-radius: 6px; }
+.ub-vcard__sheen { position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255, 238, 200, .26) 48%, transparent 64%); background-size: 260% 100%; background-position: 130% 0; }
+.unbox[data-state='card'] .ub-vcard__sheen { animation: ubSheen 2.4s ease 1.9s 1 both; }
 
-/* the two magnetic doors */
-.ub-door { top: calc(var(--D) / -2); height: var(--D); transition: transform 1.7s cubic-bezier(.66, 0, .2, 1); }
+/* ---------------- the piece on its tissue bed ---------------- */
+.ub-pack { left: 0; top: 0; transform: translateZ(var(--zi)); }
+.ub-bed { left: calc(var(--W) * -.49); top: calc(var(--D) * -.49); width: calc(var(--W) * .98); height: calc(var(--D) * .98); transform: translateZ(1px);
+  background-color: #EFE9DE; background-image: radial-gradient(ellipse at 45% 35%, #FBF8F2, transparent 70%), repeating-linear-gradient(115deg, rgba(0, 0, 0, .025) 0 2px, transparent 2px 9px), repeating-linear-gradient(28deg, rgba(0, 0, 0, .02) 0 1px, transparent 1px 13px);
+  box-shadow: inset 0 0 0 1px rgba(160, 150, 130, .35), inset 0 0 18px rgba(80, 70, 50, .18); }
+/* drawn at three times its size and scaled down, so the close-up shots stay sharp */
+.ub-garment { left: calc(var(--W) * -.27); top: calc(var(--D) * -.42); width: calc(var(--W) * 1.62); height: calc(var(--D) * 2.52); transform-origin: 0 0; transform: translateZ(calc(var(--H) * .08)) scale(.3333); }
+.ub-garment svg { display: block; width: 100%; height: 100%; }
+.ub-tissue { top: calc(var(--D) * -.47); width: calc(var(--W) * .47); height: calc(var(--D) * .94);
+  background-color: rgba(244, 240, 231, .94);
+  background-image: linear-gradient(160deg, rgba(255, 255, 255, .5), transparent 40%, rgba(0, 0, 0, .05) 80%), repeating-linear-gradient(115deg, rgba(0, 0, 0, .03) 0 2px, transparent 2px 8px), repeating-linear-gradient(28deg, rgba(0, 0, 0, .02) 0 1px, transparent 1px 11px);
+  transition: transform 1.4s cubic-bezier(.6, 0, .2, 1), opacity .8s ease; }
+.ub-tissue--l { left: calc(var(--W) * -.47); transform-origin: 0 50%; transform: translateZ(calc(var(--H) * .16)) rotateY(var(--tl, 0deg)); }
+.ub-tissue--r { left: 0; transform-origin: 100% 50%; transform: translateZ(calc(var(--H) * .17)) rotateY(var(--tr, 0deg)); transition-delay: .12s; }
+/* the tissue lifts at its outer edges and dissolves: it never sweeps through the piece */
+.unbox:not([data-state='closed']):not([data-state='open']) .ub-tissue--l { --tl: -64deg; opacity: 0; }
+.unbox:not([data-state='closed']):not([data-state='open']) .ub-tissue--r { --tr: 64deg; opacity: 0; }
+.ub-wafer { position: absolute; left: 0; top: 50%; width: calc(var(--W) * .07); aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #E9D7AE, #C9AF7E 45%, #8E7444); display: grid; place-items: center; color: #3a2d17; box-shadow: 0 1px 2px rgba(0, 0, 0, .35); }
+.ub-wafer svg { width: 66%; }
+.ub-wafer { visibility: visible; transition: opacity .6s ease; }
+.unbox:not([data-state='closed']):not([data-state='open']) .ub-wafer { opacity: 0; visibility: hidden; transition: opacity .6s ease, visibility 0s .6s; }
+/* the whole bed lifts up and back out of the box, revealing the insert */
+/* the tissue layer is set aside for the Elite Club shots (the swap happens inside the cut) */
+.unbox:is([data-state='insert'], [data-state='elite'], [data-state='card']) .ub-pack { transform: translate3d(0, calc(var(--D) * -1.7), calc(var(--zi) + var(--H) * 2)); }
+
+/* ---------------- the two magnetic doors ---------------- */
+.ub-door { top: calc(var(--D) / -2); height: var(--D); transition: transform 1.8s cubic-bezier(.66, 0, .2, 1); }
 .ub-door--l { left: calc(var(--W) / -2); width: calc(var(--W) * .6); transform-origin: 0 50%; transform: translateZ(var(--H)) rotateY(var(--dl, 0deg)); }
 .ub-door--r { left: calc(var(--W) * .1); width: calc(var(--W) * .4); transform-origin: 100% 50%; transform: translateZ(var(--H)) rotateY(var(--dr, 0deg)); transition-delay: .16s; }
-.unbox:is([data-state='open'], [data-state='garment'], [data-state='label'], [data-state='card']) .ub-door--l { --dl: -112deg; }
-.unbox:is([data-state='open'], [data-state='garment'], [data-state='label'], [data-state='card']) .ub-door--r { --dr: 112deg; }
+.unbox:not([data-state='closed']) .ub-door--l { --dl: -112deg; }
+.unbox:not([data-state='closed']) .ub-door--r { --dr: 112deg; }
 .ub-door__out, .ub-door__in { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; display: grid; place-items: center; }
-.ub-door__out { transform: translateZ(1px); background-color: #151413;
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, .07), transparent 55%), repeating-linear-gradient(0deg, rgba(255, 255, 255, .028) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(0, 0, 0, .22) 0 1px, transparent 1px 4px);
-  box-shadow: inset 0 0 0 1px rgba(201, 175, 126, .28); }
+.ub-door__out { transform: translateZ(1px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07), inset 0 0 40px rgba(0, 0, 0, .25); }
 .ub-door__in { transform: rotateY(180deg) translateZ(1px); background: radial-gradient(ellipse at 50% 40%, #5a1d29, #3a1019 75%); box-shadow: inset 0 0 0 1px rgba(201, 175, 126, .3); }
-.ub-door__wm { width: 62%; color: #C9AF7E; }
-.ub-door__seal { width: 46%; color: #C9AF7E; }
+.ub-door__wm { width: 62%; color: var(--foil); }
+.ub-door__seal { width: 46%; color: var(--foil); }
 .ub-door__seal--in { width: 26%; color: rgba(247, 244, 238, .75); }
 .ub-door__slogan { font: italic 300 calc(var(--W) * .028)/1.2 var(--serif); color: #F7F4EE; opacity: .9; text-align: center; padding: 0 10%; }
-.ub-door__sheen { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 32%, rgba(255, 236, 196, .16) 50%, transparent 68%); background-size: 260% 100%; background-position: 130% 0; animation: ubSheen 7s ease-in-out infinite; }
+.ub-door__sheen { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 32%, rgba(255, 236, 196, .14) 50%, transparent 68%); background-size: 260% 100%; background-position: 130% 0; animation: ubSheen 7s ease-in-out infinite; }
 .ub-door--r .ub-door__sheen { animation-delay: .5s; }
-.unbox[data-state='box'] .ub-door__sheen { animation-duration: 3.2s; }
 @keyframes ubSheen { 0%, 55% { background-position: 130% 0; } 100% { background-position: -30% 0; } }
+
+/* ---------------- what each shot shows ----------------
+   Hidden layers are hidden only after the camera and the lifts have finished,
+   and shown the moment they are needed, so nothing pops in view. */
+.ub-pack, .ub-insert { visibility: visible; }
+.unbox[data-state='closed'] :is(.ub-pack, .ub-insert) { visibility: hidden; transition: visibility 0s 1.95s; }
+.unbox:is([data-state='open'], [data-state='garment'], [data-state='label']) .ub-insert { visibility: hidden; transition: visibility 0s 2.1s; }
+.unbox:is([data-state='insert'], [data-state='elite'], [data-state='card']) .ub-pack { visibility: hidden; transition: visibility 0s 2.1s; }
 
 /* film framing: letterbox bars while the camera travels, and a caption */
 .unbox::before, .unbox::after { content: ''; position: absolute; left: 0; right: 0; height: 0; background: var(--obsidian-void, #0E0D0C); z-index: 3; transition: height .8s cubic-bezier(.6, 0, .2, 1); pointer-events: none; }
 .unbox::before { top: 0; } .unbox::after { bottom: 0; }
 .unbox.is-moving::before, .unbox.is-moving::after { height: 7%; }
-.unbox__cap { position: absolute; left: 0; right: 0; bottom: 3%; z-index: 4; margin: 0; text-align: center; font: italic 300 clamp(.8rem, 3.4cqw, 1.2rem)/1.3 var(--serif); color: #d6d1c5; opacity: 0; transform: translateY(6px); transition: opacity .9s ease, transform .9s ease; pointer-events: none; padding: 0 16px; }
+.unbox__cap { position: absolute; left: 0; right: 0; bottom: 2%; z-index: 4; margin: 0; text-align: center; font: italic 300 clamp(.8rem, 3.4cqw, 1.2rem)/1.3 var(--serif); color: #d6d1c5; opacity: 0; transform: translateY(6px); transition: opacity .9s ease, transform .9s ease; pointer-events: none; padding: 0 16px; text-shadow: 0 1px 12px rgba(0, 0, 0, .8); }
 .unbox__cap.is-on { opacity: 1; transform: none; }
-.unbox__cap b { font: 400 11px/1 var(--sans); letter-spacing: .2em; color: #C9AF7E; margin-right: 10px; font-style: normal; }
-.unbox__cap { bottom: 2%; }
+.unbox__cap b { font: 400 11px/1 var(--sans); letter-spacing: .2em; color: var(--foil); margin-right: 10px; font-style: normal; }
 @container (max-width: 480px) { .unbox__cap b { display: none; } }
 .unbox__ctl { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
 .unbox__ctl .btn[aria-pressed='true'] { border-color: #C9AF7E; }
 .unbox:focus-visible { outline: 1px solid #C9AF7E; outline-offset: 4px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .unbox__cam, .ub-door, .ub-tissue, .ub-vcard, .ub-floor__glow, .unbox::before, .unbox::after, .unbox__cap { transition-duration: .01s !important; transition-delay: 0s !important; }
+  .unbox__cam, .ub-door, .ub-tissue, .ub-vcard, .ub-lid, .ub-pack, .ub-bed, .ub-garment, .unbox::before, .unbox::after, .unbox__cap { transition-duration: .01s !important; transition-delay: 0s !important; }
   .ub-door__sheen, .ub-vcard__sheen { animation: none !important; }
 }
-
-/* Interior pieces are hidden once the doors have closed, so no browser can sort them above a closed door.
-   They reappear the moment the doors start to open. */
-.ub-garment, .ub-tissue, .ub-story, .ub-vcard, .ub-divider { visibility: visible; }
-.unbox:is([data-state='closed'], [data-state='box']) :is(.ub-garment, .ub-tissue, .ub-story, .ub-vcard, .ub-divider) { visibility: hidden; transition-property: transform, visibility; transition-duration: 1.5s, 0s; transition-delay: 0s, 1.85s; }
 
 /* the ritual stacks on tablets and phones: the box first, full width, then the list of objects */
 @media (max-width: 899px) {
   .ritual__grid { grid-template-columns: minmax(0, 1fr); gap: 40px; }
   .unbox { max-width: none; }
 }
+
+/* cinematic cut between the tissue layer and the Elite Club layer */
+.unbox__veil { position: absolute; inset: 0; z-index: 3; background: var(--obsidian-void, #0E0D0C); opacity: 0; pointer-events: none; transition: opacity .7s cubic-bezier(.4, 0, .2, 1); }
+.unbox.is-cut .unbox__veil { opacity: 1; transition-duration: .4s; }
+.unbox.is-swap :is(.unbox__cam, .ub-pack, .ub-insert, .ub-vcard, .ub-tissue, .ub-door) { transition: none !important; }

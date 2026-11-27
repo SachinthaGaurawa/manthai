@@ -255,14 +255,16 @@
   /* ---------- Unboxing and authenticity ritual: four objects ----------
      parts = which drawn objects light up in the exploded view */
   M.RITUAL = [
-    { id: 'box',     name: 'Rigid Linen Gatefold Box', spec: 'Matte black linen, magnetic doors, gold foil', parts: ['box', 'seal'],
-      text: 'A rigid apparel box wrapped in matte black linen. Two doors close on hidden magnets and open from the centre: the left carries the MANTHAI wordmark, the right the Unbounded Spiral Seal, both in burnished gold foil, and both are lined in velvet garnet. Each box is made in proportion to the piece it holds, and it is made to be kept.' },
-    { id: 'garment', name: 'Couture Garment Bag and Tissue', spec: 'Breathable cotton, acid-free tissue', parts: ['garment'],
-      text: 'Your piece rests inside a breathable cotton garment bag, folded in acid-free Alabaster tissue and sealed with a small gold wafer bearing the Seal. Keep the bag: it is how the piece should always be stored.' },
-    { id: 'label',   name: 'Woven Silk-Damask Neck Label', spec: 'Tack-stitched, wordmark only', parts: ['label'],
-      text: 'Every garment carries a woven silk-damask neck label, tack-stitched at all four corners and woven in proportion to the garment it belongs to. It bears only the MANTHAI wordmark, with no emblem and no other text.' },
-    { id: 'card',    name: 'Story Card and Verification Card', spec: 'Thick cotton, micro-foil seal', parts: ['card'],
-      text: 'A thick cotton Story Card tells the provenance of your piece. Beside it, a micro-foil Verification Card carries the embossed Seal, your unique edition number and an NFC and QR link to the authenticity record.' }
+    { id: 'box',     name: 'Rigid Linen Gatefold Box', spec: 'Midnight navy linen, magnetic doors, gold foil', parts: ['box', 'seal'],
+      text: 'A rigid apparel box wrapped in matte midnight navy linen. Two doors close on hidden magnets and open from the centre: the left carries the MANTHAI wordmark, the right the Unbounded Spiral Seal, both in burnished gold foil, and both are lined in velvet garnet. Each box is made in proportion to the piece it holds, and it is made to be kept.' },
+    { id: 'garment', name: 'Silk Piece in Acid-Free Tissue', spec: 'Folded by hand, sealed with a gold wafer', parts: ['garment'],
+      text: 'Your piece is folded by hand on a bed of acid-free Alabaster tissue, wrapped in two leaves and sealed with a small gold wafer bearing the Seal. It lifts out as one, tissue and all, so the silk is never handled twice.' },
+    { id: 'label',   name: 'Woven Neck and Origin Labels', spec: 'Silk damask, set under the back facing', parts: ['label'],
+      text: 'Inside the back neck, under the facing, sits a woven silk-damask label with the MANTHAI wordmark in gold. Beneath it, a soft satin label gives the size and the words Crafted in Sri Lanka. Both are woven in proportion to the garment and stitched into the neck seam, so nothing rests against the skin.' },
+    { id: 'elite',   name: 'MANTHAI Elite Club Case', spec: 'Magnetic lid, velvet tray, domed resin Seal', parts: ['card'],
+      text: 'Under the piece, a velvet insert holds the MANTHAI Elite Club case. Its lid closes on magnets and is lined with the words Sovereignty in Every Detail. Step Into Privilege. Inside, a velvet tray holds your Verification Card and the Seal, cast in gold under a clear resin dome.' },
+    { id: 'card',    name: 'Verification Card and Story Card', spec: 'Black metal, QR and NFC; thick cotton', parts: ['card'],
+      text: 'The Verification Card is cut from black brushed metal and carries the Seal, your edition number and an NFC and QR link to the authenticity record. Under the case lies a thick cotton Story Card that tells the provenance of your piece.' }
   ];
 
   /* ---------- Short policy texts for the footer info layer ---------- */
