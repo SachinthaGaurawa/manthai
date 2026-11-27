@@ -12,10 +12,12 @@
               POST {email, code} to the same endpoint verifies it.
    - preview: no mail service, or ?authpreview=1. Nothing is sent; the code
               is shown on screen so the flow can be reviewed end to end.
-   Passkeys are created on this device with WebAuthn and listed in
-   C.state.passkeys. Server-side verification of the assertion belongs to
-   the future backend; until then this static build trusts the platform
-   authenticator's user verification.
+   Passkeys: when the passkey service (/api/passkey, FIREBASE_SERVICE_ACCOUNT
+   set on Vercel) answers, every passkey is registered and verified on the
+   server and a verified passkey signs the member into the same Firebase
+   account on any device: iCloud Keychain / Google Password Manager sync,
+   or a phone scanning the code. Without the service the earlier on-device
+   flow (C.state.passkeys) stays in place, so nothing breaks.
    ========================================================================= */
 (function () {
   'use strict';
@@ -156,33 +158,126 @@
     var bio = os === 'iPhone' || os === 'iPad' ? 'Face ID' : os === 'Mac' ? 'Touch ID' : os === 'Windows PC' ? 'Windows Hello' : 'Device biometrics';
     return os + ' · ' + br + ' · ' + bio;
   }
+  /* ---------- the passkey service ---------- */
+  var serverP = null;
+  function server() {
+    return serverP || (serverP = fetch('/api/passkey/status', { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : {}; })
+      .then(function (j) { return !!(j && j.ready && j.rpId === location.hostname); })
+      .catch(function () { return false; }));
+  }
+  function api(op, data, token) {
+    var h = { 'Content-Type': 'application/json' }; if (token) h.Authorization = 'Bearer ' + token;
+    return fetch('/api/passkey/' + op, { method: 'POST', headers: h, body: JSON.stringify(data || {}), cache: 'no-store' }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) {
+        if (!r.ok) { var e = new Error(j.error || 'server_error'); e.code = j.error || 'server_error'; throw e; }
+        return j;
+      });
+    });
+  }
+  function creationOptions(o) {
+    var p = Object.assign({}, o);
+    p.challenge = unb64u(o.challenge);
+    p.user = Object.assign({}, o.user, { id: unb64u(o.user.id) });
+    p.excludeCredentials = (o.excludeCredentials || []).map(function (c) { return Object.assign({}, c, { id: unb64u(c.id) }); });
+    return p;
+  }
+  function requestOptions(o) {
+    var p = Object.assign({}, o);
+    p.challenge = unb64u(o.challenge);
+    p.allowCredentials = (o.allowCredentials || []).map(function (c) { return Object.assign({}, c, { id: unb64u(c.id) }); });
+    return p;
+  }
+  function ext(c) { try { return c.getClientExtensionResults ? c.getClientExtensionResults() : {}; } catch (e) { return {}; } }
+  function regJSON(c) {
+    var r = c.response, t = [];
+    try { t = r.getTransports ? r.getTransports() : []; } catch (e) { t = []; }
+    return { id: c.id, rawId: b64u(c.rawId), type: c.type, authenticatorAttachment: c.authenticatorAttachment || undefined, clientExtensionResults: ext(c),
+      response: { clientDataJSON: b64u(r.clientDataJSON), attestationObject: b64u(r.attestationObject), transports: t } };
+  }
+  function authJSON(c) {
+    var r = c.response;
+    return { id: c.id, rawId: b64u(c.rawId), type: c.type, authenticatorAttachment: c.authenticatorAttachment || undefined, clientExtensionResults: ext(c),
+      response: { clientDataJSON: b64u(r.clientDataJSON), authenticatorData: b64u(r.authenticatorData), signature: b64u(r.signature), userHandle: r.userHandle ? b64u(r.userHandle) : undefined } };
+  }
+  /* tell the browser's password manager a passkey no longer opens an account, where it can listen */
+  function forget(id) { try { if (window.PublicKeyCredential && PublicKeyCredential.signalUnknownCredential) PublicKeyCredential.signalUnknownCredential({ rpId: location.hostname, credentialId: id }).catch(function () {}); } catch (e) { /* older browsers */ } }
+  function pkError(e, during) {
+    var n = e && (typeof e.code === 'string' ? e.code : e.name);
+    if (n === 'NotAllowedError' || n === 'AbortError') return during === 'in' ? 'Face ID / Touch ID was cancelled. Try again, or choose another way in.' : 'Setup was cancelled. You can enable it at any time.';
+    if (n === 'InvalidStateError') return 'This device already holds a passkey for your Private Circle.';
+    if (n === 'unknown_passkey') return 'That passkey is not linked to a Private Circle account. Continue with Google or your Private Access Key, then enable Face ID / Touch ID in Profile, Addresses & Security.';
+    if (n === 'sign_in_required') return 'Please sign in again, then enable Face ID / Touch ID.';
+    if (n === 'too_many_passkeys') return 'Your Private Circle already holds ten passkeys. Remove one you no longer use, then add this device.';
+    if (n === 'challenge_expired') return 'That took a little too long. Please try once more.';
+    return during === 'in' ? 'Your passkey could not be used just now. Continue with Google or your Private Access Key.' : 'Your passkey could not be created on this device just now.';
+  }
+
   function pkSignIn() {
-    var list = Object.keys(keys()).map(function (k) { return keys()[k]; });
     var say = function (t) { st.pkMsg = t; C.$$('.pc-auth__pk').forEach(function (p) { p.textContent = t; }); };
     if (!supported()) { say('This browser does not support passkeys. Continue with Google or your Private Access Key.'); return; }
-    say('');
-    /* discoverable request: the browser offers passkeys synced through iCloud Keychain or Google Password Manager,
-       and "use a phone or tablet" (scan a code) for a passkey that lives on the member's phone */
+    if (st.busy) return;
+    say(''); st.busy = true;
+    server().then(function (ok) {
+      if (!ok) { st.busy = false; return pkSignInLocal(say); }
+      var cid = '';
+      /* discoverable request: the browser offers passkeys synced through iCloud Keychain or Google Password Manager,
+         and "use a phone or tablet" (scan a code) for a passkey that lives on the member's phone */
+      return api('login-options').then(function (j) {
+        return navigator.credentials.get({ publicKey: requestOptions(j.options) }).then(function (c) {
+          cid = c.id; say('Verifying your passkey…');
+          return api('login-verify', { challengeId: j.challengeId, response: authJSON(c) });
+        });
+      }).then(function (j) { return ui.auth.tokenSignIn(j.token); })
+        .then(function () {
+          st.busy = false; reset(); say('');
+          if (M.account && ui.curRoute && ui.curRoute() === 'account') M.account.render(ui.curSlug() || 'overview');
+        })
+        .catch(function (e) { st.busy = false; if (e && e.code === 'unknown_passkey' && cid) forget(cid); say(pkError(e, 'in')); });
+    });
+  }
+  /* the earlier on-device flow, used only while the passkey service is not configured */
+  function pkSignInLocal(say) {
+    var list = Object.keys(keys()).map(function (k) { return keys()[k]; });
     navigator.credentials.get({ publicKey: { challenge: rand(32), rpId: location.hostname, userVerification: 'required', timeout: 120000 } })
       .then(function (cred) {
         var id = cred && b64u(cred.rawId), k = list.filter(function (x) { return x.id === id; })[0];
         var handle = '';
         try { handle = cred.response.userHandle ? new TextDecoder().decode(cred.response.userHandle) : ''; } catch (e) { handle = ''; }
         var email = k ? k.email : /@/.test(handle) ? handle : '';
-        if (!email) { say('That passkey belongs to an earlier MANTHAI sign-in. Continue with Google or your Private Access Key, then enable Face ID / Touch ID again in Profile, Addresses & Security.'); return; }
+        if (!email) { say(pkError({ code: 'unknown_passkey' }, 'in')); return; }
         if (!k) { k = keys()[email.toLowerCase()] = { id: id, email: email, name: '', provider: 'email', label: deviceLabel() + ' (synced)', added: new Date().toISOString() }; }
         k.lastUsed = new Date().toISOString(); C.save(); reset();
         ui.auth.complete({ email: k.email, name: k.name }, k.provider || 'email');
       })
-      .catch(function (e) { say(e && e.name === 'NotAllowedError' ? 'Face ID / Touch ID was cancelled. Try again, or choose another way in.' : 'Your passkey could not be used just now. Continue with Google or your Private Access Key.'); });
+      .catch(function (e) { say(pkError(e, 'in')); });
   }
+
   function pkEnable(btn) {
     var m = C.state.member; if (!m) return;
     var note = $('#pkNote');
-    btn.disabled = true;
+    btn.disabled = true; if (note) note.textContent = '';
+    server().then(function (ok) {
+      if (!ok || !m.fb) return pkEnableLocal(btn, m, note);
+      var tok = '';
+      return ui.auth.idToken().then(function (t) { tok = t; return api('register-options', {}, tok); })
+        .then(function (j) {
+          return navigator.credentials.create({ publicKey: creationOptions(j.options) }).then(function (c) {
+            if (note) note.textContent = 'Linking this device…';
+            return api('register-verify', { challengeId: j.challengeId, response: regJSON(c), label: deviceLabel() }, tok);
+          });
+        })
+        .then(function () {
+          delete keys()[String(m.email).toLowerCase()]; C.save();
+          C.toast('Face ID / Touch ID is now linked to your Private Circle.');
+          if (M.account) M.account.render('profile');
+        })
+        .catch(function (e) { btn.disabled = false; if (note) note.textContent = pkError(e, 'enable'); });
+    });
+  }
+  function pkEnableLocal(btn, m, note) {
     navigator.credentials.create({ publicKey: {
       challenge: rand(32), rp: { name: 'House of MANTHAI', id: location.hostname },
-      /* the user handle carries the member's email, so a synced or phone passkey can name its account on any device */
       user: { id: new TextEncoder().encode(String(m.email).toLowerCase().slice(0, 64)), name: m.email, displayName: m.name || m.email },
       pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
       authenticatorSelection: { authenticatorAttachment: 'platform', residentKey: 'required', requireResidentKey: true, userVerification: 'required' },
@@ -192,8 +287,15 @@
         C.save(); C.toast('Face ID / Touch ID is now linked to your Private Circle on this device.');
         if (M.account) M.account.render('profile');
       })
-      .catch(function (e) { btn.disabled = false; if (note) note.textContent = e && e.name === 'NotAllowedError' ? 'Setup was cancelled. You can enable it at any time.' : 'Your passkey could not be created on this device just now.'; });
+      .catch(function (e) { btn.disabled = false; if (note) note.textContent = pkError(e, 'enable'); });
   }
+  function pkRemove(id, btn) {
+    var note = $('#pkNote'); btn.disabled = true;
+    ui.auth.idToken().then(function (t) { return api('remove', { id: id }, t); })
+      .then(function () { forget(id); C.toast('The passkey is removed from your Private Circle. It can no longer open your account.'); if (M.account) M.account.render('profile'); })
+      .catch(function (e) { btn.disabled = false; if (note) note.textContent = e && e.code === 'sign_in_required' ? pkError(e) : 'The passkey could not be removed just now. Please try again.'; });
+  }
+  function fmtDay(iso) { return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }); }
 
   /* ---------- the security section inside Profile, Addresses & Security ---------- */
   function securityHTML(m) {
@@ -208,15 +310,40 @@
       '<div class="pc-passkey"><div class="pc-passkey__head">' + PK + '<p class="pc-passkey__t">Biometric Passkey (Face ID / Touch ID)</p></div>' +
         '<p class="pc-passkey__d">Link Face ID, Touch ID, or device biometrics directly to your Google or Email Private Circle account. Unlock your Wardrobe and Digital Vault with a single glance or touch. No passwords required.</p>' +
         '<p class="acct-fine">Passkeys saved to iCloud Keychain or Google Password Manager follow you to your other devices. On any other computer, choose Face ID / Touch ID and scan the code with your phone.</p>' +
-        (k ? '<dl class="pc-passkey__meta"><div><dt>Device</dt><dd>' + esc(k.label) + '</dd></div><div><dt>Added</dt><dd>' + esc(new Date(k.added).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })) + '</dd></div></dl>' +
+        '<div class="pc-passkey__body" id="pkBody">' + (k ? '<dl class="pc-passkey__meta"><div><dt>Device</dt><dd>' + esc(k.label) + '</dd></div><div><dt>Added</dt><dd>' + esc(new Date(k.added).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })) + '</dd></div></dl>' +
           '<div class="pc-passkey__row"><span class="acct-pill is-on">Enabled on this device</span><button class="acct-link acct-link--quiet" type="button" data-pk-remove>Remove Passkey</button></div>'
-          : '<div class="pc-passkey__row"><button class="btn btn--ghost btn--sm" type="button" data-pk-enable disabled>Enable Face ID / Touch ID Passkey</button></div>') +
+          : '<div class="pc-passkey__row"><button class="btn btn--ghost btn--sm" type="button" data-pk-enable disabled>Enable Face ID / Touch ID Passkey</button></div>') + '</div>' +
         '<p class="acct-fine" id="pkNote" role="status" aria-live="polite"></p>' +
       '</div>' +
       '<p class="acct-fine">Active session: this browser, signed in ' + esc(new Date(m.since || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })) + '. Sign out below to end it.</p></section>';
   }
-  /* once the section is on the page, ask the device whether it can hold a passkey */
+  /* once the section is on the page: with the passkey service, list the member's passkeys from the server;
+     otherwise ask the device whether it can hold an on-device passkey */
   function armSecurity() {
+    var body = $('#pkBody'), m = C.state.member; if (!body || !m) return;
+    server().then(function (ok) {
+      if (!ok || !m.fb) return armLocal();
+      body.setAttribute('aria-busy', 'true');
+      body.innerHTML = '<p class="acct-fine">Checking the devices linked to your Private Circle…</p>';
+      ui.auth.idToken().then(function (t) { return api('list', {}, t); }).then(function (j) { paintKeys(body, j.passkeys || []); })
+        .catch(function () { body.removeAttribute('aria-busy'); body.innerHTML = '<p class="acct-fine">Your linked devices could not be loaded just now. Please refresh to try again.</p>'; });
+    });
+  }
+  function paintKeys(body, list) {
+    var can = supported();
+    body.removeAttribute('aria-busy');
+    body.innerHTML = (list.length ? '<ul class="pc-pks" aria-label="Passkeys linked to your Private Circle">' + list.map(function (k) {
+      var sub = ['Added ' + fmtDay(k.added)];
+      if (k.lastUsed) sub.push('Last used ' + fmtDay(k.lastUsed));
+      if (k.synced) sub.push('Synced to your other devices');
+      return '<li class="pc-pk"><div class="pc-pk__txt"><p class="pc-pk__n">' + esc(k.label) + '</p><p class="pc-pk__s">' + esc(sub.join(' · ')) + '</p></div>' +
+        '<button class="acct-link acct-link--quiet" type="button" data-pk-del="' + esc(k.id) + '" aria-label="Remove the passkey ' + esc(k.label) + '">Remove</button></li>';
+    }).join('') + '</ul>' : '') +
+      '<div class="pc-passkey__row">' + (list.length ? '<span class="acct-pill is-on">Enabled · ' + list.length + (list.length === 1 ? ' passkey' : ' passkeys') + '</span>' : '') +
+        '<button class="btn btn--ghost btn--sm" type="button" data-pk-enable' + (can ? '' : ' disabled') + '>' + (list.length ? 'Add This Device' : 'Enable Face ID / Touch ID Passkey') + '</button></div>';
+    if (!can) { var n = $('#pkNote'); if (n) n.textContent = 'This browser does not support passkeys. Try Safari, Chrome or Edge on a recent device.'; }
+  }
+  function armLocal() {
     var b = $('[data-pk-enable]'); if (!b) return;
     platformReady().then(function (ok) {
       b.disabled = !ok;
@@ -235,13 +362,14 @@
     } else if (f.hasAttribute('data-auth-code')) { e.preventDefault(); submitCode(f); }
   });
   document.addEventListener('click', function (e) {
-    var t = e.target.closest && e.target.closest('[data-auth-google], [data-auth-passkey], [data-auth-resend], [data-auth-reset], [data-pk-enable], [data-pk-remove]');
+    var t = e.target.closest && e.target.closest('[data-auth-google], [data-auth-passkey], [data-auth-resend], [data-auth-reset], [data-pk-enable], [data-pk-remove], [data-pk-del]');
     if (!t) return;
     if (t.hasAttribute('data-auth-google')) { ui.googleSignIn(function () { if (M.account && ui.curRoute() === 'account') M.account.render(ui.curSlug() || 'overview'); }); }
     else if (t.hasAttribute('data-auth-passkey')) pkSignIn();
     else if (t.hasAttribute('data-auth-resend')) { if (!secsLeft()) send(st.email); }
     else if (t.hasAttribute('data-auth-reset')) { var em = st.email; reset(); st.email = em; paint('.pc-auth input[type=email]'); }
     else if (t.hasAttribute('data-pk-enable')) pkEnable(t);
+    else if (t.hasAttribute('data-pk-del')) pkRemove(t.getAttribute('data-pk-del'), t);
     else if (t.hasAttribute('data-pk-remove')) { var m = C.state.member; if (m) { delete keys()[String(m.email).toLowerCase()]; C.save(); C.toast('The passkey is removed from this device.'); if (M.account) M.account.render('profile'); } }
   });
   C.on('member', function () { if (C.state.member) reset(); });
