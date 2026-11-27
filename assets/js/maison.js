@@ -557,17 +557,21 @@
   ui.openPassport = function (pid, code) {
     var hit = code && findItem(code), p = (hit && C.product(hit.it.id)) || (pid && C.product(pid)) || M.PRODUCTS[0];
     var id = code || ('MNT-' + hash(p.id)), n = pieceNo(p) + (hit ? hit.ordinal : 0);
-    var owner = hit ? (C.state.member ? 'Registered to ' + (C.state.member.name || 'you') : 'Registered to ' + hit.o.name) : 'Unclaimed. Registers to the first owner.';
+    /* the owner, signed in, sees their own name; anyone else who scans the piece sees it registered, never to whom */
+    var me = C.state.member, mine = hit && me && String(me.email || '').toLowerCase() === String(hit.o.email || '').toLowerCase();
+    var owner = hit ? (mine ? 'Registered to ' + (me.name || hit.o.name) : 'Registered to Private Owner (Verified)') : 'Unclaimed. Registers to the first owner.';
     var sample = !hit;
     var steward = hit ? 'Registered. Eligible for complimentary care guidance and transfer of ownership.' : 'Eligible for complimentary care guidance and the 14-day size exchange.';
     /* A museum provenance certificate: plate, crest and ID on the left, the record on the right. Opens straight away, never behind a scanner. */
+    certRec = { id: id, piece: p.name, edition: p.edition ? 'Piece ' + pad(n) + ' of ' + p.edition : 'Atelier series', materials: p.materials, origin: p.provenance, care: p.care, owner: owner, steward: steward, sample: sample };
     $('#passportPanel').innerHTML = head('passportTitle', 'Digital Product Passport', 'Close passport') +
-      '<div class="cert">' +
+      '<div class="cert-body" id="certBody"><div class="cert">' +
         '<div class="cert__side">' +
           '<div class="cert__plate">' + C.plateHTML(p, 'form') + '</div>' +
           '<svg class="cert__crest" viewBox="0 0 1000 860" aria-hidden="true"><use href="#spiral-seal"/></svg>' +
           '<p class="cert__id"><span>Passport ID</span><b class="order-ref">' + esc(id) + '</b></p>' +
           '<p class="cert__ok"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>Verified Authentic</p>' +
+          '<button class="cert__dl" type="button" data-cert-dl>Download Ownership Record</button>' +
         '</div>' +
         '<div class="cert__main">' +
           '<p class="cert__k">Museum Provenance Certificate<span class="cert__scale">Simulated preview, not shown at 1:1 scale' + C.dref(2) + '</span></p>' +
@@ -577,15 +581,43 @@
             '<div><dt>Fibre composition</dt><dd>' + esc(p.materials) + '</dd></div>' +
             '<div><dt>Craft origin</dt><dd>' + esc(p.provenance) + '</dd></div>' +
             '<div><dt>Garment care</dt><dd>' + esc(p.care) + '</dd></div>' +
-            '<div><dt>Owner</dt><dd>' + esc(owner) + '</dd></div>' +
+            '<div><dt>Registered owner</dt><dd>' + esc(owner) + '</dd></div>' +
+            '<div><dt>Issued &amp; certified by</dt><dd>House of Manthai (Private) Limited<span class="cert__sub">An Avantio Ventures Company &middot; Colombo, Sri Lanka</span></dd></div>' +
             '<div><dt>Stewardship status</dt><dd>' + esc(steward) + '</dd></div>' +
           '</dl>' +
           '<p class="cert__note">Every piece carries an NFC tag in its woven label and on its Verification Card. Hold a phone to either, or scan the card, and this record opens.</p>' +
           (sample ? '<p class="cert__note">A sample certificate for the ' + esc(p.short) + '. Certificates for your own pieces appear in your Private Circle after you order.</p>' : '') +
         '</div>' +
-      '</div>';
+      '</div></div>';
+    $('#certBody').scrollTop = 0;
     C.open($('#layerPassport'));
+    requestAnimationFrame(function () { var b = $('#certBody'); if (b) b.scrollTop = 0; });
   };
+  /* the Ownership Record: a self-contained, printable copy of the certificate the client can keep */
+  var certRec = null;
+  function recordHTML(r) {
+    var row = function (k, v) { return '<tr><th>' + esc(k) + '</th><td>' + esc(v) + '</td></tr>'; };
+    return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ownership Record ' + esc(r.id) + ' | House of MANTHAI</title>' +
+      '<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=Tenor+Sans&display=swap" rel="stylesheet">' +
+      '<style>body{margin:0;background:#F7F4EE;color:#141210;font:400 14px/1.7 "Tenor Sans",sans-serif}main{max-width:720px;margin:0 auto;padding:56px 32px}' +
+      '.k{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#755A2A;margin:0}h1{font:300 40px/1.1 "Cormorant Garamond",serif;margin:10px 0 6px}.id{letter-spacing:.14em;margin:0 0 28px;color:#59534B}' +
+      'table{width:100%;border-collapse:collapse}th,td{text-align:left;vertical-align:top;padding:12px 0;border-bottom:1px solid #DBD3C5}th{width:34%;font-weight:400;font-size:12px;letter-spacing:.04em;color:#59534B}td{font:400 17px/1.45 "Cormorant Garamond",serif}' +
+      '.sub{display:block;font:400 11px/1.6 "Tenor Sans",sans-serif;letter-spacing:.06em;color:#59534B}.note{margin-top:28px;font:italic 400 15px/1.6 "Cormorant Garamond",serif;color:#59534B}footer{margin-top:40px;padding-top:16px;border-top:1px solid #DBD3C5;font-size:10.5px;letter-spacing:.12em;color:#8E867A}' +
+      '@media print{main{padding:24px 0}}</style></head><body><main>' +
+      '<p class="k">House of MANTHAI &middot; Digital Product Passport</p><h1>Ownership Record</h1><p class="id">Passport ID ' + esc(r.id) + ' &middot; Verified Authentic</p>' +
+      '<table>' + row('Piece', r.piece) + row('Edition number', r.edition) + row('Fibre composition', r.materials) + row('Craft origin', r.origin) + row('Garment care', r.care) + row('Registered owner', r.owner) +
+      '<tr><th>Issued &amp; certified by</th><td>House of Manthai (Private) Limited<span class="sub">An Avantio Ventures Company &middot; Colombo, Sri Lanka</span></td></tr>' + row('Stewardship status', r.steward) + '</table>' +
+      '<p class="note">' + (r.sample ? 'A sample record, issued for illustration. ' : '') + 'Verify this piece at any time by tapping its Verification Card with an NFC-compatible phone, or by entering the Passport ID at manthai.vercel.app/account/vault.</p>' +
+      '<footer>Issued ' + esc(fmtDate(new Date().toISOString())) + ' &middot; HOUSE OF MANTHAI (PRIVATE) LIMITED &middot; An Avantio Ventures Company &middot; concierge@manthai.lk</footer></main></body></html>';
+  }
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest || !e.target.closest('[data-cert-dl]') || !certRec) return;
+    var blob = new Blob([recordHTML(certRec)], { type: 'text/html' }), url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = 'MANTHAI-Ownership-Record-' + certRec.id + '.html';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+    C.toast('Your Ownership Record has been saved.');
+  });
 
   /* ======================= Private Circle ======================= */
   var salonView = 'in', salonEmail = '', pendingCb = null, salonMsg = '';
@@ -638,13 +670,8 @@
           '<button class="btn btn--gold btn--block" type="submit">Continue</button><button class="link-btn" type="button" data-back>Back</button></form>';
     } else {
       h = head('salonTitle', 'The Private Circle', 'Close Private Circle') + '<div class="panel-body">' +
-        '<p class="lede lede--dark">A private room for clients of the House: your wardrobe and its authenticity records, saved silhouettes, delivery addresses and your Maison Stylist, in one place.</p>' +
         (salonMsg ? '<p class="notice" role="alert">' + esc(salonMsg) + '</p>' : '') +
-        '<button class="google-btn" type="button" data-google>' + gIcon() + ' Continue with Google</button>' +
-        '<p class="sep">or by email</p>' +
-        '<form id="salonForm" novalidate class="salon-form">' + fld('s-email', 'Email', '<input id="s-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="name@example.com">') +
-        '<button class="btn btn--gold btn--block" type="submit">Send me a private link</button></form>' +
-        '<p class="fine-print">No password needed. You never need an account to acquire a piece.</p></div>';
+        M.auth.cardHTML({ p: 'sl', titleId: 'salonCardTitle', level: 3 }) + '</div>';
     }
     $('#salonPanel').innerHTML = h;
     salonMsg = '';
@@ -833,6 +860,17 @@
     document.head.appendChild(s);
     setTimeout(function () { if (gsiState === 'loading') { gsiState = 'failed'; gsiFail('Google did not respond. Please check your connection or use the email option instead.'); } }, 8000);
   }
+  /* hooks for the Private Circle sign-in card (auth.js) */
+  ui.auth = {
+    live: fbReady,
+    complete: function (m, provider) { var nw = signIn(m, provider); welcomeToast(nw); return nw; },
+    sendLink: function (email) {
+      return fbLoad().then(function () { return FB.A.sendSignInLinkToEmail(FB.auth, email, { url: location.origin + '/', handleCodeInApp: true }); })
+        .then(function () { try { window.localStorage.setItem('manthai.emailForSignIn', email); } catch (e) { /* ignore */ } });
+    },
+    errText: function (e) { return FB_ERR[(e && e.code) || ''] || 'We could not send your key just now. Please try again, or continue with Google.'; },
+    googleIcon: function () { return gIcon(); }
+  };
   ui.googleSignIn = function (cb) {
     if (fbReady()) { pendingCb = cb || null; fbGoogle(); return; }
     pendingCb = cb || null; salonView = 'google'; renderSalon();

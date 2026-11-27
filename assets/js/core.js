@@ -11,6 +11,12 @@
   C.esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   /* a numbered disclosure reference: a quiet superscript that leads to note N in the Maison Notes band */
   C.dref = function (n) { return '<a class="dref" href="#maison-disclosure-' + n + '" data-dref="' + n + '" aria-label="Read disclosure note ' + n + '">' + n + '</a>'; };
+  /* the formal issuer block at the top of every receipt and record */
+  C.issuerHTML = function () {
+    var c = M.CONFIG.company || {}, reg = [['Company Reg. No.', c.regNo], ['TIN', c.tin], ['VAT No.', c.vat]].filter(function (x) { return x[1]; });
+    return '<div class="issuer"><p class="issuer__n">' + C.esc(c.name) + '</p><p>' + C.esc(c.line) + '</p><p><a href="mailto:' + C.esc(c.email) + '">' + C.esc(c.email) + '</a></p>' +
+      (reg.length ? '<p class="issuer__reg">' + reg.map(function (x) { return C.esc(x[0]) + ' ' + C.esc(x[1]); }).join(' · ') + '</p>' : '') + '</div>';
+  };
   C.reduced = function () { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; };
   C.product = function (id) { return M.PRODUCTS.filter(function (p) { return p.id === id; })[0]; };
 

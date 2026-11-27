@@ -594,7 +594,7 @@
       ['Delivery', esc(del.label) + '<br><span class="rec__when">' + esc(o.when) + '</span>'], ['Client', esc(o.name)],
       [o.ship === 'atelier' ? 'Collection' : 'Deliver to', esc(o.ship === 'atelier' ? 'The Colombo atelier, by private appointment' : o.address)], ['Payment', esc((PAY[o.method] || PAY.payhere).label)]];
     root.innerHTML = cxHead('<span class="cx-long">Continue to the </span>Maison', 'Acquisition Confirmed') +
-      '<div class="rec-wrap"><article class="rec" aria-labelledby="recTitle">' +
+      '<div class="rec-wrap"><article class="rec" aria-labelledby="recTitle">' + C.issuerHTML() +
         '<header class="rec__head"><span class="rec__seal">' + SEAL + '</span><p class="rec__kicker">Digital Acquisition Record</p>' +
           '<h1 class="rec__title" id="recTitle" tabindex="-1">Thank you, ' + esc(first) + '.</h1>' +
           '<p class="rec__lede">Your acquisition is confirmed. Our Colombo atelier now inspects, presses and seals your ' + (o.items.length > 1 ? 'pieces' : 'piece') + ' by hand.</p></header>' +

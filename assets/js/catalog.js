@@ -8,6 +8,8 @@
 
   /* ---------- Site configuration (replace values when going live) ---------- */
   M.CONFIG = {
+    /* Formal issuer details shown on receipts. Fill these in once registered; empty values are not shown. */
+    company: { name: 'HOUSE OF MANTHAI (PRIVATE) LIMITED', line: 'An Avantio Ventures Company · Colombo, Sri Lanka', email: 'concierge@manthai.lk', regNo: '', tin: '', vat: '' },
     /* Maison concierge WhatsApp number, international format, digits only. */
     whatsapp: '94778787998',
     /* Atelier film. Add real files and the film modal plays them instead of the placeholder reel. */
