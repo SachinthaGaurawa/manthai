@@ -602,7 +602,7 @@
         '<h2 class="rec__h">Pieces &amp; Verification Cards</h2>' +
         '<ul class="rec__pieces">' + o.items.map(function (it) {
           var p = C.product(it.id);
-          return '<li><div class="rec__thumb">' + (p ? C.plateHTML(p, 'form', 'thumb') : '') + '</div><div class="rec__piece"><p>' + esc(it.name) + '</p><small>Size ' + esc(it.size) + ' <span aria-hidden="true">·</span> ' + P(it.price) + '</small></div>' +
+          return '<li><div class="rec__thumb">' + (p ? C.plateHTML(p, 'form', 'thumb') : C.archivePlate()) + '</div><div class="rec__piece"><p>' + esc(it.name) + '</p><small>Size ' + esc(it.size) + ' <span aria-hidden="true">·</span> ' + P(it.price) + '</small></div>' +
             '<button class="rec__vcard" type="button" data-passport-open="' + esc(it.passport) + '" aria-label="View Verification Card ' + esc(it.passport) + '"><span class="rec__vcard-seal">' + SEAL + '</span><span class="rec__vcard-k">Verification Card</span><span class="rec__vcard-id">' + esc(it.passport) + '</span><span class="rec__vcard-cta">View record</span></button></li>';
         }).join('') + '</ul>' +
         '<dl class="cx-rows rec__totals"><div><dt>Subtotal</dt><dd>' + P(o.totalLKR) + '</dd></div><div><dt>Delivery</dt><dd>Complimentary</dd></div>' + (o.gift ? '<div><dt>Gift Presentation</dt><dd>Complimentary</dd></div>' : '') + '<div class="cx-rows__total"><dt>Total</dt><dd>' + P(o.totalLKR) + '</dd></div></dl>' +
