@@ -1,6 +1,6 @@
 /* =====================================================================
    MANTHAI · Cinematic gatefold box (The Unboxing & Verification Ritual)
-   A rigid apparel box in matte midnight navy linen, built in CSS 3D.
+   A rigid apparel box in high-gloss midnight navy lacquer, built in CSS 3D.
    Two magnetic doors open from the centre. Under the folded piece, a
    velvet insert holds the MANTHAI Elite Club case and the Story Card.
    The camera glides between seven shots:
@@ -37,11 +37,14 @@
 .ub-ground { left: calc(var(--W) * -.68); top: calc(var(--D) * -.72); width: calc(var(--W) * 1.36); height: calc(var(--D) * 1.44); transform: translateZ(-2px);
   background: radial-gradient(closest-side, rgba(0, 0, 0, .8), rgba(0, 0, 0, .36) 62%, transparent); }
 
-/* matte midnight navy linen */
+/* high-gloss midnight navy lacquer: a deep, smooth glaze with a long specular streak */
 .ub-wall, .ub-door__out, .ub-cw, .ub-lid__out {
   background-color: var(--navy);
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, .07), transparent 55%), repeating-linear-gradient(0deg, rgba(255, 255, 255, .026) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgba(0, 0, 0, .2) 0 1px, transparent 1px 4px); }
-.ub-wall { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .05); }
+  background-image:
+    linear-gradient(118deg, transparent 0 28%, rgba(255, 255, 255, .03) 31%, rgba(214, 226, 255, .2) 36%, rgba(255, 255, 255, .06) 40%, transparent 46%),
+    linear-gradient(118deg, transparent 0 54%, rgba(214, 226, 255, .08) 57%, transparent 61%),
+    linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, 0) 32%, rgba(0, 0, 0, .22)); }
+.ub-wall { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), inset 0 0 0 1px rgba(255, 255, 255, .06); }
 .ub-wall--front { left: calc(var(--W) / -2); top: calc(var(--D) / 2 - var(--H)); width: var(--W); height: var(--H); transform-origin: 50% 100%; transform: rotateX(-90deg); background-color: var(--navy-hi); }
 .ub-wall--back { left: calc(var(--W) / -2); top: calc(var(--D) / -2); width: var(--W); height: var(--H); transform-origin: 50% 0; transform: rotateX(90deg); background-color: var(--navy-lo); }
 .ub-wall--left { left: calc(var(--W) / -2); top: calc(var(--D) / -2); width: var(--H); height: var(--D); transform-origin: 0 50%; transform: rotateY(-90deg); background-color: var(--navy-lo); }
@@ -73,7 +76,7 @@
 /* ---------------- MANTHAI Elite Club case ---------------- */
 .ub-case { --cw: calc(var(--W) * .5); --cd: calc(var(--D) * .35); --ch: calc(var(--H) * .42);
   left: calc(var(--W) * -.25); top: calc(var(--D) * -.29); width: var(--cw); height: var(--cd); transform: translateZ(calc(var(--zr) + 2px)); }
-.ub-cw { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .05); }
+.ub-cw { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), inset 0 0 0 1px rgba(255, 255, 255, .06); }
 .ub-cw--front { left: 0; top: calc(var(--cd) - var(--ch)); width: var(--cw); height: var(--ch); transform-origin: 50% 100%; transform: rotateX(-90deg); background-color: var(--navy-hi); }
 .ub-cw--back { left: 0; top: 0; width: var(--cw); height: var(--ch); transform-origin: 50% 0; transform: rotateX(90deg); background-color: var(--navy-lo); }
 .ub-cw--left { left: 0; top: 0; width: var(--ch); height: var(--cd); transform-origin: 0 50%; transform: rotateY(-90deg); background-color: var(--navy-lo); }
@@ -154,7 +157,7 @@
 .unbox:not([data-state='closed']) .ub-door--l { --dl: -112deg; }
 .unbox:not([data-state='closed']) .ub-door--r { --dr: 112deg; }
 .ub-door__out, .ub-door__in { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; display: grid; place-items: center; }
-.ub-door__out { transform: translateZ(1px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07), inset 0 0 40px rgba(0, 0, 0, .25); }
+.ub-door__out { transform: translateZ(1px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .24), inset 0 0 0 1px rgba(255, 255, 255, .08), inset 0 0 40px rgba(0, 0, 0, .22); }
 .ub-door__in { transform: rotateY(180deg) translateZ(1px); background: radial-gradient(ellipse at 50% 40%, #5a1d29, #3a1019 75%); box-shadow: inset 0 0 0 1px rgba(201, 175, 126, .3); }
 .ub-door__wm { width: 62%; color: var(--foil); }
 .ub-door__seal { width: 46%; color: var(--foil); }

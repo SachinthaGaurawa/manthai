@@ -255,8 +255,8 @@
   /* ---------- Unboxing and authenticity ritual: four objects ----------
      parts = which drawn objects light up in the exploded view */
   M.RITUAL = [
-    { id: 'box',     name: 'Rigid Linen Gatefold Box', spec: 'Midnight navy linen, magnetic doors, gold foil', parts: ['box', 'seal'],
-      text: 'A rigid apparel box wrapped in matte midnight navy linen. Two doors close on hidden magnets and open from the centre: the left carries the MANTHAI wordmark, the right the Unbounded Spiral Seal, both in burnished gold foil, and both are lined in velvet garnet. Each box is made in proportion to the piece it holds, and it is made to be kept.' },
+    { id: 'box',     name: 'Rigid Lacquered Gatefold Box', spec: 'High-gloss midnight navy, magnetic doors, gold foil', parts: ['box', 'seal'],
+      text: 'A rigid apparel box finished in high-gloss midnight navy lacquer. Two doors close on hidden magnets and open from the centre: the left carries the MANTHAI wordmark, the right the Unbounded Spiral Seal, both in burnished gold foil, and both are lined in velvet garnet. Each box is made in proportion to the piece it holds, and it is made to be kept.' },
     { id: 'garment', name: 'Silk Piece in Acid-Free Tissue', spec: 'Folded by hand, sealed with a gold wafer', parts: ['garment'],
       text: 'Your piece is folded by hand on a bed of acid-free Alabaster tissue, wrapped in two leaves and sealed with a small gold wafer bearing the Seal. It lifts out as one, tissue and all, so the silk is never handled twice.' },
     { id: 'label',   name: 'Woven Neck and Origin Labels', spec: 'Silk damask, set under the back facing', parts: ['label'],
