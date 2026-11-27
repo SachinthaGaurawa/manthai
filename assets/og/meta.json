@@ -1,0 +1,40 @@
+{
+ "pieces": {
+  "aurelia-gown": {
+   "name": "Aurelia Liquid Silk-Velvet Evening Gown",
+   "edition": "Numbered Edition of 15",
+   "price": "LKR 185,000",
+   "note": "22-momme silk-velvet, a sculpted asymmetric neckline and a full silk crepe lining"
+  },
+  "solstice-midi": {
+   "name": "Solstice Draped Garnet Midi Dress",
+   "edition": "Numbered Edition of 20",
+   "price": "LKR 98,000",
+   "note": "Velvet-garnet satin twill, a single sculpted twist at the waist and a fluid midi hem"
+  },
+  "vespera-blazer": {
+   "name": "Vespera Structured Ivory Tailored Blazer",
+   "edition": "Numbered Edition of 20",
+   "price": "LKR 115,000",
+   "note": "Tropical virgin wool-silk, a sharp sculpted shoulder and a concealed horn clasp"
+  },
+  "vespera-trousers": {
+   "name": "Vespera High-Waist Wide Silk Trousers",
+   "edition": "Small-Batch Release · 24 Pieces",
+   "price": "LKR 62,000",
+   "note": "Double-faced crepe, a high waist with a tailored pleat and silk-lined pockets"
+  },
+  "alabaster-slip": {
+   "name": "Alabaster Bias-Cut Mulberry Silk Slip Dress",
+   "edition": "Small-Batch Release · 18 Pieces",
+   "price": "LKR 76,000",
+   "note": "19-momme mulberry silk, cut on the bias and finished with hand-rolled French seams"
+  },
+  "nocturne-cape-top": {
+   "name": "Nocturne Hand-Beaded Sheer Organza Cape Top",
+   "edition": "Numbered Edition of 12",
+   "price": "LKR 128,000",
+   "note": "Sheer silk organza, a fluid cape line and tonal hand-beading set one bead at a time"
+  }
+ }
+}
