@@ -133,8 +133,8 @@
   };
   C.fmtDay = function (d) { return d.toLocaleDateString('en-GB', { weekday: 'long' }) + ', ' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); };
   C.DELIVERY = {
-    colombo: { label: 'Complimentary White-Glove Colombo Delivery', days: 2 },
-    island: { label: 'Islandwide Insured Courier', days: 4 },
+    colombo: { label: 'Complimentary Priority Colombo Delivery (Colombo 01–15)', days: 2 },
+    island: { label: 'Complimentary Insured Courier Delivery (Islandwide)', days: 4 },
     atelier: { label: 'Private Colombo Collection', days: 1, atelier: true }
   };
   C.deliveryWhen = function (key) {
