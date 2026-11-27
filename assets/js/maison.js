@@ -285,7 +285,7 @@
   /* ======================= unboxing ritual: cinematic gatefold box ======================= */
   var ub = $('#unbox'), ubCam = $('#unboxCam'), ubCap = $('#unboxCap'), boxBtn = $('#boxToggle'), playBtn = $('#boxPlay');
   var SHOTS = {
-    closed:  ['I', 'Matte midnight navy linen, closed on hidden magnets.'],
+    closed:  ['I', 'High-gloss midnight navy lacquer, closed on hidden magnets.'],
     open:    ['II', 'The doors part from the centre, lined in velvet garnet.'],
     garment: ['III', 'Your piece, folded in acid-free tissue under a gold wafer.'],
     label:   ['IV', 'The woven label and its origin and size label, set under the back facing.'],
