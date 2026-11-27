@@ -952,11 +952,14 @@ html.acct-signed-in #acctPanel { flex: 1; display: flex; }
 html:not([data-route='legal']) [data-view='legal'] { display: none !important; }
 
 /* the superscript reference: a quiet number, never a native tooltip */
-.dref { display: inline; margin-left: 2px; padding: 0 2px; font: 400 .68em/0 var(--sans); vertical-align: super; letter-spacing: 0; color: var(--antique-bronze); text-decoration: none; cursor: pointer; transition: color var(--t-fast); }
-.dref:hover, .dref:focus-visible { color: var(--ink-noir); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
-.teaser .dref, .ritual .dref, .cipher .dref, .seal-chapter .dref, .mnotes .dref { color: var(--muted-stone); }
-.teaser .dref:hover, .ritual .dref:hover, .teaser .dref:focus-visible, .ritual .dref:focus-visible { color: var(--champagne-gold); }
-.teaser__lines .dref { font-style: normal; }
+/* disclosure marks: a fixed micro-scale that never grows with the heading or sentence around it */
+.dref { position: relative; top: -.55em; display: inline-block; margin: -4px -2px -4px -2px; padding: 4px; font-family: 'Tenor Sans', var(--sans); font-size: 10px; font-style: normal; font-weight: 400; line-height: 1; letter-spacing: 0; text-transform: none; color: rgba(117, 90, 42, .78); text-decoration: none; cursor: pointer; transition: color var(--t-fast); }
+.dref:hover, .dref:focus-visible { color: #141210; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+.teaser .dref, .ritual .dref, .cipher .dref, .seal-chapter .dref, .lede--dark .dref, .vcard-copy .dref { color: rgba(201, 175, 126, .72); }
+.teaser .dref:hover, .ritual .dref:hover, .cipher .dref:hover, .seal-chapter .dref:hover, .lede--dark .dref:hover, .vcard-copy .dref:hover,
+.teaser .dref:focus-visible, .ritual .dref:focus-visible, .lede--dark .dref:focus-visible, .vcard-copy .dref:focus-visible { color: #C9AF7E; }
+.feel__k .dref, .cert__scale .dref, .when .dref, .fine-print .dref, .opt-label__guide .dref, .gallery-note .dref { font-size: 9.5px; }
+.teaser__lines p { text-wrap: balance; }
 
 .gallery-note { margin: 10px 0 0; font: 400 12px/1.6 var(--sans); letter-spacing: .04em; color: var(--warm-umber); }
 .campaign .gallery-note { margin-top: 6px; }
@@ -1116,3 +1119,8 @@ html:not([data-route='legal']) [data-view='legal'] { display: none !important; }
 .pc-passkey__meta dd { margin: 0; font: 400 13px/1.6 var(--sans); }
 .pc-passkey__row { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
 .acct-select { background-color: var(--atelier-ivory); color: var(--ink-noir); }
+
+/* ---------------- route change: the new view settles in (0.4s fade, 8px glide) ---------------- */
+@keyframes routeIn { from { opacity: 0; transform: translate3d(0, 8px, 0); } to { opacity: 1; transform: none; } }
+.route-in { animation: routeIn .4s cubic-bezier(.22, 1, .36, 1) backwards; }
+@media (prefers-reduced-motion: reduce) { .route-in { animation: none; } }

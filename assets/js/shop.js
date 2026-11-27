@@ -44,7 +44,7 @@
     if ((size === 2 && row === 1) || (size === 3 && row === 1)) cls += ' is-drop';
     return '<article class="' + cls + '" data-id="' + p.id + '">' +
       '<button class="card__frame" type="button" data-open="' + p.id + '" tabindex="-1" aria-hidden="true" data-cursor="View" data-media-slot="' + p.id + '" data-prompt="' + esc(p.prompt) + '">' +
-      '<span class="plate plate--a">' + C.plateHTML(p, 'form') + '</span><span class="plate plate--b">' + C.plateHTML(p, 'move') + '</span>' +
+      '<span class="plate plate--a">' + C.plateHTML(p, 'form', 'card') + '</span><span class="plate plate--b">' + C.plateHTML(p, 'move', 'card') + '</span>' +
       '<span class="card__quick">Quick view</span></button>' +
       '<div class="card__meta"><p class="card__edition">' + esc(shop.editionTag(p)) + '</p>' +
       '<h3 class="card__name"><button type="button" data-open="' + p.id + '">' + esc(p.name) + '</button></h3>' +
@@ -122,7 +122,7 @@
         '<div class="pdp__gallery" role="group" aria-label="' + esc(p.name) + ' photographs">' +
           SH.map(function (v, i) {
             return '<figure class="pdp__plate" data-shot="' + i + '">' +
-              '<button class="pdp__frame" type="button" data-inspect="' + i + '" data-cursor="Inspect" aria-label="Inspect ' + esc(v[1].toLowerCase()) + ' in full screen">' + C.plateHTML(p, v[0]) + '</button>' +
+              '<button class="pdp__frame" type="button" data-inspect="' + i + '" data-cursor="Inspect" aria-label="Inspect ' + esc(v[1].toLowerCase()) + ' in full screen">' + (i ? C.plateHTML(p, v[0], 'pdp') : C.plateHTML(p, v[0], 'pdp').replace(' loading="lazy"', ' fetchpriority="high"')) + '</button>' +
               '<figcaption class="pdp__cap"><span>' + esc(v[1]) + '</span><button class="pdp__inspect" type="button" data-inspect="' + i + '">Inspect Fabric &amp; Seam</button></figcaption>' +
             '</figure>';
           }).join('') +
@@ -146,7 +146,7 @@
             '<button class="btn btn--solid btn--sheen" type="button" data-add><span class="btn__label">Reserve in Your Bag</span></button>' +
             '<div class="pdp__duo">' +
               '<button class="btn btn--ghost" type="button" data-wish aria-pressed="' + wished + '">' + wishLabel(wished) + '</button>' +
-              '<a class="btn btn--ghost" id="stylistLink" href="' + esc(shop.stylistHref(p, null)) + '" target="_blank" rel="noopener" data-wa>Consult <span class="pdp__dlong">Colombo </span>Stylist</a>' +
+              '<a class="btn btn--ghost" id="stylistLink" href="' + esc(shop.stylistHref(p, null)) + '" target="_blank" rel="noopener" data-wa><span class="btn__label">Consult <span class="pdp__dlong">Colombo </span>Stylist</span></a>' +
             '</div>' +
           '</div>' +
           '<div class="clarity">' +
@@ -163,7 +163,7 @@
         '</div>' +
       '</div>' +
       (pairs.length ? '<section class="pairing" aria-labelledby="pairTitle"><div class="pairing__head"><p class="eyebrow">Curated by the House</p><h2 class="pairing__title" id="pairTitle">Complete the Silhouette</h2></div><div class="pairing__list" data-n="' + pairs.length + '">' + pairs.map(function (q) {
-        return '<a class="pair" href="/pieces/' + q.id + '" data-pair="' + q.id + '"><span class="pair__plate">' + C.plateHTML(q, 'form') + '</span><span class="pair__name">' + esc(q.name) + '</span><span class="pair__price">' + P(q.price) + '</span></a>';
+        return '<a class="pair" href="/pieces/' + q.id + '" data-pair="' + q.id + '"><span class="pair__plate">' + C.plateHTML(q, 'form', 'pair') + '</span><span class="pair__name">' + esc(q.name) + '</span><span class="pair__price">' + P(q.price) + '</span></a>';
       }).join('') + '</div></section>' : '') +
       '<div class="pdp__sticky" id="pdpSticky" aria-hidden="true"><span class="pdp__sticky-meta"><span class="pdp__sticky-name">' + esc(p.short) + '</span><span class="pdp__price">' + P(p.price) + '</span></span><button class="btn btn--solid btn--sheen" type="button" data-add tabindex="-1"><span class="btn__label">Reserve in Your Bag</span></button></div>';
   }
@@ -263,7 +263,7 @@
       '<div class="inspect__bar"><p class="inspect__title"><span>' + esc(p.short) + '</span> · ' + esc(v[1]) + ' <span class="inspect__n">' + (insp.i + 1) + ' / ' + SH.length + '</span></p>' +
         '<button class="icon-btn" type="button" data-close aria-label="Close inspection">' + X + '</button></div>' +
       '<div class="inspect__stage" id="inspStage" tabindex="0" aria-label="' + esc(v[1]) + '. Click or press Enter to zoom; drag or use the arrow keys to move.">' +
-        '<div class="inspect__img" id="inspImg">' + C.plateHTML(p, v[0]).replace(' loading="lazy"', '') + '</div></div>' +
+        '<div class="inspect__img" id="inspImg">' + C.plateHTML(p, v[0], 'full').replace(' loading="lazy"', '') + '</div></div>' +
       '<div class="inspect__nav">' +
         '<button class="btn btn--ghost btn--sm" type="button" data-insp="-1" aria-label="Previous photograph">Previous</button>' +
         '<p class="inspect__hint" aria-hidden="true">Click to zoom 2.5x · Drag to explore</p>' +
@@ -362,9 +362,9 @@
     function row(label, arr) { return '<tr><th scope="row">' + label + '</th>' + arr.map(function (v) { return '<td>' + gv(v) + '</td>'; }).join('') + '</tr>'; }
     $('#sizePanel').setAttribute('data-product', p.id);
     $('#sizePanel').innerHTML =
-      '<div class="panel-head"><h2 id="sizeTitle">Size &amp; Fit Guide' + C.dref(4) + '</h2><button class="icon-btn" type="button" data-close aria-label="Close size guide">' + X + '</button></div>' +
+      '<div class="panel-head"><h2 id="sizeTitle">Size &amp; Fit Guide</h2><button class="icon-btn" type="button" data-close aria-label="Close size guide">' + X + '</button></div>' +
       '<div class="panel-body">' +
-        '<p class="sg-lede">' + esc(p.short) + '. Garment-specific measurements in ' + (guideUnit === 'in' ? 'inches' : 'centimetres') + '.</p>' +
+        '<p class="sg-lede">' + esc(p.short) + '. Garment-specific measurements in ' + (guideUnit === 'in' ? 'inches' : 'centimetres') + '.' + C.dref(4) + '</p>' +
         '<p class="sg-model">Model is ' + md.height + ' · Bust ' + md.bust + ' cm · Waist ' + md.waist + ' cm · wears Size ' + md.size + '</p>' +
         '<div class="seg" role="group" aria-label="Units"><button type="button" data-sunit="cm" aria-pressed="' + (guideUnit === 'cm') + '">cm</button><button type="button" data-sunit="in" aria-pressed="' + (guideUnit === 'in') + '">in</button></div>' +
         '<div class="size-table-wrap"><table class="size-table"><caption class="sr-only">Size chart for the ' + esc(p.short) + ' in ' + (guideUnit === 'in' ? 'inches' : 'centimetres') + '</caption>' +
@@ -444,7 +444,7 @@
     var g = giftState();
     var lines = bag.map(function (l) {
       var p = C.product(l.id), a = C.available(p);
-      return '<div class="bag-line" data-key="' + esc(l.key) + '"><div class="bag-line__thumb">' + C.plateHTML(p, 'form') + '</div>' +
+      return '<div class="bag-line" data-key="' + esc(l.key) + '"><div class="bag-line__thumb">' + C.plateHTML(p, 'form', 'thumb') + '</div>' +
         '<div><p class="bag-line__name">' + esc(p.short) + '</p><p class="bag-line__meta">Size ' + esc(l.size) + '</p></div>' +
         '<p class="bag-line__price">' + P(p.price * l.qty) + '</p>' +
         '<div class="bag-line__ctl"><div class="qty" role="group" aria-label="Quantity for ' + esc(p.short) + '"><button type="button" data-dec aria-label="Decrease quantity">−</button><output aria-live="polite">' + l.qty + '</output><button type="button" data-inc aria-label="Increase quantity"' + (a <= 0 ? ' disabled' : '') + '>+</button></div>' +
@@ -543,7 +543,7 @@
       '<div class="cx-sum__body" id="cxSumBody"><h2 class="cx-sum__title" id="cxSumTitle">Your Acquisition</h2>' +
       '<ul class="cx-lines">' + bag.map(function (l) {
         var p = C.product(l.id);
-        return '<li class="cx-line"><div class="cx-line__thumb">' + C.plateHTML(p, 'form') + '</div><div class="cx-line__info"><p class="cx-line__name">' + esc(p.short) + '</p><p class="cx-line__meta">Size ' + esc(l.size) + ' <span aria-hidden="true">·</span> Qty ' + l.qty + '</p></div><p class="cx-line__price">' + P(p.price * l.qty) + '</p></li>';
+        return '<li class="cx-line"><div class="cx-line__thumb">' + C.plateHTML(p, 'form', 'thumb') + '</div><div class="cx-line__info"><p class="cx-line__name">' + esc(p.short) + '</p><p class="cx-line__meta">Size ' + esc(l.size) + ' <span aria-hidden="true">·</span> Qty ' + l.qty + '</p></div><p class="cx-line__price">' + P(p.price * l.qty) + '</p></li>';
       }).join('') + '</ul>' +
       '<dl class="cx-rows"><div><dt>Subtotal</dt><dd>' + total + '</dd></div><div><dt>Delivery</dt><dd>Complimentary</dd></div>' +
         '<div><dt>Gift Presentation</dt><dd>' + (d.gift ? 'Prepared as a gift' : 'Not selected') + '</dd></div>' +
@@ -602,7 +602,7 @@
         '<h2 class="rec__h">Pieces &amp; Verification Cards</h2>' +
         '<ul class="rec__pieces">' + o.items.map(function (it) {
           var p = C.product(it.id);
-          return '<li><div class="rec__thumb">' + (p ? C.plateHTML(p, 'form') : '') + '</div><div class="rec__piece"><p>' + esc(it.name) + '</p><small>Size ' + esc(it.size) + ' <span aria-hidden="true">·</span> ' + P(it.price) + '</small></div>' +
+          return '<li><div class="rec__thumb">' + (p ? C.plateHTML(p, 'form', 'thumb') : '') + '</div><div class="rec__piece"><p>' + esc(it.name) + '</p><small>Size ' + esc(it.size) + ' <span aria-hidden="true">·</span> ' + P(it.price) + '</small></div>' +
             '<button class="rec__vcard" type="button" data-passport-open="' + esc(it.passport) + '" aria-label="View Verification Card ' + esc(it.passport) + '"><span class="rec__vcard-seal">' + SEAL + '</span><span class="rec__vcard-k">Verification Card</span><span class="rec__vcard-id">' + esc(it.passport) + '</span><span class="rec__vcard-cta">View record</span></button></li>';
         }).join('') + '</ul>' +
         '<dl class="cx-rows rec__totals"><div><dt>Subtotal</dt><dd>' + P(o.totalLKR) + '</dd></div><div><dt>Delivery</dt><dd>Complimentary</dd></div>' + (o.gift ? '<div><dt>Gift Presentation</dt><dd>Complimentary</dd></div>' : '') + '<div class="cx-rows__total"><dt>Total</dt><dd>' + P(o.totalLKR) + '</dd></div></dl>' +

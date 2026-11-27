@@ -154,7 +154,7 @@
     }
     box.innerHTML = '<p class="search-hint">' + hits.length + (hits.length === 1 ? ' piece' : ' pieces') + '</p>' + hits.map(function (x) {
       var p = x.p;
-      return '<button class="search-hit" type="button" data-product="' + p.id + '"><span class="search-hit__thumb">' + C.plateHTML(p, 'form') + '</span>' +
+      return '<button class="search-hit" type="button" data-product="' + p.id + '"><span class="search-hit__thumb">' + C.plateHTML(p, 'form', 'thumb') + '</span>' +
         '<span><span class="search-hit__name" style="display:block">' + esc(p.short) + '</span><span class="search-hit__meta" style="display:block">' + esc(p.collection) + (p.edition ? ' · Edition of ' + p.edition : '') + '</span></span>' +
         '<span class="search-hit__price" data-price="' + p.price + '">' + C.price(p.price) + '</span></button>';
     }).join('');
@@ -271,7 +271,8 @@
 
   /* ======================= campaign rail ======================= */
   $('#rail').innerHTML = M.LOOKBOOK.map(function (l) {
-    var media = l.src ? '<img src="' + esc(l.src) + '" alt="' + esc(l.caption) + '" loading="lazy" decoding="async">' : M.Art.look(l);
+    var lb = l.src ? l.src.slice(0, -5) : '';
+    var media = l.src ? '<img src="' + esc(l.src) + '" srcset="' + esc(lb + '-600.webp 600w, ' + lb + '-900.webp 900w, ' + l.src + ' 1000w') + '" sizes="(max-width: 768px) 82vw, 35vw" width="1000" height="1500" alt=""' + esc(l.caption) + '" loading="lazy" decoding="async">' : M.Art.look(l);
     return '<figure class="look"><span class="look__frame" data-media-slot="lookbook-' + l.id + '" data-prompt="' + esc(l.prompt) + '">' + media + '</span>' +
       '<figcaption class="look__cap"><h3>' + esc(l.title) + '</h3><p>' + esc(l.caption) + '</p><button class="link-btn" type="button" data-go="filter:' + esc(l.filter) + '">Shop this story</button></figcaption></figure>';
   }).join('');
@@ -567,7 +568,7 @@
     $('#passportPanel').innerHTML = head('passportTitle', 'Digital Product Passport', 'Close passport') +
       '<div class="cert-body" id="certBody"><div class="cert">' +
         '<div class="cert__side">' +
-          '<div class="cert__plate">' + C.plateHTML(p, 'form') + '</div>' +
+          '<div class="cert__plate">' + C.plateHTML(p, 'form', '(max-width: 768px) 60vw, 320px') + '</div>' +
           '<svg class="cert__crest" viewBox="0 0 1000 860" aria-hidden="true"><use href="#spiral-seal"/></svg>' +
           '<p class="cert__id"><span>Passport ID</span><b class="order-ref">' + esc(id) + '</b></p>' +
           '<p class="cert__ok"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>Verified Authentic</p>' +
@@ -937,15 +938,19 @@
     if (same) { if (target) C.scrollTo(target); else window.scrollTo({ top: 0, behavior: C.reduced() ? 'auto' : 'smooth' }); return; }
     if (push === 'replace') { try { history.replaceState({ route: name, slug: slug || null }, '', pathFor(name, slug)); } catch (e) { /* file:// */ } }
     else if (push !== false) { try { history.pushState({ route: name, slug: slug || null }, '', pathFor(name, slug) + (target ? '#' + target : '')); } catch (e) { /* file:// */ } }
-    var veil = $('#veil');
     var swap = function () {
       applyRoute(name, slug); scrollTopNow();
-      requestAnimationFrame(function () { requestAnimationFrame(function () { finish(); if (veil) veil.classList.remove('is-on'); }); });
+      /* the new view settles in: 0.4s opacity with an 8px glide, no black veil */
+      if (!C.reduced()) [$('#main'), $('.site-footer')].forEach(function (el) {
+        if (!el) return; el.classList.remove('route-in'); void el.offsetWidth; el.classList.add('route-in');
+      });
+      requestAnimationFrame(function () { requestAnimationFrame(finish); });
       var h = name === 'maison' ? $('#maisonPageTitle') : name === 'piece' ? $('#pdpTitle') : name === 'checkout' ? $('#cxTitle') : name === 'confirmed' ? $('#recTitle') : name === 'account' ? $('#acctTitle') : name === 'legal' ? $('#legalTitle') : $('#hero h1');
       if (h) { h.setAttribute('tabindex', '-1'); try { h.focus({ preventScroll: true }); } catch (e) { h.focus(); } }
     };
-    if (veil && !C.reduced()) { veil.classList.add('is-on'); setTimeout(swap, 280); } else swap();
+    swap();
   };
+  document.addEventListener('animationend', function (e) { if (e.animationName === 'routeIn') e.target.classList.remove('route-in'); });
   ui.curRoute = curRoute;
   ui.curSlug = function () { return curSlug; };
   ui.syncAccountSlug = function (t) { curSlug = t; };

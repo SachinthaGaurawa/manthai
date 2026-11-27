@@ -146,7 +146,7 @@
     var pre = !o.cancelled && !o.request && s < 2;
     var h = '<article class="acct-order" id="ord-' + esc(o.ref) + '">' +
       '<header class="acct-order__head"><div><p class="acct-order__ref">' + esc(o.ref) + '</p><p class="acct-order__date">' + esc(longDate(o.date)) + '</p></div><span class="acct-pill ' + st[1] + '">' + esc(st[0]) + '</span></header>' +
-      '<div class="acct-order__body"><div class="acct-order__thumb">' + (p ? C.plateHTML(p, 'form') : '') + '</div>' +
+      '<div class="acct-order__body"><div class="acct-order__thumb">' + (p ? C.plateHTML(p, 'form', 'thumb') : '') + '</div>' +
         '<div class="acct-order__info"><p class="acct-order__name">' + esc(first.name) + (o.items.length > 1 ? ' <span>and ' + (o.items.length - 1) + ' more</span>' : '') + '</p>' +
         '<p class="acct-order__meta">Size ' + esc(first.size) + (o.items.length > 1 ? ' · ' + o.items.length + ' pieces' : '') + '</p>' +
         '<p class="acct-order__when">' + (o.cancelled ? 'Cancellation confirmation sent to ' + esc(o.email) : esc(expected(o))) + '</p></div>' +
@@ -211,7 +211,7 @@
     return head('Wardrobe &amp; Digital Vault', 'Every piece you own, with its NFC-verified Digital Product Passport.' + C.dref(6), verify) + banner() + form +
       (items.length ? '<ul class="acct-vault">' + items.map(function (x) {
         var p = C.product(x.it.id);
-        return '<li class="acct-vcard"><div class="acct-vcard__thumb">' + (p ? C.plateHTML(p, 'form') : '') + '</div>' +
+        return '<li class="acct-vcard"><div class="acct-vcard__thumb">' + (p ? C.plateHTML(p, 'form', 'thumb') : '') + '</div>' +
           '<div class="acct-vcard__info"><p class="acct-vcard__name">' + esc(x.it.name) + '</p>' +
           '<dl class="acct-vcard__meta"><div><dt>Size</dt><dd>' + esc(x.it.size) + '</dd></div><div><dt>Edition</dt><dd>' + (p && p.edition ? 'Numbered, of ' + p.edition : 'Atelier series') + '</dd></div>' +
           '<div><dt>Passport ID</dt><dd class="acct-serial">' + esc(x.it.passport) + '</dd></div><div><dt>Registered</dt><dd>' + esc(shortDate(x.o.date)) + '</dd></div></dl>' +
@@ -227,7 +227,7 @@
     return head('Saved Silhouettes', 'Kept on this device and in your Private Circle.') + banner() +
       (list.length ? '<ul class="acct-saved">' + list.map(function (p) {
         var sel = picks[p.id] || '';
-        return '<li class="acct-sv" data-sv="' + esc(p.id) + '"><a class="acct-sv__plate" href="/pieces/' + esc(p.id) + '" data-piece="' + esc(p.id) + '">' + C.plateHTML(p, 'form') + '</a>' +
+        return '<li class="acct-sv" data-sv="' + esc(p.id) + '"><a class="acct-sv__plate" href="/pieces/' + esc(p.id) + '" data-piece="' + esc(p.id) + '">' + C.plateHTML(p, 'form', 'card') + '</a>' +
           '<button class="acct-sv__x" type="button" data-unwish="' + esc(p.id) + '" aria-label="Remove ' + esc(p.short) + ' from Saved Silhouettes"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.1"/></svg></button>' +
           '<div class="acct-sv__info"><a class="acct-sv__name" href="/pieces/' + esc(p.id) + '" data-piece="' + esc(p.id) + '">' + esc(p.short) + '</a><p class="acct-sv__price">' + P(p.price) + '</p>' +
           '<div class="acct-sizes" role="radiogroup" aria-label="Size for ' + esc(p.short) + '">' + M.SIZECHART.sizes.map(function (z) {
