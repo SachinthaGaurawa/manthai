@@ -473,10 +473,11 @@
   ui.openFilm = function () {
     var f = M.CONFIG.film || {}, real = f.webm || f.mp4;
     var stage = real
-      ? '<video controls autoplay playsinline poster="' + esc(f.poster || '') + '" aria-label="MANTHAI Atelier Film">' + (f.webm ? '<source src="' + esc(f.webm) + '" type="video/webm">' : '') + (f.mp4 ? '<source src="' + esc(f.mp4) + '" type="video/mp4">' : '') + '</video>'
+      /* silent cut, so it may start on its own; MP4 first, which Safari plays without stalling */
+      ? '<video controls autoplay muted playsinline preload="auto" poster="' + esc(f.poster || '') + '" aria-label="MANTHAI Atelier Film">' + (f.mp4 ? '<source src="' + esc(f.mp4) + '" type="video/mp4">' : '') + (f.webm ? '<source src="' + esc(f.webm) + '" type="video/webm">' : '') + '</video>'
       : '<div class="film" id="modalReel" role="img" aria-label="Atelier film placeholder: four shots of origin, craft, brushwork and the woven label reveal">' + M.Art.film() + '</div>';
     $('#filmPanel').innerHTML = '<div class="film-stage" data-media-slot="atelier-film"><button class="icon-btn film-close" type="button" data-close aria-label="Close film">' + X + '</button>' + stage + '</div>' +
-      '<div class="film-bar"><p><b>Atelier Film.</b> ' + (real ? 'Press play to watch with sound.' : 'A placeholder reel. The finished film replaces it when the files are added.') + '</p>' +
+      '<div class="film-bar"><p><b>Atelier Film.</b> ' + (real ? 'Silhouette, detail, the atelier and movement, a short, quiet study of craft.' : 'A placeholder reel. The finished film replaces it when the files are added.') + '</p>' +
       (real ? '' : '<button class="btn btn--ghost btn--sm" type="button" id="reelToggle" aria-pressed="false">Pause</button>') +
       '<button class="btn btn--ghost btn--sm" type="button" data-close>Close</button></div>';
     var rt = $('#reelToggle');
