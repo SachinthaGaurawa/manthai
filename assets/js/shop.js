@@ -95,7 +95,14 @@
   var pdp = null, loupeApi = null;
   var VIEWS = [['form', 'Front View', 'Front'], ['back', 'Back View', 'Back'], ['detail', 'Bodice & Textile 4x Macro', 'Macro 4x'], ['move', 'Drape in Motion', 'In motion']];
 
+  /* only show the angles a piece actually has photographs for; before any photography exists, every plate shows */
+  function viewsFor(p) {
+    var m = p.media || {}, real = VIEWS.filter(function (v) { return !!m[v[0]]; });
+    return real.length ? real : VIEWS;
+  }
+
   function pdpHTML(p) {
+    var VIEWS = viewsFor(p);
     var line = 'Small-Batch Release · ' + p.crafted + ' Pieces Crafted' + (p.edition ? ' · Numbered' : '');
     var feel = p.feel || {};
     var sizes = ['XS', 'S', 'M', 'L', 'XL'].map(function (s) {
