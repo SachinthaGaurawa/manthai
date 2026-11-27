@@ -1041,8 +1041,8 @@
      Vercel rewrites /the-maison to this file, so the address is shareable and survives a reload. */
   var desc = document.querySelector('meta[name="description"]'), ogUrl = document.querySelector('meta[property="og:url"]'), ogTitle = document.querySelector('meta[property="og:title"]');
   var ROUTES = { home: { path: '/', title: document.title, desc: desc && desc.content, og: ogTitle && ogTitle.content },
-                 maison: { path: '/the-maison', title: 'The Maison | House of MANTHAI, Colombo', og: 'The Maison | House of MANTHAI',
-                   desc: 'The Maison of MANTHAI: the Colombo atelier, the Unbounded Spiral Seal, and the unboxing ritual of every piece, from the lacquered gatefold box to the Private Circle Presentation Case and its Verification Card.' } };
+                 maison: { path: '/the-maison', title: 'The Maison | MANTHAI', og: 'The Maison | MANTHAI',
+                   desc: 'Discover House of MANTHAI: our savoir-faire, the Unbounded Spiral Seal, and our signature presentation ritual.' } };
   ROUTES.piece = { path: '/pieces/' };
   ROUTES.checkout = { path: '/checkout', title: 'Secure Acquisition | House of MANTHAI', og: 'Secure Acquisition | House of MANTHAI', desc: 'Complete your acquisition from House of MANTHAI, with complimentary insured delivery across Sri Lanka.' };
   ROUTES.confirmed = { path: '/checkout/confirmed', title: 'Acquisition Confirmed | House of MANTHAI', og: 'Acquisition Confirmed | House of MANTHAI', desc: 'Your Digital Acquisition Record from House of MANTHAI.' };
@@ -1065,14 +1065,14 @@
     var r = ROUTES[name] || ROUTES.home, title = r.title, d = r.desc, og = r.og;
     if (name === 'piece') {
       var p = C.product(slug); curSlug = slug;
-      title = p.name + ' | House of MANTHAI'; og = p.name + ' | House of MANTHAI'; d = p.name + '. ' + p.summary + ' ' + C.price(p.price) + ', complimentary insured delivery across Sri Lanka.';
+      title = p.name + ' | MANTHAI'; og = title; d = M.shop.editionTag(p) + ' · ' + C.price(p.price) + ' · ' + p.summary;
       M.shop.renderPiece(slug);
     } else if (name === 'legal') {
       var L = M.legal.render(slug); curSlug = slug;
       title = L.title + ' | House of MANTHAI'; og = title; d = L.desc;
     } else if (name === 'passport') {
       var P = ui.renderPassportPage(slug); curSlug = slug;
-      title = P.title; og = title; d = 'The live House registry record for MANTHAI Digital Product Passport ' + slug + ': authenticity, edition and stewardship of the piece.';
+      title = 'Digital Product Passport · ' + slug + ' | MANTHAI'; og = title; d = 'Verified authentic piece issued by House of Manthai (Private) Limited. Live digital ownership and provenance registry.';
     } else if (name === 'account') { slug = ACCOUNT_TABS.indexOf(slug) > -1 ? slug : 'overview'; curSlug = slug; if (M.account) M.account.render(slug); }
     else curSlug = null;
     /* an empty bag has nothing to acquire, and a record needs an order: both fall back to the home shell */
