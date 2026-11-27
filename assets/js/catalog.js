@@ -278,8 +278,8 @@
   /* ---------- Short policy texts for the footer info layer ---------- */
   M.INFO = {
     delivery: { title: 'Delivery',
-      body: ['Complimentary white-glove insured delivery in Colombo, usually within two working days. A Maison courier brings the piece to you and waits while you open it.',
-             'Islandwide insured courier across Sri Lanka, usually within four working days, also complimentary. You may also collect from the Colombo atelier.',
+      body: ['Complimentary Priority Colombo Delivery (Colombo 01–15), usually within two working days, insured in transit with signature confirmation.',
+             'Complimentary Insured Courier Delivery islandwide, usually within four working days. For couriered orders across Sri Lanka, your signature midnight-navy lacquered presentation box arrives safeguarded inside an unbranded, reinforced protective outer shipping carton. You may also collect from the Colombo atelier.',
              'Delivery is always complimentary. Every order is prepaid by card, LankaQR or bank transfer; cash on delivery is not offered.'] },
     care: { title: 'Care and repair',
       body: ['Every piece comes with care notes on its Story Card. The atelier in Colombo repairs and refreshes MANTHAI pieces for life.',

@@ -392,7 +392,7 @@
     bank: { label: 'Private Bank Transfer', text: 'From Commercial Bank, Sampath Bank, HNB or NTB, with a reference issued instantly.', marks: ['Commercial', 'Sampath', 'HNB', 'NTB'] }
   };
   var co = { step: 1, d: {} };
-  /* Sri Lanka's 25 districts. Colombo 01 to 15 receive the white-glove Maison courier; everywhere else, the insured islandwide courier. */
+  /* Sri Lanka's 25 districts. Colombo 01 to 15 receive Priority Colombo Delivery; everywhere else, the insured islandwide courier. */
   var DISTRICTS = ['Colombo', 'Gampaha', 'Kalutara', 'Kandy', 'Matale', 'Nuwara Eliya', 'Galle', 'Matara', 'Hambantota', 'Jaffna', 'Kilinochchi', 'Mannar', 'Vavuniya', 'Mullaitivu', 'Batticaloa', 'Ampara', 'Trincomalee', 'Kurunegala', 'Puttalam', 'Anuradhapura', 'Polonnaruwa', 'Badulla', 'Monaragala', 'Ratnapura', 'Kegalle'];
   var COLOMBO_AREAS = ['Colombo 01 · Fort', 'Colombo 02 · Slave Island', 'Colombo 03 · Kollupitiya', 'Colombo 04 · Bambalapitiya', 'Colombo 05 · Havelock Town', 'Colombo 06 · Wellawatte', 'Colombo 07 · Cinnamon Gardens', 'Colombo 08 · Borella', 'Colombo 09 · Dematagoda', 'Colombo 10 · Maradana', 'Colombo 11 · Pettah', 'Colombo 12 · Hulftsdorp', 'Colombo 13 · Kotahena', 'Colombo 14 · Grandpass', 'Colombo 15 · Mattakkuliya'];
   var ELSEWHERE = 'Elsewhere in Colombo District';
@@ -425,8 +425,8 @@
   function payOptions() { return ['payhere', 'lankaqr', 'bank']; }
   function giftState() { return C.state.gift || (C.state.gift = { on: false, note: '' }); }
   var SHIP_TEXT = {
-    colombo: 'A Maison courier brings your piece to the door in white gloves and waits while you open it.',
-    island: 'Insured, tracked and signed for, anywhere in Sri Lanka.',
+    colombo: 'Encased in a discreet, reinforced outer shipping carton · Insured transit with signature confirmation',
+    island: 'Double-boxed protective transit packaging · Full transit protection with signature confirmation',
     atelier: 'Collect in person from our Colombo atelier, by private appointment.'
   };
 
@@ -474,9 +474,9 @@
     }).join('') + '</ol>';
   }
   function zoneHTML(probe) {
-    if (inColombo(probe)) return '<b>White-glove delivery unlocked.</b> ' + esc(probe.area.split(' · ')[0]) + ' receives the Maison courier, arriving ' + esc(C.fmtDay(C.addBusinessDays(C.DELIVERY.colombo.days))) + '.';
+    if (inColombo(probe)) return '<b>Priority Colombo Delivery unlocked.</b> ' + esc(probe.area.split(' · ')[0]) + ' receives complimentary priority delivery, arriving ' + esc(C.fmtDay(C.addBusinessDays(C.DELIVERY.colombo.days))) + '.';
     if (probe.district && probe.district !== 'Colombo') return 'Insured islandwide courier to ' + esc(probe.district) + ', arriving by ' + esc(C.fmtDay(C.addBusinessDays(C.DELIVERY.island.days))) + '.';
-    return 'Colombo 01 to 15 receive the white-glove Maison courier. A Colombo postal code, such as 00700, is recognised instantly.';
+    return 'Colombo 01 to 15 receive Complimentary Priority Colombo Delivery. A Colombo postal code, such as 00700, is recognised instantly.';
   }
   function stepShell(n, body, sum) {
     var title = esc(STEP_NAMES[n - 1]), st = co.step === n ? 'is-open' : co.step > n ? 'is-done' : 'is-next';
@@ -488,7 +488,7 @@
     var d = co.d;
     return '<form class="cx-form" id="coStep1" novalidate><p class="cx-legend">Fields marked <span class="req" aria-hidden="true">*</span> are required.</p>' +
       coField('co-email', 'email', req('Email Address'), 'type="email" autocomplete="email" inputmode="email" required', d.email, 'Your Digital Acquisition Record is sent here.') +
-      '<div class="field field--phone"><label for="co-phone">' + req('Mobile Number (+94)') + '</label><div class="phone-wrap"><span class="phone-cc" aria-hidden="true">+94</span><input id="co-phone" name="phone" type="tel" autocomplete="tel-national" inputmode="numeric" placeholder="77 123 4567" maxlength="13" required value="' + esc(d.phoneLocal || '') + '" aria-describedby="co-phone-h co-phone-e"></div><span class="field__hint" id="co-phone-h">Used exclusively by our Colombo courier to coordinate your white-glove delivery window.</span><span class="field__error" id="co-phone-e" role="alert"></span></div>' +
+      '<div class="field field--phone"><label for="co-phone">' + req('Mobile Number (+94)') + '</label><div class="phone-wrap"><span class="phone-cc" aria-hidden="true">+94</span><input id="co-phone" name="phone" type="tel" autocomplete="tel-national" inputmode="numeric" placeholder="77 123 4567" maxlength="13" required value="' + esc(d.phoneLocal || '') + '" aria-describedby="co-phone-h co-phone-e"></div><span class="field__hint" id="co-phone-h">Used exclusively by our Colombo courier to coordinate your delivery window and signature on receipt.</span><span class="field__error" id="co-phone-e" role="alert"></span></div>' +
       coField('co-name', 'name', req('Full Name'), 'autocomplete="name" required', d.name) +
       coField('co-addr', 'addr', req('Street Address'), 'autocomplete="address-line1" required', d.addr) +
       '<button class="cx-more" type="button" data-addr2 aria-expanded="false" aria-controls="cxAddr2"' + (d.addr2 ? ' hidden' : '') + '>+ Add apartment, suite, or landmark <span class="opt">(optional)</span></button>' +
@@ -510,7 +510,7 @@
         var o = C.DELIVERY[k];
         return '<label class="choice cx-choice"><input type="radio" name="ship" value="' + k + '"' + (d.ship === k ? ' checked' : '') + '><span><b>' + esc(o.label) + '</b><span class="when">' + esc(C.deliveryWhen(k)) + '</span><span>' + SHIP_TEXT[k] + '</span></span><span class="cx-choice__price">Complimentary</span></label>';
       }).join('') + '</div>' +
-      (inColombo(d) ? '' : '<p class="cx-note">' + esc(d.district || 'Your district') + ' is served by the insured islandwide courier. Colombo 01 to 15 receive the white-glove Maison courier.</p>') + '</fieldset>' +
+      (inColombo(d) ? '' : '<p class="cx-note">' + esc(d.district || 'Your district') + ' is served by Complimentary Insured Courier Delivery. Colombo 01 to 15 receive Priority Colombo Delivery.</p>') + '</fieldset>' +
       '<fieldset class="cx-fs"><legend class="cx-fs__legend">Gifting</legend>' +
       '<label class="gift"><input type="checkbox" name="gift"' + (d.gift ? ' checked' : '') + '><span><b>Prepare as a Gift</b><span>Hand-wrapped, with your message written in calligraphy on a cotton card.</span></span></label>' +
       '<div class="cx-giftpanel" id="cxGift"' + (d.gift ? '' : ' hidden') + '>' +

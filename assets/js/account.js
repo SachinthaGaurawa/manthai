@@ -24,7 +24,7 @@
   var TOPICS = ['Occasion & Wardrobe Styling', 'Size & Silhouette Guidance', 'Private Gift Curation', 'Garment Care & Exchange Support'];
   var FORMATS = ['Video Styling Consultation', 'WhatsApp Personal Styling'];
   var TIMES = ['10:00 AM', '11:30 AM', '1:00 PM', '2:30 PM', '4:00 PM', '5:30 PM'];
-  var STAGES = ['Confirmed', 'Atelier Inspection', 'Sealed in Lacquered Box', 'White-Glove Delivery'];
+  var STAGES = ['Confirmed', 'Atelier Inspection', 'Sealed in Lacquered Box', 'Insured Courier Delivery'];
   var tab = 'overview', ui$ = { openOrder: null, form: null, editAddr: null, receipt: null, verify: false, saved: '', banner: '' };
 
   /* ---------- small helpers ---------- */
@@ -56,8 +56,8 @@
     return [
       [placed, 'Order confirmed and edition assigned'],
       [new Date(placed.getTime() + 5 * 3600 * 1000), 'Quality inspection in the Colombo atelier'],
-      [sealed, o.ship === 'atelier' ? 'Sealed in the lacquered box, ready for collection' : 'Sealed in the lacquered box and handed to the courier'],
-      [arrive, o.ship === 'atelier' ? 'Collected from the Colombo atelier' : 'Delivered by white-glove courier']
+      [sealed, o.ship === 'atelier' ? 'Sealed in the lacquered box, ready for collection' : 'Sealed in the lacquered box, encased in its protective outer carton and handed to the courier'],
+      [arrive, o.ship === 'atelier' ? 'Collected from the Colombo atelier' : 'Delivered by insured courier, signed for on receipt']
     ];
   }
   function stageOf(o) { var now = Date.now(), n = 0; orderTimeline(o).forEach(function (e, i) { if (e[0].getTime() <= now) n = i; }); return n; }
@@ -73,7 +73,7 @@
     if (o.ship === 'colombo') return 'Arrives ' + C.fmtDay(d) + ' · 2:00 PM – 5:00 PM IST';
     return 'Arrives by ' + C.fmtDay(d);
   }
-  function courier(o) { return o.ship === 'colombo' ? 'House of MANTHAI Colombo White-Glove Courier' : o.ship === 'atelier' ? 'Private Colombo Collection, House of MANTHAI atelier' : 'Insured Islandwide Express'; }
+  function courier(o) { return o.ship === 'colombo' ? 'Priority Colombo Insured Courier, signature on receipt' : o.ship === 'atelier' ? 'Private Colombo Collection, House of MANTHAI atelier' : 'Islandwide Insured Courier, signature on receipt'; }
   function trackRef(o) { var d = new Date(o.date); return 'MNT-TRK-' + d.getFullYear() + '-' + String(o.ref).replace(/^ORD-/, ''); }
   function orders() { return C.state.orders || []; }
   function activeOrder() { return orders().filter(function (o) { return !o.cancelled && stageOf(o) < 3; })[0]; }
