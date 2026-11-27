@@ -484,12 +484,48 @@
       (co.step > n ? '<button class="cx-edit" type="button" data-edit="' + n + '">Edit<span class="sr-only"> ' + title + '</span></button>' : '') + '</header>' +
       (co.step === n ? body() : co.step > n ? '<div class="cx-step__sum">' + sum() + '</div>' : '') + '</section>';
   }
+  /* ---------- a signed-in client never retypes what the Private Circle already knows ---------- */
+  function savedList() {
+    if (!C.state.member) return [];
+    return (C.state.addressBook || []).filter(function (a) { return a && a.addr && a.city && a.district; });
+  }
+  function savedText(a) { return [a.addr, a.addr2, a.city, a.post, a.district + ' District'].filter(Boolean).join(', '); }
+  function applySaved(d, a) {
+    d.addr = a.addr; d.addr2 = a.addr2 || ''; d.city = a.city; d.post = a.post || ''; d.district = a.district;
+    d.area = a.district === 'Colombo' ? (a.area || areaFromPost(a.post) || '') : '';
+  }
+  function savedAddrHTML(d) {
+    var list = savedList(); if (!list.length) return '';
+    return '<fieldset class="cx-fs cx-saved"><legend class="cx-fs__legend">' + req('Deliver to') + '</legend><div class="cx-saved__list">' +
+      list.map(function (a) {
+        return '<label class="cx-addrcard"><input type="radio" name="addrPick" value="' + esc(a.id) + '"' + (d.addrPick === a.id ? ' checked' : '') + '><span class="cx-radio" aria-hidden="true"></span>' +
+          '<span class="cx-addrcard__body"><b>' + esc(d.name || (C.state.member && C.state.member.name) || '') + (a.isDefault ? ' <span class="acct-pill is-default">Default</span>' : '') + '</b><span>' + esc(savedText(a)) + '</span></span></label>';
+      }).join('') +
+      '<label class="cx-addrcard cx-addrcard--new"><input type="radio" name="addrPick" value="new"' + (d.addrPick === 'new' ? ' checked' : '') + '><span class="cx-radio" aria-hidden="true"></span><span class="cx-addrcard__body"><b>Deliver to a new address</b><span>Add a Sri Lankan address for this acquisition.</span></span></label>' +
+      '</div></fieldset>';
+  }
+  function prefill(d) {
+    var m = C.state.member; if (!m) return;
+    var pr = C.state.profile || {}, last = (C.state.orders || []).filter(function (o) { return o.email && String(o.email).toLowerCase() === String(m.email).toLowerCase(); })[0] || {};
+    if (!d.email) d.email = m.email;
+    if (!d.name) d.name = m.name;
+    if (!d.phoneLocal) { var ph = String(pr.phone || last.phone || '').replace(/\D/g, '').replace(/^(94|0)/, ''); if (/^7\d{8}$/.test(ph)) d.phoneLocal = ph; }
+    var list = savedList();
+    if (!d.addrPick) {
+      var def = list.filter(function (a) { return a.isDefault; })[0] || list[0];
+      if (def) { d.addrPick = def.id; applySaved(d, def); } else d.addrPick = 'new';
+    }
+    /* a Colombo address without a recognisable area opens the form, so the client can name the area once */
+    if (d.addrPick !== 'new' && d.district === 'Colombo' && !d.area) d.addrPick = 'new';
+  }
   function step1() {
     var d = co.d;
     return '<form class="cx-form" id="coStep1" novalidate><p class="cx-legend">Fields marked <span class="req" aria-hidden="true">*</span> are required.</p>' +
       coField('co-email', 'email', req('Email Address'), 'type="email" autocomplete="email" inputmode="email" required', d.email, 'Your Digital Acquisition Record is sent here.') +
       '<div class="field field--phone"><label for="co-phone">' + req('Mobile Number (+94)') + '</label><div class="phone-wrap"><span class="phone-cc" aria-hidden="true">+94</span><input id="co-phone" name="phone" type="tel" autocomplete="tel-national" inputmode="numeric" placeholder="77 123 4567" maxlength="13" required value="' + esc(d.phoneLocal || '') + '" aria-describedby="co-phone-h co-phone-e"></div><span class="field__hint" id="co-phone-h">Used exclusively by our Colombo courier to coordinate your delivery window and signature on receipt.</span><span class="field__error" id="co-phone-e" role="alert"></span></div>' +
       coField('co-name', 'name', req('Full Name'), 'autocomplete="name" required', d.name) +
+      savedAddrHTML(d) +
+      '<div class="cx-newaddr" id="cxNewAddr"' + (savedList().length && d.addrPick !== 'new' ? ' hidden' : '') + '>' +
       coField('co-addr', 'addr', req('Street Address'), 'autocomplete="address-line1" required', d.addr) +
       '<button class="cx-more" type="button" data-addr2 aria-expanded="false" aria-controls="cxAddr2"' + (d.addr2 ? ' hidden' : '') + '>+ Add apartment, suite, or landmark <span class="opt">(optional)</span></button>' +
       '<div class="cx-addr2" id="cxAddr2"' + (d.addr2 ? '' : ' hidden') + '>' + coField('co-addr2', 'addr2', opt('Apartment, Suite or Landmark'), 'autocomplete="address-line2"', d.addr2) + '</div>' +
@@ -499,8 +535,10 @@
         '<div class="field co-area"' + (d.district === 'Colombo' ? '' : ' hidden') + '><label for="co-area">' + req('Colombo Area') + '</label><select id="co-area" name="area" aria-describedby="co-area-e"><option value="">Choose</option>' +
           COLOMBO_AREAS.concat([ELSEWHERE]).map(function (x) { return '<option' + (x === d.area ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') +
           '</select><span class="field__error" id="co-area-e" role="alert"></span></div></div>' +
-      '<p class="cx-zone' + (inColombo(d) ? ' is-on' : '') + '" id="cxZone" aria-live="polite">' + zoneHTML(d) + '</p>' +
       '<div class="field"><span class="field__label-static">Country</span><p class="field__static">Sri Lanka</p><input type="hidden" name="country" value="Sri Lanka"></div>' +
+      (C.state.member ? '<label class="cx-toggle cx-saveaddr"><input type="checkbox" name="saveAddr"' + (d.saveAddr !== false ? ' checked' : '') + '><span class="cx-toggle__ui" aria-hidden="true"></span><span>Save this address to my Private Circle</span></label>' : '') +
+      '</div>' +
+      '<p class="cx-zone' + (inColombo(d) ? ' is-on' : '') + '" id="cxZone" aria-live="polite">' + zoneHTML(d) + '</p>' +
       '<button class="btn btn--solid btn--block cx-next" type="submit"><span class="btn__label">Continue to Fulfillment</span></button></form>';
   }
   function step1Sum() { var d = co.d; return '<p>' + esc(d.name) + '<br>' + esc(d.email) + ' · ' + esc(d.phone) + '</p><p>' + esc(addressOf(d)) + '</p>'; }
@@ -531,6 +569,15 @@
         var o = PAY[k];
         return '<label class="cx-paycard"><input type="radio" name="pay" value="' + k + '"' + (d.pay === k ? ' checked' : '') + '><span class="cx-radio" aria-hidden="true"></span><span class="cx-paycard__body"><b>' + esc(o.label) + '</b><span>' + esc(o.text) + '</span></span><span class="cx-marks" aria-hidden="true">' + o.marks.map(function (x) { return '<i>' + esc(x) + '</i>'; }).join('') + '</span></label>';
       }).join('') + '</div></fieldset>' +
+      '<fieldset class="cx-fs cx-bill"><legend class="cx-fs__legend">Billing Details</legend>' +
+        '<label class="cx-toggle"><input type="checkbox" name="billSame"' + (d.billSame !== false ? ' checked' : '') + '><span class="cx-toggle__ui" aria-hidden="true"></span><span>Bill to the same name and delivery address</span></label>' +
+        '<div class="cx-billform" id="cxBill"' + (d.billSame !== false ? ' hidden' : '') + '>' +
+          coField('co-bname', 'bname', req('Name on the Bill'), 'autocomplete="billing name"', (d.bill && d.bill.name) || '') +
+          coField('co-baddr', 'baddr', req('Billing Street Address'), 'autocomplete="billing address-line1"', (d.bill && d.bill.addr) || '') +
+          '<div class="row-2">' + coField('co-bcity', 'bcity', req('City or Town'), 'autocomplete="billing address-level2"', (d.bill && d.bill.city) || '') +
+            coField('co-bpost', 'bpost', opt('Postal Code'), 'autocomplete="billing postal-code" inputmode="numeric" maxlength="5"', (d.bill && d.bill.post) || '') + '</div>' +
+          selectField('co-bdistrict', 'bdistrict', req('District'), DISTRICTS, (d.bill && d.bill.district) || '', 'autocomplete="billing address-level1"') +
+        '</div></fieldset>' +
       '<p class="cx-ssl">' + ICON.lock + '<span>256-bit SSL encryption. Card payments are processed by PayHere, a licensed Sri Lankan gateway; MANTHAI never sees or stores your card number.</span></p>' +
       '<button class="btn btn--solid btn--block btn--sheen cx-submit" type="submit"><span class="btn__label">Complete Acquisition · ' + P(C.bagTotalLKR()) + '</span></button>' +
       '<p class="cx-consent">By completing your acquisition you agree to our <a href="/legal/terms" data-legal="terms">Terms &amp; Conditions of Sale</a>, <a href="/legal/shipping-exchanges" data-legal="shipping-exchanges">Shipping &amp; Exchange Policy</a> and <a href="/legal/privacy" data-legal="privacy">Privacy Policy</a>.</p>' +
@@ -553,7 +600,7 @@
   function renderCheckoutPage() {
     var root = $('#cxPanel'); if (!root) return;
     var m = C.state.member, d = co.d, g = giftState();
-    if (!d.email && m) { d.email = m.email; d.name = d.name || m.name; }
+    prefill(d);
     d.country = M.MARKET.countryName;
     if (shipOptions().indexOf(d.ship) < 0) d.ship = shipOptions()[0];
     if (payOptions().indexOf(d.pay) < 0) d.pay = payOptions()[0];
@@ -593,6 +640,7 @@
     var meta = [['Order Reference', '<span class="order-ref">' + esc(o.ref) + '</span>'], ['Acquired', esc(C.fmtDay(placed))],
       ['Delivery', esc(del.label) + '<br><span class="rec__when">' + esc(o.when) + '</span>'], ['Client', esc(o.name)],
       [o.ship === 'atelier' ? 'Collection' : 'Deliver to', esc(o.ship === 'atelier' ? 'The Colombo atelier, by private appointment' : o.address)], ['Payment', esc((PAY[o.method] || PAY.payhere).label)]];
+    if (o.billing) meta.push(['Bill to', esc(o.billing.name) + '<br>' + esc(o.billing.address)]);
     root.innerHTML = cxHead('<span class="cx-long">Continue to the </span>Maison', 'Acquisition Confirmed') +
       '<div class="rec-wrap"><article class="rec" aria-labelledby="recTitle">' + C.issuerHTML() +
         '<header class="rec__head"><span class="rec__seal">' + SEAL + '</span><p class="rec__kicker">Digital Acquisition Record</p>' +
@@ -679,6 +727,22 @@
   cxPage.addEventListener('change', function (e) {
     var t = e.target, f = t.form; if (!f) return;
     if (f.id === 'coStep1' && (t.name === 'district' || t.name === 'area')) { syncZone(f); if (t.value) C.setError(t, ''); }
+    if (f.id === 'coStep1' && t.name === 'addrPick') {
+      var box = $('#cxNewAddr'), d = co.d;
+      if (t.value === 'new') {
+        d.addrPick = 'new'; box.hidden = false;
+        ['addr', 'addr2', 'city', 'post'].forEach(function (k) { f.elements[k].value = ''; C.setError(f.elements[k], ''); });
+        f.elements.district.value = ''; f.elements.area.value = ''; syncZone(f); f.elements.addr.focus();
+      } else {
+        var a = savedList().filter(function (x) { return x.id === t.value; })[0]; if (!a) return;
+        d.addrPick = a.id; applySaved(d, a);
+        ['addr', 'addr2', 'city', 'post', 'district'].forEach(function (k) { f.elements[k].value = d[k] || ''; C.setError(f.elements[k], ''); });
+        f.elements.area.value = d.area || ''; syncZone(f);
+        /* a Colombo address with no recognisable area asks for it once, in place */
+        box.hidden = !(d.district === 'Colombo' && !d.area);
+      }
+    }
+    if (f.id === 'coStep3' && t.name === 'billSame') { var b = $('#cxBill'); b.hidden = t.checked; co.d.billSame = t.checked; if (!t.checked) { var i = $('input', b); if (i) i.focus(); } }
     if (f.id === 'coStep2' && t.name === 'gift') { $('#cxGift').hidden = !t.checked; co.d.gift = t.checked; var row = $('.cx-rows div:nth-child(3) dd', cxPage); if (row) row.textContent = t.checked ? 'Prepared as a gift' : 'Not selected'; }
   });
   cxPage.addEventListener('input', function (e) {
@@ -708,6 +772,9 @@
       d.area = d.district === 'Colombo' ? f.elements.area.value : '';
       d.phoneLocal = f.elements.phone.value.replace(/\D/g, '').replace(/^(94|0)/, '');
       d.phone = '+94 ' + d.phoneLocal.replace(/^(\d{2})(\d{3})(\d{4})$/, '$1 $2 $3');
+      d.addrPick = (f.querySelector('input[name=addrPick]:checked') || {}).value || 'new';
+      d.saveAddr = f.elements.saveAddr ? f.elements.saveAddr.checked : false;
+      rememberClient(d);
       d.ship = shipOptions()[0];
       co.step = 2;
     } else if (f.id === 'coStep2') {
@@ -716,6 +783,16 @@
       var g = giftState(); g.on = d.gift; g.note = d.giftNote; C.save();
       co.step = 3;
     } else {
+      d.billSame = f.elements.billSame.checked;
+      if (!d.billSame) {
+        need('bname', function (v) { return v.trim().length > 1; }, 'Enter the name for the bill.');
+        need('baddr', function (v) { return v.trim().length > 4; }, 'Enter the billing street address.');
+        need('bcity', function (v) { return v.trim().length > 1; }, 'Enter the city or town.');
+        need('bpost', function (v) { return !v.trim() || /^\d{5}$/.test(v.trim()); }, 'A Sri Lankan postal code has five digits, such as 00700.');
+        need('bdistrict', function (v) { return !!v; }, 'Choose the district.');
+        if (bad) { bad.focus(); return; }
+        d.bill = { name: f.elements.bname.value.trim(), addr: f.elements.baddr.value.trim(), city: f.elements.bcity.value.trim(), post: f.elements.bpost.value.trim(), district: f.elements.bdistrict.value };
+      } else d.bill = null;
       d.pay = (f.querySelector('input[name=pay]:checked') || {}).value || payOptions()[0];
       placeOrder(); return;
     }
@@ -730,6 +807,22 @@
     if (e.target.closest('[data-circle-link]') && lastOrder) { M.ui.sendCircleLink(lastOrder.email); }
   });
 
+  /* what the client typed once is kept in their Private Circle (and, when signed in, their cloud record) */
+  function rememberClient(d) {
+    var m = C.state.member; if (!m) return;
+    var pr = C.state.profile || (C.state.profile = {});
+    if (!pr.phone) pr.phone = d.phoneLocal;
+    if (d.addrPick === 'new' && d.saveAddr) {
+      var bk = C.state.addressBook || (C.state.addressBook = []);
+      var same = bk.filter(function (a) { return a.addr === d.addr && a.city === d.city && a.district === d.district && (a.post || '') === d.post; })[0];
+      if (!same) {
+        same = { id: 'A' + Date.now().toString(36), addr: d.addr, addr2: d.addr2, city: d.city, post: d.post, district: d.district, area: d.area, isDefault: !savedList().length };
+        bk.push(same);
+      }
+      d.addrPick = same.id;
+    }
+    C.save();
+  }
   function addressOf(d) { return [d.addr, d.addr2, d.area && d.area !== ELSEWHERE ? d.area.split(' · ')[0] : '', d.city, d.post, d.district && !(d.area && d.area !== ELSEWHERE) ? d.district + ' District' : '', d.country].filter(Boolean).join(', '); }
   function placeOrder() {
     var d = co.d, items = [];
@@ -737,7 +830,8 @@
     var order = { ref: C.uid('ORD'), date: new Date().toISOString(), items: items, totalLKR: C.bagTotalLKR(), currency: C.state.currency, display: C.price(C.bagTotalLKR()),
       method: d.pay, country: d.country, email: d.email, name: d.name, phone: d.phone, ship: d.ship, when: C.deliveryWhen(d.ship), gift: d.gift, giftNote: d.giftNote, omit: d.omit, instr: d.instr,
       arrive: C.addBusinessDays((C.DELIVERY[d.ship] || C.DELIVERY.island).days).toISOString(),
-      address: addressOf(d), district: d.district, area: d.area, step: 0 };
+      address: addressOf(d), district: d.district, area: d.area, step: 0,
+      billing: d.bill ? { name: d.bill.name, address: [d.bill.addr, d.bill.city, d.bill.post, d.bill.district + ' District', 'Sri Lanka'].filter(Boolean).join(', ') } : null };
     C.state.orders.unshift(order);
     var addrs = C.state.addresses || (C.state.addresses = []);
     if (addrs.indexOf(order.address) < 0) addrs.unshift(order.address);

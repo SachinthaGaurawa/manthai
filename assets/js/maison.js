@@ -561,7 +561,8 @@
   function sampleFor(code) { return M.PRODUCTS.filter(function (p) { return 'MNT-' + hash(p.id) === code; })[0]; }
   function b64e(o) { try { return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); } catch (e) { return ''; } }
   function b64d(s) { try { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return JSON.parse(decodeURIComponent(escape(atob(s)))); } catch (e) { return null; } }
-  function verifyURL(r) { return location.origin + '/passport/' + encodeURIComponent(r.id) + (r.carry ? '#r=' + r.carry : ''); }
+  /* the public facts ride in the query string (?r=), which survives a refresh, a share and a QR scan; #r= links from earlier certificates still open */
+  function verifyURL(r) { return location.origin + '/passport/' + encodeURIComponent(r.id) + (r.carry ? '?r=' + r.carry : ''); }
   function buildRecord(id, p, opt) {
     opt = opt || {};
     var r = { id: id, p: p, piece: p.name, edition: opt.edition || (p.edition ? 'Piece ' + pad(pieceNo(p)) + ' of ' + p.edition : 'Atelier series'),
@@ -589,21 +590,24 @@
   }
   /* a record carried in the link, for a device without the order */
   function recordFromLink(code) {
-    var m = /(?:^|[#&])r=([A-Za-z0-9_-]+)/.exec(location.hash), o = m && b64d(m[1]);
-    if (!o || !/^MNT-[A-Z0-9]{4,10}$/.test(code)) return null;
+    if (!/^MNT-[A-Z0-9]{4,10}$/.test(code)) return null;
+    var m = /(?:^|[?&#])r=([A-Za-z0-9_-]+)/.exec(location.search + location.hash), seen = {};
+    try { seen = JSON.parse(window.localStorage.getItem('manthai.passports') || '{}') || {}; } catch (e) { /* ignore */ }
+    var carry = m ? m[1] : seen[code], o = carry && b64d(carry);
+    if (!o) return null;
+    /* remember a record this browser has opened, so the bare link keeps working here too */
+    if (m && seen[code] !== m[1]) { seen[code] = m[1]; try { window.localStorage.setItem('manthai.passports', JSON.stringify(seen)); } catch (e) { /* ignore */ } }
     var p = C.product(o.p) || (o.n ? C.archivedProduct({ id: o.p, name: o.n, short: o.n }) : null);
     if (!p) return null;
     return buildRecord(code, p, { edition: String(o.e || '').slice(0, 40) || undefined, date: /^\d{4}-\d{2}-\d{2}$/.test(o.d) ? o.d + 'T12:00:00' : undefined });
   }
   var CHECK = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
   var OUT = '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M9 6h9v9M18 6L7 17" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>';
-  function actionsHTML(r) {
+  function actionsHTML(r, page) {
     return '<div class="cert__acts">' +
         '<button class="cert__dl" type="button" data-cert-pdf="' + esc(r.id) + '"><span class="cert__lbl">Download Certificate (PDF)</span></button>' +
-        '<div class="cert__linkrow">' +
-          '<button class="cert__copy" type="button" data-cert-copy="' + esc(r.id) + '"><span class="cert__lbl">Copy Live Verification Link</span></button>' +
-          '<a class="cert__open" href="' + esc(r.url) + '" target="_blank" rel="noopener" aria-label="Open the live verification page in a new tab" title="Open the live verification page">' + OUT + '</a>' +
-        '</div>' +
+        '<button class="cert__copy" type="button" data-cert-copy="' + esc(r.id) + '"><span class="cert__lbl">Copy Verification Link</span></button>' +
+        (page ? '' : '<a class="cert__open" href="' + esc(r.url) + '" target="_blank" rel="noopener" aria-label="View the live record, opens in a new tab"><span>View Live Record</span>' + OUT + '</a>') +
       '</div>';
   }
   function rowsHTML(r, page) {
@@ -668,7 +672,7 @@
         '<figure class="pp__plate">' + C.plateHTML(r.p, 'form', '(max-width: 768px) 90vw, 360px') + '</figure>' +
         '<div class="pp__record">' + rowsHTML(r, true) +
           '<p class="cert__note">' + (r.sample ? 'A sample record for the ' + esc(r.p.short) + '. ' : '') + 'This page is the live record of the House registry. Tap the piece&rsquo;s Verification Card or scan the QR code on its certificate to return here at any time.</p>' +
-          actionsHTML(r) +
+          actionsHTML(r, true) +
           '<a class="pp__explore" href="/" data-route="home">Explore House of MANTHAI</a>' +
         '</div>' +
       '</div></div>';
@@ -836,8 +840,8 @@
     if (fbP) return fbP;
     var base = 'https://www.gstatic.com/firebasejs/13.4.0/';
     fbP = Promise.all([import(base + 'firebase-app.js'), import(base + 'firebase-auth.js')]).then(function (m) {
-      var A = m[1], auth = A.getAuth(m[0].initializeApp(M.CONFIG.firebase));
-      FB = { A: A, auth: auth };
+      var app = m[0].initializeApp(M.CONFIG.firebase), A = m[1], auth = A.getAuth(app);
+      FB = { A: A, auth: auth, app: app };
       A.onAuthStateChanged(auth, fbSync);
       return FB;
     }).catch(function (e) { fbP = null; throw e; });
@@ -848,14 +852,74 @@
     if (u) {
       var g = (u.providerData || []).some(function (p) { return p.providerId === 'google.com'; });
       var created = u.metadata && u.metadata.creationTime ? new Date(u.metadata.creationTime).toISOString() : new Date().toISOString();
-      C.state.member = { id: 'MNT-' + String(u.uid).slice(0, 7).toUpperCase(), uid: u.uid, fb: true, email: u.email || '', name: u.displayName || nameFromEmail(u.email || 'guest'), picture: u.photoURL || '', provider: g ? 'google' : 'email', since: created };
+      var same = cur && cur.uid === u.uid;
+      /* keep what the client edited (their name) when the same account returns; Google only fills the gaps */
+      C.state.member = { id: 'MNT-' + String(u.uid).slice(0, 7).toUpperCase(), uid: u.uid, fb: true, email: u.email || '', name: (same && cur.name) || u.displayName || nameFromEmail(u.email || 'guest'), picture: u.photoURL || '', provider: g ? 'google' : 'email', since: created };
       C.save(); C.emit('member');
       if ($('#layerSalon').open) renderSalon();
+      cloudLoad(u);
     } else if (cur && cur.fb) {
+      cloud.uid = null;
       C.state.member = null; C.save(); C.emit('member');
       if ($('#layerSalon').open) renderSalon();
     }
   }
+
+  /* ---------- Private Circle cloud record (Cloud Firestore: members/{uid}) ----------
+     The client's details follow them to any browser or device they sign in on. If Firestore is not
+     switched on for the project yet, everything still saves in this browser and nothing breaks. */
+  var CLOUD_KEYS = ['profile', 'fitSize', 'addressBook', 'notify', 'wishlist', 'savedSize', 'stockAlerts', 'orders', 'consults', 'security'];
+  var cloud = { F: null, db: null, uid: null, seen: '', timer: 0, off: false };
+  function cloudPick() { var o = {}; CLOUD_KEYS.forEach(function (k) { if (C.state[k] !== undefined) o[k] = C.state[k]; }); if (C.state.member) o.name = C.state.member.name; return o; }
+  function isEmpty(v) { return v == null || v === '' || (Array.isArray(v) ? !v.length : (typeof v === 'object' && !Object.keys(v).length)); }
+  function unionBy(a, b, key) { var seen = {}, out = []; (a || []).concat(b || []).forEach(function (x) { var k = x && x[key]; if (!k || !seen[k]) { if (k) seen[k] = 1; out.push(x); } }); return out; }
+  function cloudLoad(u) {
+    if (cloud.off) return;
+    import('https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js').then(function (F) {
+      cloud.F = F; cloud.db = cloud.db || F.getFirestore(FB.app);
+      return F.getDoc(F.doc(cloud.db, 'members', u.uid));
+    }).then(function (snap) {
+      var m = C.state.member; if (!m || m.uid !== u.uid) return;
+      /* a different client signed in on this browser: start from a clean record, never show another person's details */
+      if (C.state.ownerUid && C.state.ownerUid !== u.uid) CLOUD_KEYS.forEach(function (k) { delete C.state[k]; });
+      C.state.ownerUid = u.uid;
+      var d = snap.exists() ? (snap.data() || {}) : null, r = d && d.record ? d.record : null, localAt = C.state.localAt || 0, cloudAt = (d && d.updatedAt) || 0;
+      if (r) {
+        CLOUD_KEYS.forEach(function (k) {
+          if (r[k] === undefined) return;
+          if (k === 'orders') C.state.orders = unionBy(C.state.orders, r.orders, 'ref');
+          else if (k === 'consults') C.state.consults = unionBy(C.state.consults, r.consults, 'id');
+          else if (isEmpty(C.state[k]) || cloudAt >= localAt) C.state[k] = r[k];
+        });
+        if (r.name && (cloudAt >= localAt)) m.name = r.name;
+      }
+      cloud.uid = u.uid; cloud.seen = JSON.stringify(cloudPick());
+      C.save(); C.emit('member');
+      if (!r || localAt > cloudAt) cloudPush(true);
+    }).catch(cloudFail);
+  }
+  function cloudPush(now) {
+    if (!cloud.uid || !cloud.F || cloud.off) return;
+    clearTimeout(cloud.timer);
+    cloud.timer = setTimeout(function () {
+      var rec = cloudPick(), at = Date.now();
+      cloud.F.setDoc(cloud.F.doc(cloud.db, 'members', cloud.uid), { record: JSON.parse(JSON.stringify(rec)), email: (C.state.member && C.state.member.email) || '', updatedAt: at })
+        .catch(cloudFail);
+    }, now ? 0 : 600);
+  }
+  function cloudFail(e) {
+    var code = (e && e.code) || String(e && e.message || e);
+    if (/permission-denied|failed-precondition|not-found|unimplemented|SERVICE_DISABLED|has not been used/i.test(code)) cloud.off = true;
+    if (window.console) console.info('[MANTHAI] Saved in this browser only; cloud record unavailable:', code);
+  }
+  /* every save of the client's own details marks the time and, when signed in, goes up to the cloud record */
+  var save0 = C.save;
+  cloud.seen = JSON.stringify(cloudPick());
+  C.save = function () {
+    var j = JSON.stringify(cloudPick());
+    if (j !== cloud.seen) { cloud.seen = j; if (C.state.member && C.state.member.uid) C.state.localAt = Date.now(); save0(); cloudPush(); return; }
+    save0();
+  };
   var FB_ERR = {
     'auth/unauthorized-domain': 'This web address is not authorised for sign-in yet. Add it under Firebase, Authentication, Settings, Authorized domains.',
     'auth/popup-blocked': 'Your browser blocked the Google window. Allow pop-ups for this site and try again.',
