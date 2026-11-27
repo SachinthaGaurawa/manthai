@@ -94,7 +94,8 @@ html.has-cursor .cursor.is-on { opacity: 1; }
 .cursor.is-ring::before { transform: scale(1); background: rgba(14, 13, 12, 0.18); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); }
 .cursor__label { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); font: 400 11px/1 var(--sans); letter-spacing: .08em; color: var(--alabaster-silk); white-space: nowrap; opacity: 0; transition: opacity .3s var(--ease); }
 .cursor.is-ring .cursor__label { opacity: 1; }
-html.has-cursor, html.has-cursor a, html.has-cursor button, html.has-cursor [role='button'], html.has-cursor label, html.has-cursor summary { cursor: none; }
+/* the native pointer stays everywhere; only editorial photography trades it for the gold ring */
+html.has-cursor [data-cursor], html.has-cursor [data-cursor] * { cursor: none; }
 html.has-cursor.has-dialog, html.has-cursor.has-dialog a, html.has-cursor.has-dialog button, html.has-cursor.has-dialog label, html.has-cursor.has-dialog summary { cursor: auto; }
 html.has-cursor.has-dialog .cursor { opacity: 0 !important; }
 html.has-cursor input, html.has-cursor textarea, html.has-cursor select { cursor: auto; }

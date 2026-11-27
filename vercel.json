@@ -58,6 +58,10 @@
     {
       "source": "/the-maison",
       "destination": "/"
+    },
+    {
+      "source": "/pieces/:slug",
+      "destination": "/"
     }
   ]
 }
