@@ -7,7 +7,7 @@
 
 /* ---------------- sentence-case UI ---------------- */
 .btn, .nav-item, .tab, .link-btn, .card__quick, .viewtab, .ctl, .skip, .util-btn,
-.pdp summary, .search-hint, .size-table th, .footer__col h3, .field label, .field .legend,
+.pdp summary, .search-hint, .size-table th, .footer__col h3, .footer__col h2, .field label, .field .legend,
 .salon-card h3, .pdp__collection, .thumb span, .provenance b, .opt-label,
 .switch__text b, .badge-btn, .totals, .seg button, .google-btn, .passport dt, .verified, .size-table tbody th { text-transform: none; }
 .btn, .nav-item, .tab, .card__quick { letter-spacing: .08em; }
