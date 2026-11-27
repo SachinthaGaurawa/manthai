@@ -8,8 +8,11 @@
 (function () {
   'use strict';
   var M = window.MANTHAI, C = M.core;
-  var STAMP = '20261128s';
-  var INK = '#141210', UMBER = '#59534B', BRONZE = '#755A2A', GOLD = '#C9AF7E', RULE = '#DBD3C5', IVORY = '#F7F4EE', FINE = '#8E867A';
+  var STAMP = '20261128t';
+  var INK = '#141210', UMBER = '#59534B', BRONZE = '#755A2A', GOLD = '#C9AF7E', SEAL = '#9F824C', RULE = '#DBD3C5', IVORY = '#F7F4EE', LIMESTONE = '#EFEAE0', FINE = '#8E867A';
+  var PT = 0.3528;
+  /* the Atelier Director's signature, the same stroke as the 3D certificate in the ritual (index.html, .ub-cert__sig) */
+  var SIGNATURE = 'M6 40C10 31 15 19 20 13C23 9.5 26 10 25.5 15C25 21 23 30 23.5 36C26 27 31 16 36 12C39.5 9.5 41.5 11.5 40.5 17C39.5 23 38 30 39.5 35C42.5 29 46.5 23.5 50.5 23C53.5 22.7 53.5 26.5 52 30C50.8 33 51.5 35.5 54.5 35C59 34.3 62.5 27.5 66.5 26.5C69.5 25.8 70 28.5 68.8 31.5C67.8 34 68.8 35.6 71.8 35C77 34 81 25 86 24C89.6 23.3 90 26.4 88.6 29.6C87.6 32 88.4 34 91.4 33.4C98 32 104 21 111 17.5C114.5 15.8 116.5 17.5 115 21.5C113.2 26.5 111 31 113.5 32C118 33.6 126 26 132 24.6M13 47C42 41.5 82 39 128 36.5C140 35.8 150 35.6 158 36';
   var ready = null;
 
   function script(src) {
@@ -81,101 +84,190 @@
   }
 
   /* ---------- text helpers ---------- */
-  function spaced(doc, text, size, track) { return doc.getTextWidth(text) + track * Math.max(0, text.length - 1); }
-  function centred(doc, text, y, size, track, color, face, style) {
-    doc.setFont(face, style || 'normal'); doc.setFontSize(size); doc.setTextColor(color);
+  function setFace(doc, face, style, size, color) { doc.setFont(face, style || 'normal'); doc.setFontSize(size); doc.setTextColor(color); }
+  function spaced(doc, text, track) { return doc.getTextWidth(text) + (track || 0) * Math.max(0, text.length - 1); }
+  /* one line of text, tracked, aligned left / centre / right on x */
+  function tracked(doc, text, x, y, track, align) {
+    var w = spaced(doc, text, track);
     doc.setCharSpace(track || 0);
-    doc.text(text, 105 - spaced(doc, text, size, track || 0) / 2, y);
+    doc.text(text, align === 'center' ? x - w / 2 : align === 'right' ? x - w : x, y);
     doc.setCharSpace(0);
+    return w;
+  }
+  /* parts joined by a drawn dot (never a font glyph, so no viewer can run them together) or by an ASCII bar */
+  function joined(doc, parts, x, y, o) {
+    o = o || {};
+    var track = o.track || 0, size = doc.getFontSize() * PT, gap = o.bar ? 0 : size * 0.62 + track * 1.6, r = size * 0.075;
+    var sep = o.bar ? '  |  ' : '', sw = o.bar ? spaced(doc, sep, track) : gap * 2;
+    var total = parts.reduce(function (n, t, i) { return n + spaced(doc, t, track) + (i ? sw : 0); }, 0);
+    var cx = o.align === 'center' ? x - total / 2 : x;
+    parts.forEach(function (t, i) {
+      if (i) {
+        if (o.bar) { tracked(doc, sep, cx, y, track); }
+        else { doc.setFillColor(o.dot || doc.getTextColor()); doc.circle(cx + gap, y - size * 0.25, r, 'F'); }
+        cx += sw;
+      }
+      cx += tracked(doc, t, cx, y, track);
+    });
+    return total;
   }
 
-  /* r: { id, piece, edition, materials, origin, care, owner, steward, issued, url, sample } */
+  /* the embossed House stamp: double ring, curved legend, the Seal at its heart */
+  function stamp(doc, cx, cy, R) {
+    doc.setDrawColor(SEAL);
+    doc.setLineWidth(0.6 * PT); doc.circle(cx, cy, R, 'S');
+    doc.setLineWidth(0.25 * PT); doc.circle(cx, cy, R - 0.8, 'S'); doc.circle(cx, cy, R * 0.6, 'S');
+    var tR = R * 0.735, legend = ['HOUSE', 'OF', 'MANTHAI', '·', 'AUTHENTICATED', 'ARCHIVE', '·'];
+    setFace(doc, 'Tenor', 'normal', 4.7, SEAL);
+    var chars = [];
+    legend.forEach(function (word, i) {
+      if (i) chars.push({ sp: true });
+      if (word === '·') chars.push({ dot: true, w: 0.9 });
+      else word.split('').forEach(function (ch) { chars.push({ ch: ch, w: doc.getTextWidth(ch) }); });
+    });
+    chars.push({ sp: true });
+    var spaceW = 0.75, ink = chars.reduce(function (n, c) { return n + (c.sp ? spaceW : c.w); }, 0);
+    var extra = (2 * Math.PI * tR - ink) / chars.length, cap = 4.7 * PT * 0.7, head = 0;
+    /* "HOUSE OF MANTHAI" is centred over the top of the ring */
+    for (var k = 0; k < chars.length && !chars[k + 1].dot; k++) head += (chars[k].sp ? spaceW : chars[k].w) + extra;
+    var along = -(head - extra) / 2;
+    chars.forEach(function (c) {
+      var w = c.sp ? spaceW : c.w, th = (along + w / 2) / tR;
+      if (c.dot) { doc.setFillColor(SEAL); doc.circle(cx + (tR + cap / 2) * Math.sin(th), cy - (tR + cap / 2) * Math.cos(th), 0.22, 'F'); }
+      else if (c.ch) {
+        var t0 = th - (w / 2) / tR;
+        doc.text(c.ch, cx + tR * Math.sin(t0), cy - tR * Math.cos(t0), { angle: -th * 180 / Math.PI });
+      }
+      along += w + extra;
+    });
+    var sw = R * 0.62;
+    drawSprite(doc, document.getElementById('spiral-seal'), [0, 0, 1000, 860], cx - sw / 2, cy - sw * 0.43, sw, SEAL);
+  }
+
+  /* a real, scannable QR: ink modules on a white quiet zone, inside a fine champagne rule */
+  function qrTile(doc, url, x, y, size) {
+    var qr = window.qrcode(0, 'M'); qr.addData(url); qr.make();
+    var n = qr.getModuleCount(), q = size * 0.085, cell = (size - 2 * q) / n;
+    doc.setFillColor('#FFFFFF'); doc.rect(x, y, size, size, 'F');
+    doc.setDrawColor(GOLD); doc.setLineWidth(0.4 * PT); doc.rect(x, y, size, size, 'S');
+    doc.setFillColor(INK);
+    for (var row = 0; row < n; row++) {
+      for (var col = 0; col < n; col++) {
+        if (!qr.isDark(row, col)) continue;
+        var run = 1; while (col + run < n && qr.isDark(row, col + run)) run++;
+        doc.rect(x + q + col * cell, y + q + row * cell, cell * run + 0.01, cell + 0.01, 'F');
+        col += run - 1;
+      }
+    }
+  }
+
+  /* r: { id, piece, edition, materials, origin, care, owner, provenance, issued, url, digest, sample } */
   function build(r, faces) {
     var doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', compress: true });
     doc.addFileToVFS('Cormorant.ttf', faces.serif); doc.addFont('Cormorant.ttf', 'Cormorant', 'normal');
     doc.addFileToVFS('Cormorant-Italic.ttf', faces.serifItalic); doc.addFont('Cormorant-Italic.ttf', 'Cormorant', 'italic');
     doc.addFileToVFS('TenorSans.ttf', faces.sans); doc.addFont('TenorSans.ttf', 'Tenor', 'normal');
     doc.setProperties({ title: 'Certificate of Authenticity & Ownership ' + r.id, subject: r.piece, author: 'House of Manthai (Private) Limited', creator: 'House of MANTHAI Digital Registry', keywords: 'MANTHAI, Digital Product Passport, ' + r.id });
+    var seal = document.getElementById('spiral-seal'), CX = 105;
 
-    /* ivory sheet, gold outer rule at 12mm, alabaster inner rule at 14.5mm */
+    /* ivory sheet; champagne outer rule at 10mm, alabaster inner rule at 13mm, gold corner ticks */
     doc.setFillColor(IVORY); doc.rect(0, 0, 210, 297, 'F');
-    doc.setDrawColor(GOLD); doc.setLineWidth(0.5 * 0.3528); doc.rect(12, 12, 186, 273, 'S');
-    doc.setDrawColor(RULE); doc.setLineWidth(0.3 * 0.3528); doc.rect(14.5, 14.5, 181, 268, 'S');
-
-    /* the Unbounded Spiral Seal, 14mm, and the official wordmark */
-    var sealW = 14, sealH = sealW * 860 / 1000;
-    drawSprite(doc, document.getElementById('spiral-seal'), [0, 0, 1000, 860], 105 - sealW / 2, 24, sealW, BRONZE);
-    var wmW = 62, wmH = wmW * 120 / 796;
-    drawSprite(doc, document.getElementById('wm-paths'), [120, 30, 796, 120], 105 - wmW / 2, 24 + sealH + 6, wmW, INK);
-
-    var y = 24 + sealH + 6 + wmH + 9;
-    centred(doc, 'HOUSE OF MANTHAI  ·  DIGITAL PRODUCT PASSPORT', y, 8, 0.9, BRONZE, 'Tenor');
-    y += 11;
-    centred(doc, 'Certificate of Authenticity & Ownership', y, 20, 0.15, INK, 'Cormorant');
-    y += 8;
-    centred(doc, 'PASSPORT ID: ' + r.id + '   ·   VERIFIED AUTHENTIC', y, 8, 0.7, UMBER, 'Tenor');
-    y += 9;
-
-    /* the record: two columns, 0.3pt alabaster dividers */
-    var L = 32, V = 82, R = 178, VW = R - V;
-    var rows = [
-      ['Piece', r.piece],
-      ['Edition Number', r.edition],
-      ['Fibre Composition', r.materials],
-      ['Craft Origin', r.origin],
-      ['Garment Care', r.care],
-      ['Registered Owner', r.owner],
-      ['Issued & Certified By', 'House of Manthai (Private) Limited', 'An Avantio Ventures Company · Colombo, Sri Lanka'],
-      ['Stewardship Status', r.steward],
-      ['Date of Issue', r.issued]
-    ];
-    doc.setDrawColor(RULE); doc.setLineWidth(0.3 * 0.3528);
-    doc.line(L, y, R, y);
-    rows.forEach(function (row) {
-      doc.setFont('Cormorant', 'normal'); doc.setFontSize(11.5);
-      var lines = doc.splitTextToSize(String(row[1] || ''), VW), lh = 11.5 * 0.3528 * 1.32;
-      var sub = row[2], h = lines.length * lh + (sub ? 4.2 : 0) + 6.4, top = y + 4.6;
-      doc.setFont('Tenor', 'normal'); doc.setFontSize(7); doc.setTextColor(UMBER); doc.setCharSpace(0.5);
-      doc.text(row[0].toUpperCase(), L, top + 0.4);
-      doc.setCharSpace(0);
-      doc.setFont('Cormorant', 'normal'); doc.setFontSize(11.5); doc.setTextColor(INK);
-      doc.text(lines, V, top + 0.9, { lineHeightFactor: 1.32 });
-      if (sub) { doc.setFont('Tenor', 'normal'); doc.setFontSize(7.5); doc.setTextColor(UMBER); doc.text(sub, V, top + 0.9 + lines.length * lh + 0.8); }
-      y += h;
-      doc.line(L, y, R, y);
+    doc.setDrawColor(GOLD); doc.setLineWidth(0.6 * PT); doc.rect(10, 10, 190, 277, 'S');
+    doc.setDrawColor(RULE); doc.setLineWidth(0.3 * PT); doc.rect(13, 13, 184, 271, 'S');
+    doc.setDrawColor(GOLD); doc.setLineWidth(0.6 * PT);
+    [[14.6, 14.6, 1, 1], [195.4, 14.6, -1, 1], [14.6, 282.4, 1, -1], [195.4, 282.4, -1, -1]].forEach(function (c) {
+      doc.line(c[0], c[1], c[0] + 2.5 * c[2], c[1]); doc.line(c[0], c[1], c[0], c[1] + 2.5 * c[3]);
     });
 
-    /* live verification: vector QR, 26mm, ink on ivory */
+    /* the Seal pressed faintly into the sheet, behind the record */
+    doc.saveGraphicsState(); doc.setGState(new doc.GState({ opacity: 0.04 }));
+    drawSprite(doc, seal, [0, 0, 1000, 860], CX - 47.5, 112, 95, GOLD);
+    doc.restoreGraphicsState();
+
+    /* header: the Unbounded Spiral Seal, 16mm, and the official wordmark, both traced vectors */
+    var sealW = 16, sealH = sealW * 0.86, y = 20;
+    drawSprite(doc, seal, [0, 0, 1000, 860], CX - sealW / 2, y, sealW, SEAL);
+    var wmW = 60, wmH = wmW * 120 / 796; y += sealH + 5;
+    drawSprite(doc, document.getElementById('wm-paths'), [120, 30, 796, 120], CX - wmW / 2, y, wmW, INK);
+    y += wmH + 7.5;
+    setFace(doc, 'Tenor', 'normal', 7.5, BRONZE);
+    joined(doc, ['HOUSE OF MANTHAI', 'DIGITAL PRODUCT PASSPORT'], CX, y, { bar: true, track: 0.85, align: 'center' });
     y += 10;
-    var qr = window.qrcode(0, 'M'); qr.addData(r.url); qr.make();
-    var count = qr.getModuleCount(), QS = 26, cell = QS / count;
-    doc.setFillColor(INK);
-    for (var row = 0; row < count; row++) {
-      for (var col = 0; col < count; col++) {
-        if (!qr.isDark(row, col)) continue;
-        var run = 1; while (col + run < count && qr.isDark(row, col + run)) run++;
-        doc.rect(L + col * cell, y + row * cell, cell * run + 0.01, cell + 0.01, 'F');
-        col += run - 1;
-      }
-    }
-    var TX = L + QS + 9, TW = R - TX;
-    doc.setFont('Cormorant', 'italic'); doc.setFontSize(11); doc.setTextColor(UMBER);
-    var copy = doc.splitTextToSize('Verify this document online at any time by scanning the QR code, tapping the piece’s NFC Verification Card, or visiting the live registry link below:', TW);
-    doc.text(copy, TX, y + 4.5, { lineHeightFactor: 1.3 });
-    var ly = y + 4.5 + copy.length * 11 * 0.3528 * 1.3 + 3;
-    var shown = r.url.split('#')[0];
-    doc.setFont('Tenor', 'normal'); doc.setFontSize(8); doc.setTextColor(BRONZE); doc.setCharSpace(0.25);
-    var urlLines = doc.splitTextToSize(shown, TW);
-    doc.text(urlLines, TX, ly, { lineHeightFactor: 1.4 });
-    doc.setCharSpace(0);
-    doc.link(TX, ly - 3.2, TW, urlLines.length * 4.2 + 1, { url: r.url });
-    doc.link(L, y, QS, QS, { url: r.url });
+    setFace(doc, 'Cormorant', 'normal', 20, INK);
+    tracked(doc, 'Certificate of Authenticity & Ownership', CX, y, 0.12, 'center');
+
+    /* status band between gold hairlines */
+    y += 5.5;
+    doc.setDrawColor(GOLD); doc.setLineWidth(0.3 * PT); doc.line(30, y, 180, y); doc.line(30, y + 7, 180, y + 7);
+    setFace(doc, 'Tenor', 'normal', 6.6, UMBER);
+    joined(doc, ['PASSPORT ID: ' + r.id, 'STATUS: ' + (r.sample ? 'ARCHIVE SPECIMEN' : 'VERIFIED AUTHENTIC'), 'EDITION: ' + String(r.edition).split(' · ')[0].toUpperCase()], CX, y + 4.55, { track: 0.55, align: 'center', dot: GOLD });
+    y += 7 + 6.5;
+
+    /* the record: labels 36% in bronze tracked caps, values 64% in ink, 0.25pt alabaster rules */
+    var L = 24, R = 186, V = L + (R - L) * 0.36, VW = R - V, VS = 10.2, lh = VS * PT * 1.3;
+    var rows = [
+      { k: 'Piece', v: [r.piece] },
+      { k: 'Edition Number', dots: String(r.edition).split(' · ') },
+      { k: 'Fibre & Construction', v: [r.materials] },
+      { k: 'Craft Origin', v: [r.origin] },
+      { k: 'Garment Stewardship & Care', v: [r.care] },
+      { k: 'Registered Owner', v: [r.owner], italic: r.sample },
+      { k: 'Provenance & Transfer', v: String(r.provenance).split(' · ') },
+      { k: 'Issued & Certified By', v: ['House of Manthai (Private) Limited'], sub: ['An Avantio Ventures Company', 'Colombo, Sri Lanka'] },
+      { k: 'Date of Issue', v: [r.issued] }
+    ];
+    doc.setDrawColor(RULE); doc.setLineWidth(0.25 * PT); doc.line(L, y, R, y);
+    rows.forEach(function (row) {
+      setFace(doc, 'Cormorant', row.italic ? 'italic' : 'normal', VS, INK);
+      var lines = row.dots ? [''] : [].concat.apply([], row.v.map(function (t) { return doc.splitTextToSize(String(t || ''), VW); }));
+      var top = y + 4.7, h = lines.length * lh + (row.sub ? 3.9 : 0) + 4.4;
+      setFace(doc, 'Tenor', 'normal', 6.4, BRONZE);
+      tracked(doc, row.k.toUpperCase(), L, top - 0.15, 0.55);
+      setFace(doc, 'Cormorant', row.italic ? 'italic' : 'normal', VS, INK);
+      if (row.dots) joined(doc, row.dots, V, top, { dot: BRONZE });
+      else doc.text(lines, V, top, { lineHeightFactor: 1.3 });
+      if (row.sub) { setFace(doc, 'Tenor', 'normal', 6.6, UMBER); joined(doc, row.sub, V, top + lines.length * lh + 0.6, { bar: true, track: 0.2 }); }
+      y += h;
+      doc.setDrawColor(RULE); doc.setLineWidth(0.25 * PT); doc.line(L, y, R, y);
+    });
+
+    /* attestation: the Atelier Director's signature over a champagne hairline; the House stamp */
+    y += 6;
+    var sigW = 50, sigS = sigW / 164;
+    doc.setDrawColor(INK); doc.setLineCap('round'); doc.setLineJoin('round');
+    doc.setLineWidth(0.32); doc.path(trace(SIGNATURE, 0, 0, sigS, L + 3, y)).stroke();
+    doc.setLineWidth(0.14); doc.path(trace(SIGNATURE, 0, 0.55, sigS, L + 3.1, y)).stroke();
+    var hy = y + 52 * sigS + 1.5;
+    doc.setDrawColor(GOLD); doc.setLineWidth(0.4 * PT); doc.line(L, hy, L + 52, hy);
+    setFace(doc, 'Tenor', 'normal', 6.2, BRONZE); tracked(doc, 'AUTHORIZED SIGNATORY', L, hy + 4.2, 0.7);
+    setFace(doc, 'Cormorant', 'italic', 9.2, UMBER); joined(doc, ['The Atelier Director', 'House of Manthai (Private) Limited'], L, hy + 8.4, { dot: BRONZE });
+    stamp(doc, L + (R - L) * 0.55 + (R - L) * 0.45 / 2, y + 11.5, 11);
+    y = hy + 14;
+
+    /* live registry verification band */
+    var BH = 31, QS = 24, pad = (BH - QS) / 2;
+    doc.setFillColor(LIMESTONE); doc.setDrawColor(RULE); doc.setLineWidth(0.75 * PT); doc.rect(L, y, R - L, BH, 'FD');
+    qrTile(doc, r.url, L + pad, y + pad, QS);
+    doc.link(L + pad, y + pad, QS, QS, { url: r.url });
+    var TX = L + pad + QS + 7, TW = R - TX - 6, ty = y + pad + 3.2;
+    setFace(doc, 'Tenor', 'normal', 7.5, BRONZE); tracked(doc, 'LIVE REGISTRY VERIFICATION', TX, ty, 0.9);
+    setFace(doc, 'Cormorant', 'italic', 9.6, UMBER);
+    var copy = doc.splitTextToSize('Confirm real-time authenticity and ownership status by scanning this QR code, tapping the piece’s NFC Verification Card, or visiting the live House registry:', TW);
+    ty += 4.6; doc.text(copy, TX, ty, { lineHeightFactor: 1.25 });
+    ty += copy.length * 9.6 * PT * 1.25 + 0.9;
+    var shown = location.origin.replace(/^https?:\/\//, '') + '/passport/' + r.id;
+    setFace(doc, 'Tenor', 'normal', 7.4, INK); var uw = tracked(doc, shown, TX, ty, 0.25);
+    doc.link(TX, ty - 2.8, uw, 3.8, { url: r.url });
+    ty += 4.4;
+    doc.setFont('courier', 'normal'); doc.setFontSize(7.5); doc.setTextColor(UMBER);
+    doc.text('ARCHIVAL DIGEST: ' + r.digest, TX, ty);
 
     /* foot: the legal entity line and the registry note */
-    doc.setDrawColor(RULE); doc.line(L, 262, R, 262);
-    centred(doc, 'HOUSE OF MANTHAI (PRIVATE) LIMITED  ·  An Avantio Ventures Company', 267, 6.5, 0.4, UMBER, 'Tenor');
-    centred(doc, 'Colombo, Sri Lanka  ·  concierge@manthai.lk', 271, 6.5, 0.4, UMBER, 'Tenor');
-    centred(doc, (r.sample ? 'A sample certificate, issued for illustration. ' : '') + 'This certificate reflects the House digital registry at the time of issue. Live verification status always governs.', 276.5, 7, 0.05, FINE, 'Cormorant', 'italic');
+    setFace(doc, 'Tenor', 'normal', 6.2, UMBER);
+    joined(doc, ['HOUSE OF MANTHAI (PRIVATE) LIMITED', 'An Avantio Ventures Company', 'Colombo, Sri Lanka', 'concierge@manthai.lk'], CX, 271.5, { bar: true, track: 0.3, align: 'center' });
+    setFace(doc, 'Cormorant', 'italic', 6.8, FINE);
+    tracked(doc, 'This certificate reflects the House of MANTHAI digital registry at the time of issue. Live verification status on the official registry always governs.', CX, 276.2, 0.02, 'center');
+    if (r.sample) tracked(doc, 'A specimen certificate, issued for illustration.', CX, 279.4, 0.02, 'center');
     return doc;
   }
 

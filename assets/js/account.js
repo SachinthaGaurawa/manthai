@@ -210,10 +210,10 @@
       '<div class="acct-form__row acct-form__row--field">' + field('vf-code', req('Passport ID'), input('vf-code', 'code', 'autocomplete="off" placeholder="MNT-XXXXXXX" required')) + '<button class="btn btn--solid" type="submit"><span class="btn__label">Verify</span></button></div></form>' : '';
     return head('Wardrobe &amp; Digital Vault', 'Every piece you own, with its NFC-verified Digital Product Passport.' + C.dref(6), verify) + banner() + form +
       (items.length ? '<ul class="acct-vault">' + items.map(function (x) {
-        var p = C.product(x.it.id);
+        var p = C.product(x.it.id), nm = p ? p.name : x.it.name;
         return '<li class="acct-vcard"><div class="acct-vcard__thumb">' + (p ? C.plateHTML(p, 'form', 'thumb') : C.archivePlate()) + '</div>' +
-          '<div class="acct-vcard__info"><p class="acct-vcard__name">' + esc(x.it.name) + '</p>' +
-          '<dl class="acct-vcard__meta"><div><dt>Size</dt><dd>' + esc(x.it.size) + '</dd></div><div><dt>Edition</dt><dd>' + (p && p.edition ? 'Numbered, of ' + p.edition : 'Atelier series') + '</dd></div>' +
+          '<div class="acct-vcard__info"><p class="acct-vcard__name">' + esc(nm) + '</p>' +
+          '<dl class="acct-vcard__meta"><div><dt>Size</dt><dd>' + esc(x.it.size) + '</dd></div><div><dt>Edition</dt><dd>' + esc((ui.passportRecord && (ui.passportRecord(x.it.passport) || {}).edition) || C.editionLabel(p)) + '</dd></div>' +
           '<div><dt>Passport ID</dt><dd class="acct-serial">' + esc(x.it.passport) + '</dd></div><div><dt>Registered</dt><dd>' + esc(shortDate(x.o.date)) + '</dd></div></dl>' +
           '<p class="acct-verified"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>Verified Authentic</p></div>' +
           '<button class="btn btn--solid acct-vcard__cta" type="button" data-cert="' + esc(x.it.passport) + '"><span class="btn__label">View Ownership Certificate</span></button></li>';

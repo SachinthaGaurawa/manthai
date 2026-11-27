@@ -576,14 +576,22 @@
   function b64d(s) { try { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return JSON.parse(decodeURIComponent(escape(atob(s)))); } catch (e) { return null; } }
   /* the public facts ride in the query string (?r=), which survives a refresh, a share and a QR scan; #r= links from earlier certificates still open */
   function verifyURL(r) { return location.origin + '/passport/' + encodeURIComponent(r.id) + (r.carry ? '?r=' + r.carry : ''); }
+  /* a deterministic archival digest: the same passport, edition and date of issue always print the same seal */
+  function digestOf(id, edition, iso) {
+    var s = id + '|' + edition + '|' + String(iso || '').slice(0, 10), h = 2166136261;
+    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+    var yr = String(iso || '').slice(0, 4) || String(new Date().getFullYear());
+    return 'MNT-' + yr + '-' + id.replace(/^MNT-/, '') + '-' + ('00000' + (h >>> 0).toString(16).toUpperCase()).slice(-6);
+  }
   function buildRecord(id, p, opt) {
     opt = opt || {};
-    var r = { id: id, p: p, piece: p.name, edition: opt.edition || (p.edition ? 'Piece ' + pad(pieceNo(p)) + ' of ' + p.edition : 'Atelier series'),
-      materials: p.materials, origin: p.provenance, care: p.care, sample: !!opt.sample, mine: !!opt.mine,
+    var r = { id: id, p: p, piece: p.name, edition: C.normEdition(opt.edition, p),
+      materials: p.materials, origin: String(p.provenance || '').replace(/Colombo atelier/, 'Colombo Atelier') + ', Sri Lanka', care: p.care, sample: !!opt.sample, mine: !!opt.mine,
       issuedISO: opt.date || new Date().toISOString() };
     r.issued = fmtDate(r.issuedISO);
-    r.owner = r.sample ? 'Unclaimed. Registers to the first owner.' : opt.mine ? 'Registered to ' + opt.name : 'Registered to Private Owner (Verified)';
-    r.steward = r.sample ? 'Eligible for complimentary care guidance and the 14-day size exchange.' : 'Registered · Eligible for complimentary care guidance and transfer of ownership';
+    r.owner = r.sample ? 'Inscribed upon private acquisition' : opt.mine ? 'Registered to ' + opt.name : 'Registered to Private Owner (Verified)';
+    r.provenance = r.sample ? 'Archive specimen \u00b7 Registers to its first owner upon private acquisition' : 'Original Acquisition \u00b7 Registered in the House Archive \u00b7 Eligible for official transfer of ownership and complimentary care guidance';
+    r.digest = digestOf(id, r.edition, r.issuedISO);
     /* the link carries the public facts (never the owner), so the record also opens on a device that has never seen the order */
     r.carry = r.sample ? '' : b64e({ p: p.id, n: p.archived ? p.name : undefined, e: r.edition, d: r.issuedISO.slice(0, 10) });
     r.url = verifyURL(r);
@@ -595,12 +603,13 @@
     if (hit) {
       var p = C.product(hit.it.id) || C.archivedProduct(hit.it);
       var me = C.state.member, mine = !!(me && String(me.email || '').toLowerCase() === String(hit.o.email || '').toLowerCase());
-      return buildRecord(code, p, { edition: p.edition ? 'Piece ' + pad(pieceNo(p) + hit.ordinal) + ' of ' + p.edition : 'Atelier series', mine: mine, name: (me && me.name) || hit.o.name, date: hit.o.date });
+      return buildRecord(code, p, { edition: C.editionLabel(p, hit.ordinal), mine: mine, name: (me && me.name) || hit.o.name, date: hit.o.date });
     }
     var s = code ? sampleFor(code) : (pid && C.product(pid)) || M.PRODUCTS[0];
     if (s) return buildRecord(code || 'MNT-' + hash(s.id), s, { sample: true });
     return null;
   }
+  ui.passportRecord = function (code) { return recordFor(code); };
   /* a record carried in the link, for a device without the order */
   function recordFromLink(code) {
     if (!/^MNT-[A-Z0-9]{4,10}$/.test(code)) return null;
@@ -627,12 +636,12 @@
     return '<dl class="cert__table">' +
       '<div><dt>Piece</dt><dd>' + esc(r.piece) + '</dd></div>' +
       '<div><dt>Edition number</dt><dd>' + esc(r.edition) + '</dd></div>' +
-      '<div><dt>Fibre composition</dt><dd>' + esc(r.materials) + '</dd></div>' +
+      '<div><dt>Fibre &amp; construction</dt><dd>' + esc(r.materials) + '</dd></div>' +
       '<div><dt>Craft origin</dt><dd>' + esc(r.origin) + '</dd></div>' +
-      '<div><dt>Garment care</dt><dd>' + esc(r.care) + '</dd></div>' +
-      '<div><dt>Registered owner</dt><dd>' + esc(r.owner) + (page && !r.sample && !r.mine ? '<span class="cert__sub">Owner name withheld for client discretion.</span>' : '') + '</dd></div>' +
+      '<div><dt>Garment stewardship &amp; care</dt><dd>' + esc(r.care) + '</dd></div>' +
+      '<div><dt>Registered owner</dt><dd>' + (r.sample ? '<i>' + esc(r.owner) + '</i>' : esc(r.owner)) + (page && !r.sample && !r.mine ? '<span class="cert__sub">Owner name withheld for client discretion.</span>' : '') + '</dd></div>' +
+      '<div><dt>Provenance &amp; transfer</dt><dd>' + esc(r.provenance) + '</dd></div>' +
       '<div><dt>Issued &amp; certified by</dt><dd>House of Manthai (Private) Limited<span class="cert__sub">An Avantio Ventures Company &middot; Colombo, Sri Lanka</span></dd></div>' +
-      '<div><dt>Stewardship status</dt><dd>' + esc(r.steward) + '</dd></div>' +
       (page ? '<div><dt>Date of issue</dt><dd>' + esc(r.issued) + '</dd></div>' : '') +
     '</dl>';
   }
