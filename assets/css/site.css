@@ -183,8 +183,9 @@ body::after {
 .rail { display: flex; scroll-padding-inline: var(--gutter); align-items: flex-start; gap: clamp(16px, 2vw, 32px); overflow-x: auto; scroll-snap-type: x mandatory; padding: clamp(36px, 5vw, 64px) var(--gutter) 24px; margin-top: 0; scrollbar-color: var(--sovereign-gold) transparent; scrollbar-width: thin; }
 .look { flex: 0 0 min(78vw, 480px); scroll-snap-align: start; }
 .look:nth-child(even) { margin-top: clamp(32px, 6vw, 88px); flex-basis: min(70vw, 400px); }
-.look__frame { position: relative; display: block; width: 100%; aspect-ratio: 4 / 5; overflow: hidden; background: var(--anuradhapura-charcoal); }
+.look__frame { position: relative; display: block; width: 100%; aspect-ratio: 2 / 3; overflow: hidden; background: var(--anuradhapura-charcoal); }
 .look:nth-child(even) .look__frame { aspect-ratio: 3 / 4; }
+.look__frame img { object-position: 50% 30%; }
 .look__frame svg, .look__frame img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.6s var(--ease); }
 .look:hover .look__frame svg, .look:hover .look__frame img { transform: scale(1.04); }
 .look__cap { padding-top: 18px; display: grid; gap: 8px; max-width: 40ch; }

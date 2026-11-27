@@ -55,7 +55,7 @@
     pl.innerHTML = M.PILLARS.map(function (x, i) {
       var p = C.product(x.product);
       return '<article class="pillar pillar--' + (i + 1) + '">' +
-        '<button class="pillar__frame reveal" type="button" data-go="' + esc(x.action) + '" data-cursor="Explore" aria-label="' + esc(x.link) + '">' + C.plateHTML(p, i === 1 ? 'form' : 'move') + '</button>' +
+        '<button class="pillar__frame reveal" type="button" data-go="' + esc(x.action) + '" data-cursor="Explore" aria-label="' + esc(x.link) + '">' + C.plateHTML(p, 'form') + '</button>' +
         '<div class="pillar__copy"><h3 class="pillar__title">' + esc(x.title) + '</h3><p>' + esc(x.text) + '</p><button class="link-btn" type="button" data-go="' + esc(x.action) + '">' + esc(x.link) + '</button></div></article>';
     }).join('');
   }
