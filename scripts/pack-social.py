@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """House of MANTHAI | packs the rendered social cards and icons (development only).
 
-Run after scripts/build-social.js, from the repository root:
+Run after scripts/build-social.cjs, from the repository root:
   python3 scripts/pack-social.py
 Flattens every card to 8-bit sRGB, lays a seeded monochrome micro-grain (one
 level, about 2%) over the lacquer and ivory fields, which also breaks 8-bit
