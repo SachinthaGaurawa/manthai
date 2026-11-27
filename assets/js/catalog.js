@@ -274,7 +274,9 @@
     { id: 'card',    name: 'Verification Card', spec: 'Brushed black metal, QR and NFC', parts: ['card'],
       text: 'The Verification Card is cut from brushed black metal with gold edge plates. Its face carries only the Seal; its back carries your edition number and an NFC and QR link to the authenticity record.' },
     { id: 'story',   name: 'Story Card', spec: 'Thick cotton, cut to the case', parts: ['card'],
-      text: 'Beneath the Private Circle Presentation Case lies a thick cotton Story Card, cut to exactly the same size as the case so that nothing shifts in transit. It records where, and by whose hands, your piece was made.' }
+      text: 'Beneath the Private Circle Presentation Case lies a thick cotton Story Card, cut to exactly the same size as the case so that nothing shifts in transit. It records where, and by whose hands, your piece was made.' },
+    { id: 'cert',    name: 'Certificate of Authenticity', spec: 'Ivory card, gold foil, registry QR', parts: ['card'],
+      text: 'Beneath the Story Card lies the last layer: the Certificate of Authenticity and Ownership, on heavy ivory card in a gold-foil frame and cut to the same size. It records the piece, its edition, where it was made, its registered owner and the date of issue, with a QR code to the live House registry. The Story Card is read first; the certificate is the one you keep.' }
   ];
 
   /* ---------- Short policy texts for the footer info layer ---------- */
