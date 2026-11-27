@@ -152,9 +152,17 @@
   };
 
   /* ---------- plate html (real photo wins over placeholder) ---------- */
-  C.plateHTML = function (p, view) {
+  /* product photos ship at 600, 900 and 1200 wide; the browser picks the one the frame needs */
+  C.srcset = function (src) {
+    if (!/\/assets\/media\/products\/.+\.webp$/.test(src)) return '';
+    var b = src.slice(0, -5);
+    return b + '-600.webp 600w, ' + b + '-900.webp 900w, ' + src + ' 1200w';
+  };
+  C.SIZES = { card: '(max-width: 768px) 92vw, 30vw', thumb: '160px', full: '100vw', pdp: '(max-width: 768px) 92vw, 52vw', pair: '(max-width: 768px) 46vw, 30vw', pillar: '(max-width: 768px) 94vw, 38vw' };
+  C.plateHTML = function (p, view, sizes) {
     var src = p.media && p.media[view];
-    if (src) return '<img src="' + C.esc(src) + '" alt="' + C.esc(p.name) + '" loading="lazy" decoding="async" data-ph-id="' + C.esc(p.id) + '" data-ph-view="' + C.esc(view) + '">';
+    var ss = src ? C.srcset(src) : '';
+    if (src) return '<img src="' + C.esc(src) + '"' + (ss ? ' srcset="' + ss + '" sizes="' + (C.SIZES[sizes] || sizes || '(max-width: 768px) 92vw, 40vw') + '" width="1200" height="1500"' : '') + ' alt="' + C.esc(p.name) + '" loading="lazy" decoding="async" data-ph-id="' + C.esc(p.id) + '" data-ph-view="' + C.esc(view) + '">';
     return M.Art.plate(p, view);
   };
 
