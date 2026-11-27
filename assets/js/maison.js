@@ -885,37 +885,46 @@
   var ROUTES = { home: { path: '/', title: document.title, desc: desc && desc.content, og: ogTitle && ogTitle.content },
                  maison: { path: '/the-maison', title: 'The Maison | House of MANTHAI, Colombo', og: 'The Maison | House of MANTHAI',
                    desc: 'The Maison of MANTHAI: the Colombo atelier, the Unbounded Spiral Seal, and the unboxing ritual of every piece, from the lacquered gatefold box to the Private Circle Presentation Case and its Verification Card.' } };
-  var canon = document.querySelector('link[rel="canonical"]');
-  function routeFromPath(p) { return /\/the-maison\/?$/.test(p || location.pathname) ? 'maison' : 'home'; }
+  ROUTES.piece = { path: '/pieces/' };
+  var canon = document.querySelector('link[rel="canonical"]'), curSlug = null;
+  function slugFromPath(p) { var m = /\/pieces\/([a-z0-9-]+)\/?$/.exec(p || location.pathname); return m && C.product(m[1]) ? m[1] : null; }
+  function routeFromPath(p) { p = p || location.pathname; return /\/the-maison\/?$/.test(p) ? 'maison' : slugFromPath(p) ? 'piece' : 'home'; }
   function curRoute() { return document.documentElement.getAttribute('data-route') || 'home'; }
-  function applyRoute(name) {
-    var r = ROUTES[name] || ROUTES.home;
+  function pathFor(name, slug) { return name === 'piece' ? '/pieces/' + slug : (ROUTES[name] || ROUTES.home).path; }
+  function applyRoute(name, slug) {
+    var r = ROUTES[name] || ROUTES.home, title = r.title, d = r.desc, og = r.og;
+    if (name === 'piece') {
+      var p = C.product(slug); curSlug = slug;
+      title = p.name + ' | House of MANTHAI'; og = p.name + ' | House of MANTHAI'; d = p.name + '. ' + p.summary + ' ' + C.price(p.price) + ', complimentary insured delivery across Sri Lanka.';
+      M.shop.renderPiece(slug);
+    } else curSlug = null;
     document.documentElement.setAttribute('data-route', name);
-    document.title = r.title;
-    if (canon) canon.href = 'https://manthai.vercel.app' + r.path;
-    if (ogUrl) ogUrl.content = 'https://manthai.vercel.app' + r.path;
-    if (desc && r.desc) desc.content = r.desc;
-    if (ogTitle && r.og) ogTitle.content = r.og;
+    document.title = title;
+    if (canon) canon.href = 'https://manthai.vercel.app' + pathFor(name, slug);
+    if (ogUrl) ogUrl.content = 'https://manthai.vercel.app' + pathFor(name, slug);
+    if (desc && d) desc.content = d;
+    if (ogTitle && og) ogTitle.content = og;
     C.emit('route', name);
   }
   function scrollTopNow() { if (C.lenis) C.lenis.scrollTo(0, { immediate: true }); window.scrollTo(0, 0); }
-  ui.route = function (name, target, push) {
-    if (!ROUTES[name]) name = 'home';
-    var same = name === curRoute();
+  ui.route = function (name, target, push, slug) {
+    if (!ROUTES[name] || (name === 'piece' && !C.product(slug))) name = 'home';
+    var same = name === curRoute() && (name !== 'piece' || slug === curSlug);
     var finish = function () {
       if (target && document.getElementById(target)) C.scrollTo(target); else if (!same) scrollTopNow();
     };
     if (same) { if (target) C.scrollTo(target); else window.scrollTo({ top: 0, behavior: C.reduced() ? 'auto' : 'smooth' }); return; }
-    if (push !== false) { try { history.pushState({ route: name }, '', ROUTES[name].path + (target ? '#' + target : '')); } catch (e) { /* file:// */ } }
+    if (push !== false) { try { history.pushState({ route: name, slug: slug || null }, '', pathFor(name, slug) + (target ? '#' + target : '')); } catch (e) { /* file:// */ } }
     var veil = $('#veil');
     var swap = function () {
-      applyRoute(name); scrollTopNow();
+      applyRoute(name, slug); scrollTopNow();
       requestAnimationFrame(function () { requestAnimationFrame(function () { finish(); if (veil) veil.classList.remove('is-on'); }); });
-      var h = name === 'maison' ? $('#maisonPageTitle') : $('#hero h1');
+      var h = name === 'maison' ? $('#maisonPageTitle') : name === 'piece' ? $('#pdpTitle') : $('#hero h1');
       if (h) { h.setAttribute('tabindex', '-1'); try { h.focus({ preventScroll: true }); } catch (e) { h.focus(); } }
     };
     if (veil && !C.reduced()) { veil.classList.add('is-on'); setTimeout(swap, 280); } else swap();
   };
+  ui.curRoute = curRoute;
   /* a scroll target inside the other view switches route first */
   var baseScrollTo = C.scrollTo;
   C.scrollTo = function (id) {
@@ -925,12 +934,12 @@
     baseScrollTo(id);
   };
   window.addEventListener('popstate', function () {
-    var name = routeFromPath();
-    if (name !== curRoute()) { applyRoute(name); scrollTopNow(); }
+    var name = routeFromPath(), slug = slugFromPath();
+    if (name !== curRoute() || (name === 'piece' && slug !== curSlug)) { applyRoute(name, slug); scrollTopNow(); }
     var id = location.hash.slice(1);
     if (id && document.getElementById(id)) requestAnimationFrame(function () { baseScrollTo(id); });
   });
-  applyRoute(routeFromPath());
+  applyRoute(routeFromPath(), slugFromPath());
   if (location.hash && document.getElementById(location.hash.slice(1))) {
     var hashId = location.hash.slice(1);
     window.addEventListener('load', function () { setTimeout(function () { baseScrollTo(hashId); }, 60); });

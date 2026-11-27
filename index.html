@@ -30,7 +30,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/favicon-32.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="preload" as="image" href="assets/media/hero/hero-poster.webp" type="image/webp" fetchpriority="high">
+<link rel="preload" as="image" href="/assets/media/hero/hero-poster.webp" type="image/webp" fetchpriority="high">
 
 <!-- The GitHub Pages mirror always forwards to the canonical Vercel domain. -->
 <script>
@@ -54,12 +54,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@600&family=Tenor+Sans&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/tokens.css?v=20261127x">
-<link rel="stylesheet" href="assets/css/site.css?v=20261127x">
-<link rel="stylesheet" href="assets/css/flagship.css?v=20261127x">
-<link rel="stylesheet" href="assets/css/gallery.css?v=20261127x">
-<link rel="stylesheet" href="assets/css/unbox.css?v=20261127x">
-<link rel="stylesheet" href="assets/css/cipher.css?v=20261127x">
+<link rel="stylesheet" href="/assets/css/tokens.css?v=20261127y">
+<link rel="stylesheet" href="/assets/css/site.css?v=20261127y">
+<link rel="stylesheet" href="/assets/css/flagship.css?v=20261127y">
+<link rel="stylesheet" href="/assets/css/gallery.css?v=20261127y">
+<link rel="stylesheet" href="/assets/css/unbox.css?v=20261127y">
+<link rel="stylesheet" href="/assets/css/cipher.css?v=20261127y">
 </head>
 <body>
 
@@ -136,9 +136,9 @@
          data-prompt="Ultra-luxury Parisian-Ceylonese haute couture campaign film, flowing hand-painted silk-velvet evening couture in dramatic chiaroscuro drapery, warm golden beam inside a dark travertine pavilion, macro brushwork and beadwork shimmer, final reveal of a woven damask neck label bearing the gold MANTHAI wordmark, 35mm anamorphic film grain, obsidian black, alabaster ivory, burnished antique gold, deep garnet">
       <div class="film" data-film-reel aria-hidden="true"></div>
       <video class="hero__video" id="heroVideo" autoplay muted loop playsinline preload="auto"
-             poster="assets/media/hero/hero-poster.webp" aria-hidden="true" tabindex="-1">
-        <source src="assets/media/hero/manthai-hero.mp4" type="video/mp4">
-        <source src="assets/media/hero/manthai-hero.webm" type="video/webm">
+             poster="/assets/media/hero/hero-poster.webp" aria-hidden="true" tabindex="-1">
+        <source src="/assets/media/hero/manthai-hero.mp4" type="video/mp4">
+        <source src="/assets/media/hero/manthai-hero.webm" type="video/webm">
       </video>
       <div class="hero__scrim"></div>
     </div>
@@ -550,6 +550,10 @@
       </div>
     </div>
   </section>
+  <!-- ============================ PIECE (/pieces/[slug]) ============================ -->
+  <section class="piece on-light" id="piece" data-view="piece" aria-labelledby="pdpTitle">
+    <div id="pdpPanel"></div>
+  </section>
 </main>
 
 <!-- =============================== FOOTER =============================== -->
@@ -621,9 +625,8 @@
 </dialog>
 
 <!-- Product detail drawer -->
-<dialog data-lenis-prevent class="layer layer--right layer--pdp" id="layerPdp" aria-labelledby="pdpTitle">
-  <div class="layer__scrim" data-close></div>
-  <div class="layer__panel on-light" id="pdpPanel"></div>
+<dialog data-lenis-prevent class="layer layer--inspect" id="layerInspect" aria-label="Inspect fabric and seam" data-history>
+  <div class="inspect" id="inspectPanel"></div>
 </dialog>
 
 
@@ -658,7 +661,7 @@
 </dialog>
 
 <!-- Size and fit guide -->
-<dialog data-lenis-prevent class="layer layer--center layer--guide" id="layerSize" aria-labelledby="sizeTitle">
+<dialog data-lenis-prevent class="layer layer--center layer--guide" id="layerSize" aria-labelledby="sizeTitle" data-history>
   <div class="layer__scrim" data-close></div>
   <div class="layer__panel" id="sizePanel"></div>
 </dialog>
@@ -673,12 +676,12 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="assets/js/catalog.js?v=20261127x"></script>
-<script src="assets/js/art.js?v=20261127x"></script>
-<script src="assets/js/core.js?v=20261127x"></script>
-<script src="assets/js/shop.js?v=20261127x"></script>
-<script src="assets/js/maison.js?v=20261127x"></script>
-<script src="assets/vendor/lenis.min.js?v=20261127x" defer></script>
-<script src="assets/js/flagship.js?v=20261127x" defer></script>
+<script src="/assets/js/catalog.js?v=20261127y"></script>
+<script src="/assets/js/art.js?v=20261127y"></script>
+<script src="/assets/js/core.js?v=20261127y"></script>
+<script src="/assets/js/shop.js?v=20261127y"></script>
+<script src="/assets/js/maison.js?v=20261127y"></script>
+<script src="/assets/vendor/lenis.min.js?v=20261127y" defer></script>
+<script src="/assets/js/flagship.js?v=20261127y" defer></script>
 </body>
 </html>

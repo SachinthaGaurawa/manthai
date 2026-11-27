@@ -91,93 +91,111 @@
     var b = e.target.closest('[data-open]'); if (b) shop.openProduct(b.getAttribute('data-open'), b);
   });
 
-  /* ======================= product drawer ======================= */
-  var pdp = null, loupeApi = null;
-  var VIEWS = [['form', 'Front View', 'Front'], ['back', 'Back View', 'Back'], ['detail', 'Bodice & Textile 4x Macro', 'Macro 4x'], ['move', 'Drape in Motion', 'In motion']];
-
-  /* only show the angles a piece actually has photographs for; before any photography exists, every plate shows */
-  function viewsFor(p) {
-    var m = p.media || {}, real = VIEWS.filter(function (v) { return !!m[v[0]]; });
-    return real.length ? real : VIEWS;
+  /* ======================= the piece page (/pieces/[slug]) ======================= */
+  /* A full page, not a drawer: an unhurried vertical stack of 3:4 plates on the left, a calm sticky
+     acquisition panel on the right. Every plate opens the inspection lightbox; there is no hover loupe. */
+  var pdp = null, ctaIO = null;
+  /* the plates a piece shows, in order: front, a second clean angle, then the textile and seam macro */
+  function shotsFor(p) {
+    var m = p.media || {}, out = [['form', 'Front']];
+    out.push([m.back ? 'back' : 'move', 'Silhouette Detail']);
+    out.push(['detail', 'Textile & Seam']);
+    return out;
   }
+  function crumbFor(p) { var t = (p.tabs || [])[0] || 'All'; return { tab: t, label: p.collection || t }; }
+  function editionLine(p) { return (p.edition ? 'Edition of ' + p.edition : 'Small-Batch Release of ' + p.crafted) + ' · Cut & Hand-Finished in Colombo'; }
+  function wishLabel(on) { return on ? 'Silhouette Saved' : 'Save Silhouette'; }
 
   function pdpHTML(p) {
-    var VIEWS = viewsFor(p);
-    var line = 'Small-Batch Release · ' + p.crafted + ' Pieces Crafted' + (p.edition ? ' · Numbered' : '');
-    var feel = p.feel || {};
-    var sizes = ['XS', 'S', 'M', 'L', 'XL'].map(function (s) {
+    var SH = shotsFor(p), cr = crumbFor(p), feel = p.feel || {};
+    var sizes = M.SIZECHART.sizes.map(function (s) {
       var out = p.soldOut.indexOf(s) > -1;
-      return '<button type="button" class="size" role="radio" data-size="' + s + '" aria-checked="false"' + (out ? ' aria-disabled="true" title="Sold out"' : '') + '>' + s + '</button>';
+      return '<button type="button" class="size" role="radio" data-size="' + s + '" aria-checked="false"' + (out ? ' aria-disabled="true" aria-label="' + s + ', sold out"' : '') + '>' + s + '</button>';
     }).join('');
     var fit = typeof p.fit === 'number' ? p.fit : 1, fitIdx = Math.round(fit);
     var fitWord = fit < 0.85 ? 'Runs slightly small' : fit > 1.15 ? 'Runs slightly large' : 'True to size';
     var wished = (C.state.wishlist || []).indexOf(p.id) > -1;
     var pairs = (p.pairs || []).map(C.product).filter(Boolean).slice(0, 3);
+    var md = M.MODEL;
     return '' +
-      '<div class="pdp on-light">' +
-      '<button class="icon-btn pdp__close" type="button" data-close aria-label="Close product">' + X + '</button>' +
-      '<div class="pdp__gallery">' +
-        '<div class="viewtabs" role="group" aria-label="Choose an angle">' + VIEWS.map(function (v, i) { return '<button type="button" class="viewtab" data-view="' + v[0] + '" aria-pressed="' + (i === 0) + '">' + v[1] + '</button>'; }).join('') + '</div>' +
-        '<div class="stage" id="stage" tabindex="0" role="group" aria-label="' + esc(p.name) + ' images" aria-describedby="stageHint" data-cursor="Zoom" data-media-slot="' + p.id + '-gallery" data-prompt="' + esc(p.prompt) + '">' +
-          VIEWS.map(function (v, i) { return '<div class="plate' + (i === 0 ? ' is-on' : '') + '" data-view="' + v[0] + '">' + C.plateHTML(p, v[0]) + '</div>'; }).join('') +
-          '<div class="loupe" id="loupe" aria-hidden="true"><div class="loupe__view"></div><span class="loupe__tag">4×</span></div>' +
-          '<div class="stage__bar"><button class="btn btn--sm" type="button" id="loupeToggle" aria-pressed="true">Loupe 4×</button></div>' +
+      '<div class="pdp">' +
+        '<div class="pdp__gallery" role="group" aria-label="' + esc(p.name) + ' photographs">' +
+          SH.map(function (v, i) {
+            return '<figure class="pdp__plate" data-shot="' + i + '">' +
+              '<button class="pdp__frame" type="button" data-inspect="' + i + '" data-cursor="Inspect" aria-label="Inspect ' + esc(v[1].toLowerCase()) + ' in full screen">' + C.plateHTML(p, v[0]) + '</button>' +
+              '<figcaption class="pdp__cap"><span>' + esc(v[1]) + '</span><button class="pdp__inspect" type="button" data-inspect="' + i + '">Inspect Fabric &amp; Seam</button></figcaption>' +
+            '</figure>';
+          }).join('') +
         '</div>' +
-        '<p class="sr-only" id="stageHint">Loupe: move the pointer over the image, or focus it and use the arrow keys, to magnify the fabric four times.</p>' +
-        '<div class="thumbs" role="group" aria-label="Choose an image">' + VIEWS.map(function (v, i) {
-          return '<button class="thumb" type="button" data-view="' + v[0] + '" aria-pressed="' + (i === 0) + '" aria-label="' + v[1] + '">' + C.plateHTML(p, v[0]) + '<span>' + v[2] + '</span></button>';
-        }).join('') + '</div>' +
+        '<div class="pdp__details">' +
+          '<nav class="crumb" aria-label="Breadcrumb"><a href="/" data-crumb="All">Collections</a><span aria-hidden="true">/</span><a href="/" data-crumb="' + esc(cr.tab) + '">' + esc(cr.label) + '</a></nav>' +
+          '<h1 class="pdp__name" id="pdpTitle">' + esc(p.name) + '</h1>' +
+          '<p class="pdp__edition">' + esc(editionLine(p)) + '</p>' +
+          '<p class="pdp__price">' + P(p.price) + '</p>' +
+          '<p class="pdp__summary">' + esc(p.summary) + '</p>' +
+          '<div class="pdp__size"><div class="opt-label"><span id="sizeLabel">Size</span><button class="link-btn" type="button" data-sizeguide>Size &amp; Fit Guide</button></div>' +
+            '<div class="sizes" role="radiogroup" aria-labelledby="sizeLabel" id="sizes">' + sizes + '</div>' +
+            '<p class="field__error" id="sizeError" role="alert"></p>' +
+            '<p class="stock-cue" id="stockCue" aria-live="polite"></p>' +
+            '<p class="model-note">Model is ' + md.height + ' · Bust ' + md.bust + ' cm · Waist ' + md.waist + ' cm · wears Size ' + md.size + '</p>' +
+            '<div class="fitbar"><p class="fitbar__title">Fit consensus <span>' + esc(fitWord) + '</span></p>' +
+              '<div class="fitbar__track" role="img" aria-label="Fit consensus: ' + esc(fitWord.toLowerCase()) + '"><span class="fitbar__mark" style="left:' + (fit / 2 * 100).toFixed(0) + '%"></span></div>' +
+              '<div class="fitbar__labels" aria-hidden="true">' + M.FIT_LABELS.map(function (l, i) { return '<span' + (i === fitIdx ? ' class="is-on"' : '') + '>' + l + '</span>'; }).join('') + '</div></div>' +
+          '</div>' +
+          '<div class="pdp__cta" id="pdpCta">' +
+            '<button class="btn btn--solid btn--sheen" type="button" data-add><span class="btn__label">Reserve in Your Bag</span></button>' +
+            '<div class="pdp__duo">' +
+              '<button class="btn btn--ghost" type="button" data-wish aria-pressed="' + wished + '">' + wishLabel(wished) + '</button>' +
+              '<a class="btn btn--ghost" id="stylistLink" href="' + esc(shop.stylistHref(p, null)) + '" target="_blank" rel="noopener" data-wa>Consult <span class="pdp__dlong">Colombo </span>Stylist</a>' +
+            '</div>' +
+          '</div>' +
+          '<div class="clarity">' +
+            '<p><b>Total: ' + P(p.price) + '</b> · Complimentary Insured Delivery <span id="pdpWhen"></span></p>' +
+            '<p><b>Gifting included.</b> Complimentary sealed lacquered gift presentation and a handwritten calligraphy note, available at checkout. Prices are omitted on gift receipts.</p>' +
+            '<p><b>Risk-free stewardship.</b> 14-day complimentary size exchange, or a transparent refund to your original payment method.</p>' +
+          '</div>' +
+          (feel.fabric ? '<div class="feel"><p class="feel__k">Feel &amp; Drape</p><p class="feel__v">' + esc(feel.fabric) + ' · ' + esc(feel.hand) + ' · ' + feel.gsm + ' GSM</p></div>' : '') +
+          '<div class="pdp__acc">' +
+            '<details><summary>Atelier Craft &amp; Textile Provenance</summary><p>' + esc(p.story) + '</p><p><b>Materials.</b> ' + esc(p.materials) + '</p><p><b>Weight.</b> ' + esc(p.weight || '') + '</p><p><b>Drape and lining.</b> ' + esc(p.drape || '') + '</p><p><b>Provenance.</b> ' + esc(p.provenance) + '.</p></details>' +
+            '<details><summary>Garment Care</summary><p>' + esc(p.care) + '</p><ul class="care-list">' + M.CARE.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul></details>' +
+            '<details><summary>Packaging &amp; Verification Card</summary><p>Your piece arrives in a rigid gatefold box in high-gloss midnight navy lacquer, lined in velvet garnet and stamped in gold foil with the Unbounded Spiral Seal. Inside, it rests folded in acid-free tissue under a gold wafer, with a woven silk neck label. Beneath it, the Private Circle Presentation Case holds a brushed black metal Verification Card with NFC and QR, and under the case lies a thick cotton Story Card. Tap the card or scan its code to open the authenticity record.</p><button class="link-btn" type="button" data-passport="' + p.id + '">Open a sample record</button></details>' +
+          '</div>' +
+        '</div>' +
       '</div>' +
-      '<div class="pdp__details">' +
-        '<p class="pdp__edition">' + esc(line) + '</p>' +
-        '<h2 class="pdp__name" id="pdpTitle">' + esc(p.name) + '</h2>' +
-        '<p class="pdp__price">' + P(p.price) + '</p>' +
-        '<p class="pdp__summary">' + esc(p.summary) + '</p>' +
-        '<div class="pdp__size"><div class="opt-label"><span id="sizeLabel">Size</span><button class="link-btn" type="button" data-sizeguide>Size &amp; fit guide</button></div>' +
-          '<div class="sizes" role="radiogroup" aria-labelledby="sizeLabel" id="sizes">' + sizes + '</div>' +
-          '<p class="field__error" id="sizeError" role="alert"></p>' +
-          '<p class="stock-cue" id="stockCue" aria-live="polite"></p>' +
-          '<p class="model-note">Model is ' + M.MODEL.height + ' and wears Size ' + M.MODEL.size + '.</p>' +
-          '<div class="fitbar"><p class="fitbar__title">Fit consensus <span>' + esc(fitWord) + '</span></p>' +
-            '<div class="fitbar__track" role="img" aria-label="Fit consensus: ' + esc(fitWord.toLowerCase()) + '"><span class="fitbar__mark" style="left:' + (fit / 2 * 100).toFixed(0) + '%"></span></div>' +
-            '<div class="fitbar__labels" aria-hidden="true">' + M.FIT_LABELS.map(function (l, i) { return '<span' + (i === fitIdx ? ' class="is-on"' : '') + '>' + l + '</span>'; }).join('') + '</div></div>' +
-        '</div>' +
-        '<div class="pdp__cta">' +
-          '<button class="btn btn--solid" type="button" data-add><span class="btn__label">Reserve in Your Bag</span></button>' +
-          '<a class="btn btn--ghost btn--block" id="stylistLink" href="' + esc(shop.stylistHref(p, null)) + '" target="_blank" rel="noopener" data-wa>Consult Our Colombo Stylist</a>' +
-          '<button class="wish-btn" type="button" data-wish aria-pressed="' + wished + '">' + (wished ? 'Saved to your wishlist' : 'Save this silhouette') + '</button>' +
-        '</div>' +
-        '<div class="assure">' +
-          '<p><b id="pdpShip"></b><span id="pdpWhen"></span></p>' +
-          '<p>14-day complimentary size exchange, or a transparent refund to your original payment method.</p>' +
-        '</div>' +
-        (feel.fabric ? '<div class="feel"><p class="feel__k">Feel &amp; Drape</p><p class="feel__v">' + esc(feel.fabric) + ' · ' + esc(feel.hand) + ' · ' + feel.gsm + ' GSM</p></div>' : '') +
-        '<div class="pdp__acc">' +
-          '<details><summary>Fabric weight</summary><p>' + esc(p.weight || '') + '</p><p>' + esc(p.story) + '</p><p><b>Materials.</b> ' + esc(p.materials) + '</p><p><b>Provenance.</b> ' + esc(p.provenance) + '.</p></details>' +
-          '<details><summary>Drape &amp; lining</summary><p>' + esc(p.drape || '') + '</p></details>' +
-          '<details><summary>Garment care</summary><p>' + esc(p.care) + '</p><ul class="care-list">' + M.CARE.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul></details>' +
-          '<details><summary>Packaging &amp; verification card</summary><p>Your piece arrives in a rigid gatefold box in high-gloss midnight navy lacquer, lined in velvet garnet and stamped in gold foil with the Unbounded Spiral Seal. Inside, it rests folded in acid-free tissue under a gold wafer, with a woven silk neck label. Beneath it, the Private Circle Presentation Case holds a brushed black metal Verification Card with NFC and QR, and under the case lies a thick cotton Story Card. Tap the card or scan its code to open the authenticity record.</p><button class="link-btn" type="button" data-passport="' + p.id + '">Open a sample record</button></details>' +
-        '</div>' +
-        (pairs.length ? '<section class="pairing" aria-labelledby="pairTitle"><h3 id="pairTitle">Style With</h3><div class="pairing__list">' + pairs.map(function (q) {
-          return '<button class="pair" type="button" data-pair="' + q.id + '"><span class="pair__plate">' + C.plateHTML(q, 'form') + '</span><span class="pair__name">' + esc(q.short) + '</span><span class="pair__price">' + P(q.price) + '</span></button>';
-        }).join('') + '</div></section>' : '') +
-      '</div></div>' +
-      '<div class="pdp__sticky"><span class="pdp__sticky-meta"><span class="pdp__sticky-name">' + esc(p.short) + '</span><span class="pdp__price">' + P(p.price) + '</span></span><button class="btn btn--solid" type="button" data-add><span class="btn__label">Reserve in Your Bag</span></button></div>';
+      (pairs.length ? '<section class="pairing" aria-labelledby="pairTitle"><div class="pairing__head"><p class="eyebrow">Curated by the House</p><h2 class="pairing__title" id="pairTitle">Complete the Silhouette</h2></div><div class="pairing__list" data-n="' + pairs.length + '">' + pairs.map(function (q) {
+        return '<a class="pair" href="/pieces/' + q.id + '" data-pair="' + q.id + '"><span class="pair__plate">' + C.plateHTML(q, 'form') + '</span><span class="pair__name">' + esc(q.name) + '</span><span class="pair__price">' + P(q.price) + '</span></a>';
+      }).join('') + '</div></section>' : '') +
+      '<div class="pdp__sticky" id="pdpSticky" aria-hidden="true"><span class="pdp__sticky-meta"><span class="pdp__sticky-name">' + esc(p.short) + '</span><span class="pdp__price">' + P(p.price) + '</span></span><button class="btn btn--solid btn--sheen" type="button" data-add tabindex="-1"><span class="btn__label">Reserve in Your Bag</span></button></div>';
   }
   function syncShip() {
-    var b = $('#pdpShip'), w = $('#pdpWhen'); if (!b) return;
-    b.textContent = 'Complimentary Insured Delivery Islandwide'; w.textContent = ' · Colombo 01–15 arrives by ' + C.fmtDay(C.addBusinessDays(C.DELIVERY.colombo.days));
+    var w = $('#pdpWhen'); if (!w) return;
+    w.textContent = '(Colombo 01–15 arrives by ' + C.fmtDay(C.addBusinessDays(1)) + '; Islandwide by ' + C.fmtDay(C.addBusinessDays(3)) + ')';
+  }
+  /* the frosted bar on phones appears once the main Reserve button has scrolled away */
+  function watchCta() {
+    if (ctaIO) ctaIO.disconnect();
+    var cta = $('#pdpCta'), bar = $('#pdpSticky'); if (!cta || !bar || !('IntersectionObserver' in window)) return;
+    ctaIO = new IntersectionObserver(function (en) {
+      var show = !en[0].isIntersecting && en[0].boundingClientRect.top < 0;
+      bar.classList.toggle('is-on', show); bar.setAttribute('aria-hidden', show ? 'false' : 'true');
+      $$('button', bar).forEach(function (b) { b.tabIndex = show ? 0 : -1; });
+    });
+    ctaIO.observe(cta);
   }
 
-  shop.openProduct = function (id) {
+  /* render the page for a piece (called by the router) */
+  shop.renderPiece = function (id) {
     var p = C.product(id); if (!p) return;
-    pdp = { p: p, size: p.sizing === 'apparel' ? null : p.sizeLabel, view: 'form' };
+    pdp = { p: p, size: null };
     $('#pdpPanel').innerHTML = pdpHTML(p);
-    $('#layerPdp').setAttribute('aria-labelledby', 'pdpTitle');
     var fs = C.state.fitSize; if (fs && p.soldOut.indexOf(fs) < 0) { pdp.size = fs; var sb = $('#sizes [data-size="' + fs + '"]'); if (sb) sb.setAttribute('aria-checked', 'true'); }
-    C.open($('#layerPdp'));
-    initLoupe();
-    syncAddButtons(); syncShip(); syncSize();
+    syncAddButtons(); syncShip(); syncSize(); watchCta();
+  };
+  /* every card, search hit, pairing and panel link arrives here */
+  shop.openProduct = function (id) {
+    if (!C.product(id)) return;
+    ['#layerBag', '#layerSize', '#layerInspect'].forEach(function (s) { var d = $(s); if (d && d.open) C.close(d); });
+    M.ui.route('piece', null, true, id);
   };
 
   function syncSize() {
@@ -195,18 +213,12 @@
     });
   }
 
-  function setView(v) {
-    pdp.view = v;
-    $$('#stage .plate').forEach(function (pl) { pl.classList.toggle('is-on', pl.getAttribute('data-view') === v); });
-    $$('#pdpPanel .thumb, #pdpPanel .viewtab').forEach(function (t) { t.setAttribute('aria-pressed', t.getAttribute('data-view') === v); });
-    if (loupeApi) loupeApi.refresh();
-  }
-
   function addToBag() {
     var p = pdp.p, err = $('#sizeError');
     if (p.sizing === 'apparel' && !pdp.size) {
       err.textContent = 'Please choose a size.';
-      var first = $('#sizes .size:not([aria-disabled="true"])'); if (first) first.focus();
+      var first = $('#sizes .size:not([aria-disabled="true"])');
+      if (first) { if (first.getBoundingClientRect().top < 80) first.scrollIntoView({ block: 'center', behavior: C.reduced() ? 'auto' : 'smooth' }); first.focus({ preventScroll: true }); }
       return;
     }
     if (C.available(p) <= 0) { C.toast('Every piece of this edition is already reserved.'); return; }
@@ -218,100 +230,151 @@
       b.classList.add('is-reserved'); b.querySelector('.btn__label').textContent = 'Reserved in Your Private Bag';
       setTimeout(function () { b.classList.remove('is-reserved'); syncAddButtons(); }, 2600);
     });
-    setTimeout(function () { if ($('#layerPdp').open) shop.openBag(); }, C.reduced() ? 0 : 700);
+    setTimeout(function () { if (M.ui.curRoute() === 'piece') shop.openBag(); }, C.reduced() ? 0 : 700);
   }
 
   $('#pdpPanel').addEventListener('click', function (e) {
     if (!pdp) return;
     var t;
-    if ((t = e.target.closest('.thumb, .viewtab'))) { setView(t.getAttribute('data-view')); return; }
+    if ((t = e.target.closest('[data-inspect]'))) { shop.openInspect(+t.getAttribute('data-inspect')); return; }
+    if ((t = e.target.closest('[data-crumb]'))) { e.preventDefault(); var tab = t.getAttribute('data-crumb'); M.ui.route('home', 'collection'); setTimeout(function () { shop.setFilter(tab); }, 420); return; }
     if (e.target.closest('[data-sizeguide]')) { shop.openSize(pdp.p.id); return; }
     if ((t = e.target.closest('.size'))) {
       if (t.getAttribute('aria-disabled') === 'true') { C.toast('That size is sold out in this edition.'); return; }
       pdp.size = t.getAttribute('data-size'); $$('#sizes .size').forEach(function (s) { s.setAttribute('aria-checked', s === t); }); $('#sizeError').textContent = ''; syncSize(); return;
     }
     if (e.target.closest('[data-add]')) { addToBag(); return; }
-    if ((t = e.target.closest('[data-wish]'))) { var on = shop.toggleWish(pdp.p.id); t.setAttribute('aria-pressed', on); t.textContent = on ? 'Saved to your wishlist' : 'Save this silhouette'; return; }
-    if ((t = e.target.closest('[data-pair]'))) { shop.openProduct(t.getAttribute('data-pair')); $('#pdpPanel').scrollTop = 0; return; }
-    if (e.target.closest('[data-stylist]')) { M.ui.openStylist(pdp.p.id); return; }
+    if ((t = e.target.closest('[data-wish]'))) { var on = shop.toggleWish(pdp.p.id); t.setAttribute('aria-pressed', on); t.textContent = wishLabel(on); C.toast(on ? 'Saved to your silhouettes. They stay on this device and join your Private Circle when you sign in.' : 'Removed from your silhouettes.'); return; }
+    if ((t = e.target.closest('[data-pair]'))) { if (e.metaKey || e.ctrlKey || e.shiftKey) return; e.preventDefault(); shop.openProduct(t.getAttribute('data-pair')); return; }
     if ((t = e.target.closest('[data-passport]'))) { M.ui.openPassport(t.getAttribute('data-passport')); return; }
-    if (e.target.closest('#loupeToggle')) { loupeApi.toggle(); }
   });
   $('#pdpPanel').addEventListener('keydown', function (e) {
-    var t = e.target.closest('.size'); if (!t || pdp.p.sizing !== 'apparel') return;
+    var t = e.target.closest('.size'); if (!t || !pdp || pdp.p.sizing !== 'apparel') return;
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
     var all = $$('#sizes .size:not([aria-disabled="true"])'), i = all.indexOf(t) + (e.key === 'ArrowRight' ? 1 : -1);
     i = (i + all.length) % all.length; all[i].focus(); all[i].click(); e.preventDefault();
   });
 
-
-  /* ---------- 4x macro loupe ---------- */
-  function initLoupe() {
-    var stage = $('#stage'), lp = $('#loupe'), view = $('.loupe__view', lp), tog = $('#loupeToggle');
-    var finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    var enabled = finePointer, pressed = false, kx = 0.5, ky = 0.45, Z = 4;
-    tog.setAttribute('aria-pressed', enabled); stage.classList.toggle('is-touch-loupe', enabled && !finePointer);
-    function refresh() {
-      var on = $('.plate.is-on', stage); var inner = on ? on.innerHTML : '';
-      view.innerHTML = inner;
-    }
-    function place(px, py) {
-      var r = stage.getBoundingClientRect(), L = lp.offsetWidth;
-      view.style.width = r.width * Z + 'px'; view.style.height = r.height * Z + 'px';
-      view.style.transform = 'translate(' + (L / 2 - px * Z) + 'px,' + (L / 2 - py * Z) + 'px)';
-      lp.style.left = Math.max(0, Math.min(r.width - L, px - L / 2)) + 'px';
-      lp.style.top = Math.max(0, Math.min(r.height - L, py - L / 2)) + 'px';
-      lp.classList.add('is-on');
-    }
-    function hide() { lp.classList.remove('is-on'); }
-    function pos(e) { var r = stage.getBoundingClientRect(); return [Math.max(0, Math.min(r.width, e.clientX - r.left)), Math.max(0, Math.min(r.height, e.clientY - r.top))]; }
-    stage.addEventListener('pointermove', function (e) {
-      if (!enabled || e.target.closest('.stage__bar')) { if (e.target.closest('.stage__bar')) hide(); return; }
-      if (e.pointerType !== 'mouse' && !pressed) return;
-      var q = pos(e); place(q[0], q[1]);
-    });
-    stage.addEventListener('pointerdown', function (e) { if (!enabled || e.target.closest('.stage__bar') || e.pointerType === 'mouse') return; pressed = true; var q = pos(e); place(q[0], q[1]); });
-    ['pointerup', 'pointercancel'].forEach(function (ev) { stage.addEventListener(ev, function (e) { if (e.pointerType !== 'mouse') { pressed = false; hide(); } }); });
-    stage.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') hide(); });
-    stage.addEventListener('keydown', function (e) {
-      if (e.target !== stage) return;
-      var step = 0.06, used = true;
-      if (e.key === 'ArrowLeft') kx = Math.max(0, kx - step); else if (e.key === 'ArrowRight') kx = Math.min(1, kx + step);
-      else if (e.key === 'ArrowUp') ky = Math.max(0, ky - step); else if (e.key === 'ArrowDown') ky = Math.min(1, ky + step);
-      else if (e.key === 'Enter' || e.key === ' ') { if (lp.classList.contains('is-on')) hide(); else used = 'show'; }
-      else if (e.key === 'Escape' && lp.classList.contains('is-on')) { hide(); e.stopPropagation(); e.preventDefault(); return; }
-      else used = false;
-      if (used) { e.preventDefault(); var r = stage.getBoundingClientRect(); if (enabled || used === 'show') place(kx * r.width, ky * r.height); }
-    });
-    stage.addEventListener('blur', hide);
-    loupeApi = {
-      refresh: refresh,
-      toggle: function () { enabled = !enabled; tog.setAttribute('aria-pressed', enabled); stage.classList.toggle('is-touch-loupe', enabled && !finePointer); if (!enabled) hide(); C.toast(enabled ? (finePointer ? 'Loupe on. Move across the image.' : 'Loupe on. Press and drag across the image.') : 'Loupe off.'); }
-    };
-    refresh();
+  /* ---------- inspection lightbox: click toggles a 2.5x macro, drag pans, pinch on touch ---------- */
+  var insp = { i: 0, z: false, x: 0, y: 0 };
+  function inspRender() {
+    var p = pdp.p, SH = shotsFor(p), v = SH[insp.i];
+    $('#inspectPanel').innerHTML =
+      '<div class="inspect__bar"><p class="inspect__title"><span>' + esc(p.short) + '</span> · ' + esc(v[1]) + ' <span class="inspect__n">' + (insp.i + 1) + ' / ' + SH.length + '</span></p>' +
+        '<button class="icon-btn" type="button" data-close aria-label="Close inspection">' + X + '</button></div>' +
+      '<div class="inspect__stage" id="inspStage" tabindex="0" aria-label="' + esc(v[1]) + '. Click or press Enter to zoom; drag or use the arrow keys to move.">' +
+        '<div class="inspect__img" id="inspImg">' + C.plateHTML(p, v[0]).replace(' loading="lazy"', '') + '</div></div>' +
+      '<div class="inspect__nav">' +
+        '<button class="btn btn--ghost btn--sm" type="button" data-insp="-1" aria-label="Previous photograph">Previous</button>' +
+        '<p class="inspect__hint" aria-hidden="true">Click to zoom 2.5x · Drag to explore</p>' +
+        '<button class="btn btn--ghost btn--sm" type="button" data-insp="1" aria-label="Next photograph">Next</button></div>';
+    insp.z = false; insp.x = 0; insp.y = 0; inspApply();
   }
+  function inspApply() {
+    var img = $('#inspImg'), st = $('#inspStage'); if (!img) return;
+    img.style.transform = insp.z ? 'translate(' + insp.x + 'px,' + insp.y + 'px) scale(2.5)' : 'none';
+    st.classList.toggle('is-zoomed', insp.z);
+  }
+  function inspClamp() {
+    var st = $('#inspStage'); if (!st) return;
+    var mx = st.clientWidth * 0.75, my = st.clientHeight * 0.75;
+    insp.x = Math.max(-mx, Math.min(mx, insp.x)); insp.y = Math.max(-my, Math.min(my, insp.y));
+  }
+  function inspZoomAt(cx, cy) {
+    var st = $('#inspStage'), r = st.getBoundingClientRect();
+    if (insp.z) { insp.z = false; insp.x = 0; insp.y = 0; }
+    else { insp.z = true; insp.x = (r.width / 2 - (cx - r.left)) * 1.5; insp.y = (r.height / 2 - (cy - r.top)) * 1.5; inspClamp(); }
+    inspApply();
+  }
+  shop.openInspect = function (i) { if (!pdp) return; insp.i = i || 0; inspRender(); C.open($('#layerInspect')); };
+  (function () {
+    var panel = $('#inspectPanel'), drag = null, moved = false;
+    panel.addEventListener('click', function (e) {
+      var t = e.target.closest('[data-insp]');
+      if (t) { var n = shotsFor(pdp.p).length; insp.i = (insp.i + (+t.getAttribute('data-insp')) + n) % n; inspRender(); return; }
+    });
+    panel.addEventListener('pointerdown', function (e) {
+      if (!e.target.closest('#inspStage') || e.pointerType === 'touch') return;
+      drag = { sx: e.clientX, sy: e.clientY, x: insp.x, y: insp.y }; moved = false;
+    });
+    window.addEventListener('pointermove', function (e) {
+      if (!drag) return;
+      var dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+      if (Math.abs(dx) + Math.abs(dy) > 4) moved = true;
+      if (moved && insp.z) { insp.x = drag.x + dx; insp.y = drag.y + dy; inspClamp(); inspApply(); }
+    });
+    window.addEventListener('pointerup', function (e) {
+      if (!drag) return; var was = moved; drag = null;
+      if (!was && e.target.closest && e.target.closest('#inspStage')) inspZoomAt(e.clientX, e.clientY);
+    });
+    /* touch: double tap toggles the macro; pinch is left to the browser */
+    var lastTap = 0;
+    panel.addEventListener('touchend', function (e) {
+      if (!e.target.closest('#inspStage') || e.changedTouches.length !== 1) return;
+      var now = Date.now(), t = e.changedTouches[0];
+      if (now - lastTap < 320) { inspZoomAt(t.clientX, t.clientY); lastTap = 0; e.preventDefault(); } else lastTap = now;
+    });
+    panel.addEventListener('keydown', function (e) {
+      if (!e.target.closest('#inspStage')) return;
+      var st = $('#inspStage'), r = st.getBoundingClientRect(), step = 60;
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inspZoomAt(r.left + r.width / 2, r.top + r.height / 2); }
+      else if (insp.z && /^Arrow/.test(e.key)) {
+        e.preventDefault();
+        if (e.key === 'ArrowLeft') insp.x += step; else if (e.key === 'ArrowRight') insp.x -= step; else if (e.key === 'ArrowUp') insp.y += step; else insp.y -= step;
+        inspClamp(); inspApply();
+      } else if (!insp.z && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { var b = $('[data-insp="' + (e.key === 'ArrowLeft' ? -1 : 1) + '"]', panel); if (b) b.click(); var s2 = $('#inspStage'); if (s2) s2.focus(); }
+    });
+  })();
 
 
   /* ======================= size and fit guide ======================= */
+  /* Product-specific: a gown reads bust, waist, hip and hollow-to-hem; a blazer reads shoulder and sleeve;
+     trousers read waist, hip, rise and inseam. Body sizes and international conversions sit underneath. */
   var guideUnit = 'cm';
   function gv(cm) { return guideUnit === 'in' ? (Math.round(cm / 2.54 * 10) / 10).toFixed(1) : (Math.round(cm * 10) / 10).toString(); }
+  function guideRows(p) {
+    var S = M.SIZECHART, G = M.GUIDE_EXTRA, kind = p.kind;
+    var lenS = function (step) { return S.sizes.map(function (_, i) { return p.hollow + (i - 1) * step; }); };
+    if (kind === 'blazer') return [['Bust', S.bust], ['Waist', S.waist], ['Shoulder', G.shoulder], ['Sleeve', G.sleeve], ['Back Length', lenS(1)]];
+    if (kind === 'cape') return [['Bust', S.bust], ['Shoulder', G.shoulder], ['Sleeve', G.sleeve], ['Back Length', lenS(1)]];
+    if (kind === 'trouser') return [['Waist', S.waist], ['Hip', S.hip], ['Front Rise', G.rise], ['Inseam', G.inseam]];
+    return [['Bust', S.bust], ['Waist', S.waist], ['Hip', S.hip], ['Hollow-to-Hem', lenS(S.hollowStep)]];
+  }
+  function guideHow(p) {
+    var lower = p.kind === 'trouser';
+    var steps = lower
+      ? [['Waist', 'Around the natural waistline, the narrowest part of the torso.'], ['Hip', 'Around the fullest part of the hips, feet together.'], ['Front Rise', 'From the crotch seam to the top of the waistband.'], ['Inseam', 'From the crotch to the ankle bone, along the inner leg.']]
+      : p.kind === 'blazer' || p.kind === 'cape'
+      ? [['Bust', 'Around the fullest part of the bust, tape level.'], ['Shoulder', 'Across the back, from one shoulder point to the other.'], ['Sleeve', 'From the shoulder point to the wrist, arm relaxed.'], ['Back Length', 'From the base of the neck at the back, down to the hem.']]
+      : [['Bust', 'Around the fullest part of the bust, tape level.'], ['Waist', 'Around the natural waistline, the narrowest part of the torso.'], ['Hip', 'Around the fullest part of the hips, feet together.'], ['Hollow-to-Hem', 'From the hollow at the base of the neck, straight down to the hem.']];
+    var fig = '<svg class="howto__fig" viewBox="0 0 120 214" aria-hidden="true"><path class="howto__form" d="M52 10 C52 18 44 22 31 27 C22 31 26 50 30 62 C34 78 40 90 40 100 C40 112 28 124 28 138 C28 160 32 182 34 204 L86 204 C88 182 92 160 92 138 C92 124 80 112 80 100 C80 90 86 78 90 62 C94 50 98 31 89 27 C76 22 68 18 68 10 Z"/>' +
+      (lower
+        ? '<line x1="36" y1="100" x2="84" y2="100"/><line x1="24" y1="138" x2="96" y2="138"/><line x1="60" y1="100" x2="60" y2="150"/><line x1="70" y1="150" x2="70" y2="204"/><g class="howto__n"><circle cx="30" cy="100" r="5"/><text x="30" y="102.5">1</text><circle cx="18" cy="138" r="5"/><text x="18" y="140.5">2</text><circle cx="54" cy="125" r="5"/><text x="54" y="127.5">3</text><circle cx="78" cy="180" r="5"/><text x="78" y="182.5">4</text></g>'
+        : p.kind === 'blazer' || p.kind === 'cape'
+        ? '<line x1="26" y1="62" x2="94" y2="62"/><line x1="31" y1="28" x2="89" y2="28"/><line x1="96" y1="30" x2="104" y2="112"/><line x1="60" y1="12" x2="60" y2="140"/><g class="howto__n"><circle cx="20" cy="62" r="5"/><text x="20" y="64.5">1</text><circle cx="60" cy="20" r="5"/><text x="60" y="22.5">2</text><circle cx="108" cy="78" r="5"/><text x="108" y="80.5">3</text><circle cx="66" cy="120" r="5"/><text x="66" y="122.5">4</text></g>'
+        : '<line x1="26" y1="62" x2="94" y2="62"/><line x1="36" y1="100" x2="84" y2="100"/><line x1="24" y1="138" x2="96" y2="138"/><line x1="60" y1="14" x2="60" y2="204"/><g class="howto__n"><circle cx="20" cy="62" r="5"/><text x="20" y="64.5">1</text><circle cx="30" cy="100" r="5"/><text x="30" y="102.5">2</text><circle cx="18" cy="138" r="5"/><text x="18" y="140.5">3</text><circle cx="66" cy="182" r="5"/><text x="66" y="184.5">4</text></g>') +
+      '</svg>';
+    return '<div class="howto"><h3 class="howto__title">How to Measure</h3><div class="howto__grid">' + fig + '<ol class="howto__list">' +
+      steps.map(function (s) { return '<li><b>' + s[0] + '.</b> ' + s[1] + '</li>'; }).join('') + '</ol></div></div>';
+  }
   function renderSize(pid) {
-    var p = C.product(pid) || M.PRODUCTS[0], S = M.SIZECHART;
-    var hollow = S.sizes.map(function (_, i) { return p.hollow + (i - 1) * S.hollowStep; });
-    function row(label, arr) { return '<tr><th scope="row">' + label + '</th>' + arr.map(function (v) { return '<td' + '>' + gv(v) + '</td>'; }).join('') + '</tr>'; }
+    var p = C.product(pid) || M.PRODUCTS[0], S = M.SIZECHART, md = M.MODEL;
+    function row(label, arr) { return '<tr><th scope="row">' + label + '</th>' + arr.map(function (v) { return '<td>' + gv(v) + '</td>'; }).join('') + '</tr>'; }
     $('#sizePanel').setAttribute('data-product', p.id);
     $('#sizePanel').innerHTML =
       '<div class="panel-head"><h2 id="sizeTitle">Size &amp; Fit Guide</h2><button class="icon-btn" type="button" data-close aria-label="Close size guide">' + X + '</button></div>' +
       '<div class="panel-body">' +
-        '<p class="lede lede--dark">' + esc(p.short) + '. Body measurements, not garment measurements. Model is ' + M.MODEL.height + ' and wears Size ' + M.MODEL.size + '.</p>' +
-        '<div class="seg" role="group" aria-label="Units"><button type="button" data-sunit="cm" aria-pressed="' + (guideUnit === 'cm') + '">CM</button><button type="button" data-sunit="in" aria-pressed="' + (guideUnit === 'in') + '">Inches</button></div>' +
-        '<div class="size-table-wrap"><table class="size-table"><caption class="sr-only">Size chart in ' + (guideUnit === 'in' ? 'inches' : 'centimetres') + '</caption>' +
+        '<p class="sg-lede">' + esc(p.short) + '. Garment-specific measurements in ' + (guideUnit === 'in' ? 'inches' : 'centimetres') + '.</p>' +
+        '<p class="sg-model">Model is ' + md.height + ' · Bust ' + md.bust + ' cm · Waist ' + md.waist + ' cm · wears Size ' + md.size + '</p>' +
+        '<div class="seg" role="group" aria-label="Units"><button type="button" data-sunit="cm" aria-pressed="' + (guideUnit === 'cm') + '">cm</button><button type="button" data-sunit="in" aria-pressed="' + (guideUnit === 'in') + '">in</button></div>' +
+        '<div class="size-table-wrap"><table class="size-table"><caption class="sr-only">Size chart for the ' + esc(p.short) + ' in ' + (guideUnit === 'in' ? 'inches' : 'centimetres') + '</caption>' +
           '<thead><tr><th scope="col"><span class="sr-only">Measurement</span></th>' + S.sizes.map(function (z) { return '<th scope="col">' + z + '</th>'; }).join('') + '</tr></thead><tbody>' +
-          row('Bust', S.bust) + row('Waist', S.waist) + row('Hip', S.hip) + row('Hollow-to-Hem', hollow) +
-          ['UK', 'EU', 'US'].map(function (k) { return '<tr class="intl"><th scope="row">' + k + ' size</th>' + M.SIZE_INTL[k].map(function (v) { return '<td>' + v + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>' +
-        '<p class="field__hint">Hollow-to-Hem is measured from the hollow at the base of the neck, straight down to the hem. Between sizes, choose the larger, or ask the stylist.</p>' +
+          guideRows(p).map(function (r) { return row(r[0], r[1]); }).join('') +
+          ['UK', 'EU', 'US'].map(function (k) { return '<tr class="intl"><th scope="row">' + k + '</th>' + M.SIZE_INTL[k].map(function (v) { return '<td>' + v + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>' +
+        guideHow(p) +
+        '<p class="field__hint">Between sizes, choose the larger, or ask the stylist.</p>' +
         '<p class="sg-ask">Unsure of your size? Our stylist replies on WhatsApp.</p>' +
-        '<a class="btn btn--ghost btn--block" href="' + esc(shop.stylistHref(p, null)) + '" target="_blank" rel="noopener" data-wa>Consult Our Colombo Stylist</a>' +
+        '<a class="btn btn--ghost btn--block" href="' + esc(shop.stylistHref(p, pdp && pdp.p.id === p.id ? pdp.size : null)) + '" target="_blank" rel="noopener" data-wa>Consult Our Colombo Stylist</a>' +
       '</div>';
   }
   shop.openSize = function (pid) { renderSize(pid); C.open($('#layerSize')); };

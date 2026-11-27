@@ -60,7 +60,7 @@
     }).join('');
   }
   var mp = $('#maisonPlate');
-  if (mp) mp.innerHTML = '<span class="maison__plate-inner reveal">' + '<img src="assets/media/editorial/temp/maison-gown.webp" alt="A long-sleeved ivory dress with a hand-beaded sunburst, in the atelier" loading="lazy" decoding="async">' + '</span><figcaption>In the Colombo atelier.</figcaption>';
+  if (mp) mp.innerHTML = '<span class="maison__plate-inner reveal">' + '<img src="/assets/media/editorial/temp/maison-gown.webp" alt="A long-sleeved ivory dress with a hand-beaded sunburst, in the atelier" loading="lazy" decoding="async">' + '</span><figcaption>In the Colombo atelier.</figcaption>';
 
   /* ---------------- silk-curtain reveals ---------------- */
   function observeReveals() {
@@ -142,42 +142,6 @@
     };
     new IntersectionObserver(function (en) { plxOn = en[0].isIntersecting; if (plxOn) plxFrame(); }).observe(plx);
     window.addEventListener('scroll', function () { if (plxOn && !plxRaf) plxRaf = requestAnimationFrame(plxFrame); }, { passive: true });
-  }
-
-  /* ---------------- grid to PDP: the card image travels to the stage ---------------- */
-  var openProduct = M.shop && M.shop.openProduct, pdpLayer = $('#layerPdp');
-  if (openProduct && pdpLayer) {
-    M.shop.openProduct = function (id, from) {
-      var card = from && from.closest ? from.closest('.card') : null;
-      var frame = card && $('.card__frame', card), src = frame && $('.plate--a', frame);
-      var r = frame && frame.getBoundingClientRect();
-      if (!src || C.reduced() || pdpLayer.open || !r.width || r.bottom < 0 || r.top > window.innerHeight) return openProduct.apply(this, arguments);
-      pdpLayer.classList.add('is-handoff', 'is-awaiting');
-      openProduct.apply(this, arguments);
-      var ghost = document.createElement('div');
-      ghost.className = 'handoff'; ghost.setAttribute('aria-hidden', 'true');
-      ghost.appendChild(src.cloneNode(true));
-      ghost.style.width = r.width + 'px'; ghost.style.height = r.height + 'px';
-      ghost.style.transform = 'translate(' + r.left + 'px,' + r.top + 'px)';
-      ghost.style.clipPath = 'inset(0px 0px 0px 0px)';
-      pdpLayer.appendChild(ghost);
-      var land = function () {
-        if (!ghost.isConnected) return;
-        pdpLayer.classList.remove('is-awaiting'); ghost.classList.add('is-done');
-        setTimeout(function () { ghost.remove(); }, 260);
-      };
-      requestAnimationFrame(function () { requestAnimationFrame(function () {
-        var st = $('#stage'), t = st && st.getBoundingClientRect();
-        if (!t || !t.width) { land(); return; }
-        var s = Math.max(t.width / r.width, t.height / r.height);
-        var cx = Math.max(0, (r.width - t.width / s) / 2), cy = Math.max(0, (r.height - t.height / s) / 2);
-        ghost.style.transition = 'transform .62s cubic-bezier(0.22, 1, 0.36, 1), clip-path .62s cubic-bezier(0.22, 1, 0.36, 1)';
-        ghost.style.transform = 'translate(' + (t.left - cx * s).toFixed(1) + 'px,' + (t.top - cy * s).toFixed(1) + 'px) scale(' + s.toFixed(4) + ')';
-        ghost.style.clipPath = 'inset(' + cy.toFixed(1) + 'px ' + cx.toFixed(1) + 'px ' + cy.toFixed(1) + 'px ' + cx.toFixed(1) + 'px)';
-        setTimeout(land, 660);
-      }); });
-    };
-    C.on('close', function (d) { if (d === pdpLayer) pdpLayer.classList.remove('is-handoff', 'is-awaiting'); });
   }
 
   /* ---------------- Unbounded Spiral Seal decoder ---------------- */
@@ -276,14 +240,26 @@
     }
     window.addEventListener('pointermove', function (e) {
       if (e.pointerType !== 'mouse') return;
-      cx = e.clientX; cy = e.clientY; cur.classList.add('is-on');
-      if (!running) { running = true; requestAnimationFrame(loop); }
       var t = e.target.closest && e.target.closest('[data-cursor]');
       var word = t ? t.getAttribute('data-cursor') : '';
-      if (t && t.closest('.stage') && $('#loupeToggle') && $('#loupeToggle').getAttribute('aria-pressed') === 'true') word = '';
-      cur.classList.toggle('is-ring', !!word); if (word && label.textContent !== word) label.textContent = word;
+      /* the ring appears only over photography; forms, buttons, links and navigation keep the native pointer */
+      if (!t) { cur.classList.remove('is-on', 'is-ring'); return; }
+      if (!cur.classList.contains('is-on')) { dx = e.clientX; dy = e.clientY; }
+      cx = e.clientX; cy = e.clientY; cur.classList.add('is-on', 'is-ring');
+      if (!running) { running = true; requestAnimationFrame(loop); }
+      if (label.textContent !== word) label.textContent = word;
     }, { passive: true });
-    document.addEventListener('pointerleave', function () { cur.classList.remove('is-on'); });
+    function hideCur() { cur.classList.remove('is-on', 'is-ring'); }
+    /* when the page moves under a still pointer, re-read what lies beneath it */
+    var recheckRaf = 0;
+    function recheck() {
+      recheckRaf = 0; if (!cur.classList.contains('is-on')) return;
+      var el = document.elementFromPoint(cx, cy), t = el && el.closest('[data-cursor]');
+      if (!t) hideCur(); else if (label.textContent !== t.getAttribute('data-cursor')) label.textContent = t.getAttribute('data-cursor');
+    }
+    document.addEventListener('pointerleave', hideCur);
+    window.addEventListener('scroll', function () { if (!recheckRaf) recheckRaf = requestAnimationFrame(recheck); }, { passive: true });
+    C.on('route', hideCur);
     /* modal dialogs sit in the top layer above the cursor, so the native pointer returns while one is open */
     function sync() { root.classList.toggle('has-dialog', !!$$('dialog[open]').length); }
     C.on('open', sync); C.on('close', function () { setTimeout(sync, 0); });

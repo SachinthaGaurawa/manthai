@@ -11,7 +11,7 @@
     /* Maison concierge WhatsApp number, international format, digits only. */
     whatsapp: '94778787998',
     /* Atelier film. Add real files and the film modal plays them instead of the placeholder reel. */
-    film: { webm: '', mp4: '', poster: 'assets/media/hero/hero-poster.webp' },
+    film: { webm: '', mp4: '', poster: '/assets/media/hero/hero-poster.webp' },
     /* Optional ambient bed. When empty the page synthesises a very quiet drone. */
     ambientSrc: '',
     /* Google Identity Services client id. Empty means the Private Circle sign-in runs in demo mode. */
@@ -38,7 +38,7 @@
   M.FIT_LABELS = ['Runs small', 'True to size', 'Runs large'];
 
   /* ---------- Fit information ---------- */
-  M.MODEL = { height: '173 cm / 5′8″', size: 'S' };
+  M.MODEL = { height: '173 cm / 5′8″', bust: 83, waist: 63, size: 'S' };
   /* International size conversion for women's apparel */
   M.SIZE_INTL = { UK: [6, 8, 10, 12, 14], EU: [34, 36, 38, 40, 42], US: [2, 4, 6, 8, 10] };
   /* Body measurements in cm. Hollow-to-hem is per piece (product.hollow, size S) and moves 1.5 cm per size. */
@@ -48,6 +48,13 @@
     waist: [62, 66, 70, 75, 80],
     hip:   [88, 92, 96, 101, 106],
     hollowStep: 1.5
+  };
+  /* Garment measurements in cm for tailoring and trousers (XS to XL) */
+  M.GUIDE_EXTRA = {
+    shoulder: [36.5, 37.5, 38.5, 40, 41.5],
+    sleeve:   [59, 60, 61, 62, 63],
+    rise:     [27, 27.5, 28, 28.5, 29],
+    inseam:   [80, 80.5, 81, 81.5, 82]
   };
   /* Universal preservation notes shown in the Material & garment care accordion */
   M.CARE = [
@@ -83,7 +90,7 @@
       care: 'Silk-velvet crushes under pressure: never iron or press the pile. Steam from the reverse at a distance and store hanging in the supplied garment bag.',
       palette: ['#3a2618', '#100b08', '#C9AF7E'],
       occasions: ['Evening & Gala'], fit: 1, pairs: ['nocturne-cape-top', 'vespera-blazer'],
-      media: { form: 'assets/media/products/temp/aurelia-gown-form.webp', back: '', detail: 'assets/media/products/temp/aurelia-gown-detail.webp', move: 'assets/media/products/temp/aurelia-gown-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
+      media: { form: '/assets/media/products/temp/aurelia-gown-form.webp', back: '', detail: '/assets/media/products/temp/aurelia-gown-detail.webp', move: '/assets/media/products/temp/aurelia-gown-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
       prompt: 'Liquid silk-velvet evening gown with a sculpted asymmetric neckline, deep warm sheen, chiaroscuro golden light, 35mm editorial photography'
     },
     {
@@ -102,7 +109,7 @@
       care: 'Satin twill waterspots: keep dry and blot at once. Steam on the reverse.',
       palette: ['#4C1722', '#1d070c', '#8a2a3a'],
       occasions: ['Cocktail & Private Dinner', 'Modern Reception'], fit: 1, pairs: ['vespera-blazer', 'nocturne-cape-top'],
-      media: { form: 'assets/media/products/temp/solstice-midi-form.webp', back: '', detail: 'assets/media/products/temp/solstice-midi-detail.webp', move: 'assets/media/products/temp/solstice-midi-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
+      media: { form: '/assets/media/products/temp/solstice-midi-form.webp', back: '', detail: '/assets/media/products/temp/solstice-midi-detail.webp', move: '/assets/media/products/temp/solstice-midi-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
       prompt: 'Velvet-garnet satin twill midi dress with a sculpted waist twist and fluid hem, soft window light on ivory, editorial womenswear'
     },
     {
@@ -121,7 +128,7 @@
       care: 'Brush gently with a soft garment brush after wearing. Steam, never press the lapel roll flat.',
       palette: ['#2a2018', '#0E0D0C', '#C9AF7E'],
       occasions: ['Elevated Day-to-Evening', 'Cocktail & Private Dinner'], fit: 1, pairs: ['vespera-trousers', 'alabaster-slip'],
-      media: { form: 'assets/media/products/temp/vespera-blazer-form.webp', back: '', detail: 'assets/media/products/temp/vespera-blazer-detail.webp', move: 'assets/media/products/temp/vespera-blazer-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
+      media: { form: '/assets/media/products/temp/vespera-blazer-form.webp', back: '', detail: '/assets/media/products/temp/vespera-blazer-detail.webp', move: '/assets/media/products/temp/vespera-blazer-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
       prompt: 'Structured ivory tailored blazer in tropical wool-silk with a sharp shoulder and concealed horn clasp, soft window light, editorial womenswear'
     },
     {
@@ -140,7 +147,7 @@
       care: 'Hang by the waistband on a padded clip hanger. Steam on the reverse; never press the pleat flat.',
       palette: ['#26262a', '#0E0D0C', '#C9AF7E'],
       occasions: ['Elevated Day-to-Evening'], fit: 0.9, pairs: ['vespera-blazer', 'alabaster-slip'],
-      media: { form: 'assets/media/products/temp/vespera-trousers-form.webp', back: '', detail: 'assets/media/products/temp/vespera-trousers-detail.webp', move: 'assets/media/products/temp/vespera-trousers-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
+      media: { form: '/assets/media/products/temp/vespera-trousers-form.webp', back: '', detail: '/assets/media/products/temp/vespera-trousers-detail.webp', move: '/assets/media/products/temp/vespera-trousers-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
       prompt: 'High-waist wide-leg double-faced crepe trousers with a tailored pleat, fluid motion, soft light on an ivory wall'
     },
     {
@@ -159,7 +166,7 @@
       care: 'Mulberry silk waterspots: keep dry and blot at once. Steam on the reverse at a distance.',
       palette: ['#2a2018', '#0E0D0C', '#C9AF7E'],
       occasions: ['Modern Reception', 'Cocktail & Private Dinner'], fit: 1.1, pairs: ['vespera-blazer', 'nocturne-cape-top'],
-      media: { form: 'assets/media/products/temp/alabaster-slip-form.webp', back: '', detail: 'assets/media/products/temp/alabaster-slip-detail.webp', move: 'assets/media/products/temp/alabaster-slip-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
+      media: { form: '/assets/media/products/temp/alabaster-slip-form.webp', back: '', detail: '/assets/media/products/temp/alabaster-slip-detail.webp', move: '/assets/media/products/temp/alabaster-slip-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
       prompt: 'Ivory bias-cut mulberry silk slip dress, liquid pearl sheen, hand-rolled seams, soft window light, editorial womenswear'
     },
     {
@@ -178,7 +185,7 @@
       care: 'Beadwork snags easily: remove rings when dressing. Steam at a distance, never press, and store flat in tissue.',
       palette: ['#16110a', '#0E0D0C', '#C9AF7E'],
       occasions: ['Evening & Gala', 'Modern Reception'], fit: 1, pairs: ['aurelia-gown', 'vespera-trousers'],
-      media: { form: 'assets/media/products/temp/nocturne-cape-top-form.webp', back: '', detail: 'assets/media/products/temp/nocturne-cape-top-detail.webp', move: 'assets/media/products/temp/nocturne-cape-top-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
+      media: { form: '/assets/media/products/temp/nocturne-cape-top-form.webp', back: '', detail: '/assets/media/products/temp/nocturne-cape-top-detail.webp', move: '/assets/media/products/temp/nocturne-cape-top-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
       prompt: 'Sheer silk organza cape top with tonal hand-beading catching the light, numbered atelier edition, dark warm chiaroscuro'
     }
   ];
@@ -195,7 +202,7 @@
   M.NAV = [
     { key: 'new', label: 'New Arrivals', action: 'filter:All' },
     { key: 'collections', label: 'Collections', title: 'Ladies ready-to-wear, cut in the Colombo atelier.',
-      product: 'aurelia-gown', image: 'Aurelia, Vespera and Alabaster', src: 'assets/media/editorial/temp/collections-panel.webp', /* TEMPORARY reference photos */
+      product: 'aurelia-gown', image: 'Aurelia, Vespera and Alabaster', src: '/assets/media/editorial/temp/collections-panel.webp', /* TEMPORARY reference photos */
       groups: [
         { title: 'Categories', links: [
           { label: 'Evening & Gala Gowns', action: 'filter:Evening Gowns' },
@@ -237,16 +244,16 @@
   /* ---------- Lookbook stills (campaign media slots) ---------- */
   M.LOOKBOOK = [
     /* src: TEMPORARY reference photos for the test build (assets/media/lookbook/temp). Replace with the MANTHAI campaign shoot before launch. */
-    { id: 'emporium', title: 'The Great Hall', filter: 'Evening Gowns', kind: 'courtyard', src: 'assets/media/lookbook/temp/emporium.webp',
+    { id: 'emporium', title: 'The Great Hall', filter: 'Evening Gowns', kind: 'courtyard', src: '/assets/media/lookbook/temp/emporium.webp',
       caption: 'Ivory tailoring and a hand-worked column skirt under a travertine arch.',
       prompt: 'Ultra-luxury haute couture campaign still, ivory tailoring in a minimalist travertine hall with soft directional light' },
-    { id: 'studio', title: 'Sculpted Tailoring', filter: 'Tailoring', kind: 'studio', src: 'assets/media/lookbook/temp/studio.webp',
+    { id: 'studio', title: 'Sculpted Tailoring', filter: 'Tailoring', kind: 'studio', src: '/assets/media/lookbook/temp/studio.webp',
       caption: 'Black tailoring cut with an ivory silk drape, high above the city.',
       prompt: 'Luxury womenswear editorial, black tailored jacket with an ivory silk drape, wide trousers, penthouse window light' },
-    { id: 'atelier', title: 'On the Stand', filter: 'Limited Editions', kind: 'table', src: 'assets/media/lookbook/temp/atelier.webp',
+    { id: 'atelier', title: 'On the Stand', filter: 'Limited Editions', kind: 'table', src: '/assets/media/lookbook/temp/atelier.webp',
       caption: 'A hand-embroidered bodice and a full silk skirt, finished on the stand.',
       prompt: 'Hand-embroidered bodice and silk skirt on a dress form in a sunlit atelier' },
-    { id: 'ivory', title: 'Ivory Hour', filter: 'Tailoring', kind: 'damask', src: 'assets/media/lookbook/temp/ivory.webp',
+    { id: 'ivory', title: 'Ivory Hour', filter: 'Tailoring', kind: 'damask', src: '/assets/media/lookbook/temp/ivory.webp',
       caption: 'A wrap jacket embroidered by hand, worn with wide ivory trousers.',
       prompt: 'Ivory wrap jacket with hand embroidery and wide trousers, soft morning light through sheer curtains' }
   ];
