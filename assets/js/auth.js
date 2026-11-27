@@ -160,13 +160,17 @@
     var list = Object.keys(keys()).map(function (k) { return keys()[k]; });
     var say = function (t) { st.pkMsg = t; C.$$('.pc-auth__pk').forEach(function (p) { p.textContent = t; }); };
     if (!supported()) { say('This browser does not support passkeys. Continue with Google or your Private Access Key.'); return; }
-    if (!list.length) { say('No passkey is linked on this device yet. Sign in with Google or your Private Access Key first, then enable Face ID / Touch ID in Profile, Addresses & Security.'); return; }
     say('');
-    navigator.credentials.get({ publicKey: { challenge: rand(32), rpId: location.hostname, userVerification: 'required', timeout: 60000,
-      allowCredentials: list.map(function (k) { return { type: 'public-key', id: unb64u(k.id) }; }) } })
+    /* discoverable request: the browser offers passkeys synced through iCloud Keychain or Google Password Manager,
+       and "use a phone or tablet" (scan a code) for a passkey that lives on the member's phone */
+    navigator.credentials.get({ publicKey: { challenge: rand(32), rpId: location.hostname, userVerification: 'required', timeout: 120000 } })
       .then(function (cred) {
         var id = cred && b64u(cred.rawId), k = list.filter(function (x) { return x.id === id; })[0];
-        if (!k) { say('That passkey is not linked to a Private Circle account on this device.'); return; }
+        var handle = '';
+        try { handle = cred.response.userHandle ? new TextDecoder().decode(cred.response.userHandle) : ''; } catch (e) { handle = ''; }
+        var email = k ? k.email : /@/.test(handle) ? handle : '';
+        if (!email) { say('That passkey belongs to an earlier MANTHAI sign-in. Continue with Google or your Private Access Key, then enable Face ID / Touch ID again in Profile, Addresses & Security.'); return; }
+        if (!k) { k = keys()[email.toLowerCase()] = { id: id, email: email, name: '', provider: 'email', label: deviceLabel() + ' (synced)', added: new Date().toISOString() }; }
         k.lastUsed = new Date().toISOString(); C.save(); reset();
         ui.auth.complete({ email: k.email, name: k.name }, k.provider || 'email');
       })
@@ -178,9 +182,10 @@
     btn.disabled = true;
     navigator.credentials.create({ publicKey: {
       challenge: rand(32), rp: { name: 'House of MANTHAI', id: location.hostname },
-      user: { id: new TextEncoder().encode(m.id || m.email), name: m.email, displayName: m.name || m.email },
+      /* the user handle carries the member's email, so a synced or phone passkey can name its account on any device */
+      user: { id: new TextEncoder().encode(String(m.email).toLowerCase().slice(0, 64)), name: m.email, displayName: m.name || m.email },
       pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
-      authenticatorSelection: { authenticatorAttachment: 'platform', residentKey: 'preferred', userVerification: 'required' },
+      authenticatorSelection: { authenticatorAttachment: 'platform', residentKey: 'required', requireResidentKey: true, userVerification: 'required' },
       timeout: 60000, attestation: 'none' } })
       .then(function (cred) {
         keys()[String(m.email).toLowerCase()] = { id: b64u(cred.rawId), email: m.email, name: m.name, provider: m.provider, label: deviceLabel(), added: new Date().toISOString() };
@@ -201,7 +206,8 @@
         row('Email Private Key', esc(m.email) + (google ? '' : ' · link and code by email'), !google, '<span class="acct-pill">Available</span>') +
       '</ul>' +
       '<div class="pc-passkey"><div class="pc-passkey__head">' + PK + '<p class="pc-passkey__t">Biometric Passkey (Face ID / Touch ID)</p></div>' +
-        '<p class="pc-passkey__d">Link Face ID, Touch ID, or device biometrics directly to your Google or Email Private Circle account. Unlock your Wardrobe and Digital Vault on this device with a single glance or touch. No passwords required.</p>' +
+        '<p class="pc-passkey__d">Link Face ID, Touch ID, or device biometrics directly to your Google or Email Private Circle account. Unlock your Wardrobe and Digital Vault with a single glance or touch. No passwords required.</p>' +
+        '<p class="acct-fine">Passkeys saved to iCloud Keychain or Google Password Manager follow you to your other devices. On any other computer, choose Face ID / Touch ID and scan the code with your phone.</p>' +
         (k ? '<dl class="pc-passkey__meta"><div><dt>Device</dt><dd>' + esc(k.label) + '</dd></div><div><dt>Added</dt><dd>' + esc(new Date(k.added).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })) + '</dd></div></dl>' +
           '<div class="pc-passkey__row"><span class="acct-pill is-on">Enabled on this device</span><button class="acct-link acct-link--quiet" type="button" data-pk-remove>Remove Passkey</button></div>'
           : '<div class="pc-passkey__row"><button class="btn btn--ghost btn--sm" type="button" data-pk-enable disabled>Enable Face ID / Touch ID Passkey</button></div>') +
