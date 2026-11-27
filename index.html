@@ -54,12 +54,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@600&family=Tenor+Sans&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/tokens.css?v=20261127w">
-<link rel="stylesheet" href="assets/css/site.css?v=20261127w">
-<link rel="stylesheet" href="assets/css/flagship.css?v=20261127w">
-<link rel="stylesheet" href="assets/css/gallery.css?v=20261127w">
-<link rel="stylesheet" href="assets/css/unbox.css?v=20261127w">
-<link rel="stylesheet" href="assets/css/cipher.css?v=20261127w">
+<link rel="stylesheet" href="assets/css/tokens.css?v=20261127x">
+<link rel="stylesheet" href="assets/css/site.css?v=20261127x">
+<link rel="stylesheet" href="assets/css/flagship.css?v=20261127x">
+<link rel="stylesheet" href="assets/css/gallery.css?v=20261127x">
+<link rel="stylesheet" href="assets/css/unbox.css?v=20261127x">
+<link rel="stylesheet" href="assets/css/cipher.css?v=20261127x">
 </head>
 <body>
 
@@ -213,36 +213,79 @@
   </section>
 
   <!-- =========================== THE MAISON PAGE =========================== -->
-  <section class="maison-intro on-light" id="maisonTop" data-view="maison" aria-labelledby="maisonPageTitle">
-    <div class="wrap maison-intro__inner">
-      <p class="eyebrow">House of MANTHAI · Colombo</p>
-      <h1 class="display maison-intro__title" id="maisonPageTitle">The Maison</h1>
-      <nav class="chapters" aria-label="Chapters">
-        <a href="#maison" data-jump="maison"><span>Chapter I</span>The Spirit Without Borders</a>
-        <a href="#seal" data-jump="seal"><span>The Seal</span>The Anatomy of Our Emblem</a>
-        <a href="#cipher" data-jump="cipher"><span>The Wordmark</span>The Hidden Sun &amp; Moon Cipher</a>
-        <a href="#ritual" data-jump="ritual"><span>Chapter II</span>The Unboxing &amp; Verification Ritual</a>
-      </nav>
-    </div>
-  </section>
+  <nav class="chapnav" data-view="maison" aria-label="Chapters of the Maison">
+    <ol class="chapnav__list">
+      <li><a href="#house" data-chap="house"><span class="chapnav__n">I.</span> The House</a></li>
+      <li><a href="#savoir-faire" data-chap="savoir-faire"><span class="chapnav__n">II.</span> Savoir-Faire</a></li>
+      <li><a href="#seal" data-chap="seal"><span class="chapnav__n">III.</span> The Seal</a></li>
+      <li><a href="#cipher" data-chap="cipher"><span class="chapnav__n">IV.</span> The Wordmark</a></li>
+      <li><a href="#ritual" data-chap="ritual"><span class="chapnav__n">V.</span> The Ritual</a></li>
+    </ol>
+  </nav>
 
-  <!-- =============================== MAISON =============================== -->
-  <section class="maison on-light" id="maison" data-view="maison" aria-labelledby="maisonTitle">
-    <div class="wrap maison__statement">
+  <!-- ========================= CHAPTER I · THE HOUSE ========================= -->
+  <section class="maison house on-light" id="house" data-view="maison" aria-labelledby="maisonPageTitle">
+    <div class="wrap house__head">
+      <p class="eyebrow">Chapter I &middot; The House</p>
+      <h1 class="display house__title" id="maisonPageTitle">House of MANTHAI</h1>
+      <p class="house__say">Pronounced <span class="house__ipa" lang="en-fonipa">/m&#593;&#720;n-t&#652;&#618;/</span>. Named in tribute to Mantai, the ancient Indian Ocean crossroads of silk and craft.</p>
+    </div>
+    <div class="wrap maison__statement" id="maison">
       <figure class="maison__plate" id="maisonPlate" data-cursor="View"></figure>
       <div class="maison__copy">
-        <p class="eyebrow">Chapter I</p>
         <h2 class="display maison__title" id="maisonTitle">The Spirit Without Borders</h2>
-        <p>Our name honors Mantai, the ancient Indian Ocean crossroads where silk, craft, and distant cultures met without borders. House of MANTHAI carries that borderless spirit into contemporary Sri Lankan luxury womenswear: sculptural silhouettes, tactile fine fabrics, and disciplined tailoring designed to outlive every passing trend.</p>
+        <p>Founded in Colombo as an independent luxury womenswear maison, House of MANTHAI was created to challenge the assumption that timeless fashion belongs only to distant capitals.</p>
+        <p>Our name honors Mantai, the ancient Indian Ocean port where silk, rare materials, and distant cultures met without borders. We carry that borderless spirit into sculptural ready-to-wear conceived far beyond seasonal trends.</p>
         <p class="maison__slogan">Tailored Without Boundaries. Crafted to Endure.</p>
       </div>
     </div>
+    <div class="wrap">
+      <h3 class="sr-only">The House Creed</h3>
+      <ol class="creed" aria-label="The House Creed">
+        <li class="creed__item">
+          <p class="creed__k">01 &middot; Our Conviction</p>
+          <p class="creed__t">Fashion Without Borders or Ceilings.</p>
+          <p class="creed__d">We reject disposable trend cycles and narrow regional limits. Every silhouette is conceived for women who move effortlessly between Colombo, London, Paris, and everywhere beyond.</p>
+        </li>
+        <li class="creed__item">
+          <p class="creed__k">02 &middot; Our Standard</p>
+          <p class="creed__t">Small-Batch Permanence.</p>
+          <p class="creed__d">Each edition is produced strictly in small, individually numbered runs. We measure success not by volume sold, but by silhouettes still worn and treasured a decade from now.</p>
+        </li>
+        <li class="creed__item">
+          <p class="creed__k">03 &middot; Our Horizon</p>
+          <p class="creed__t">A Modern House Built in Chapters.</p>
+          <p class="creed__d">Phase One is devoted exclusively to luxury ladies ready-to-wear. Menswear tailoring and Maison objects will follow only when each m&eacute;tier meets the exact same standard of craft.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
 
+  <!-- ===================== CHAPTER II · SAVOIR-FAIRE ===================== -->
+  <section class="savoir on-light" id="savoir-faire" data-view="maison" aria-labelledby="savoirTitle">
+    <div class="wrap">
+      <div class="savoir__head">
+        <p class="eyebrow">Chapter II &middot; Savoir-Faire</p>
+        <h2 class="display savoir__title" id="savoirTitle">Cut with Patience. Finished to Endure.</h2>
+      </div>
+      <ol class="proofs">
+        <li class="proof"><span class="proof__n" aria-hidden="true">I.</span><h3 class="proof__t">Natural Textiles Only</h3><p>19 to 22 momme mulberry silk, breathable tropical virgin wool-silk blends, pure silk organza, and full silk crepe de chine linings, chosen for Sri Lanka&rsquo;s climate and effortless global travel.</p></li>
+        <li class="proof"><span class="proof__n" aria-hidden="true">II.</span><h3 class="proof__t">Architectural Cut &amp; Inside Finish</h3><p>French seams, concealed closures, hand-pressed lapels, and balanced drape, engineered to feel as refined inside the garment as on the exterior.</p></li>
+        <li class="proof"><span class="proof__n" aria-hidden="true">III.</span><h3 class="proof__t">Numbered Provenance &amp; Digital Passport</h3><p>Every piece carries an individual edition number and an embedded NFC Digital Product Passport linked to its brushed-metal Verification Card, structured to meet evolving international luxury traceability standards.</p></li>
+        <li class="proof"><span class="proof__n" aria-hidden="true">IV.</span><h3 class="proof__t">After-Sales Stewardship</h3><p>Dedicated garment care guidance, complimentary insured delivery across Sri Lanka, and a 14-day white-glove exchange with transparent refunds, from our Colombo Client Office.</p></li>
+      </ol>
+      <dl class="trust">
+        <div class="trust__c"><dt>House Entity</dt><dd>House of MANTHAI &middot; Independent Womenswear Maison &middot; Colombo, Sri Lanka</dd></div>
+        <div class="trust__c"><dt>Client Care</dt><dd>Monday to Saturday, 10:00 AM to 7:00 PM IST &middot; <a href="mailto:concierge@manthai.lk">concierge@manthai.lk</a></dd></div>
+        <div class="trust__c"><dt>Private Styling &amp; Press</dt><dd><a href="https://wa.me/94778787998" target="_blank" rel="noopener" data-wa>WhatsApp Client Advisor</a> &middot; <a href="mailto:press@manthai.lk">press@manthai.lk</a></dd></div>
+      </dl>
+    </div>
   </section>
 
   <section class="seal-chapter" id="seal" data-view="maison" aria-labelledby="sealTitle">
     <div class="wrap decoder">
       <div class="decoder__copy">
+        <p class="eyebrow eyebrow--dark">Chapter III &middot; The Seal</p>
         <h2 class="display display--light" id="sealTitle">The Anatomy of Our Seal</h2>
         <p class="lede lede--dark">The Unbounded Spiral is an original sculptural emblem created exclusively for House of MANTHAI, uniting nature&rsquo;s self-similar logarithmic growth with the fluid poise of haute couture.</p>
         <div class="decoder__parts" id="decoderParts" role="group" aria-label="The four parts of the Seal"></div>
@@ -257,12 +300,11 @@
   <!-- ============================== CIPHER ============================== -->
   <section class="cipher" id="cipher" data-view="maison" data-state="concealed" aria-labelledby="cipherTitle">
     <div class="wrap cipher__inner">
-      <p class="eyebrow eyebrow--dark cipher__eyebrow">The Wordmark</p>
+      <p class="eyebrow eyebrow--dark cipher__eyebrow">Chapter IV &middot; The Wordmark</p>
       <h2 class="cipher__title" id="cipherTitle">The Hidden Sun &amp; Moon Cipher</h2>
       <p class="cipher__lede">Drawn into three letters of our name is a quiet cipher of light. Most will never notice it. Those who do, carry it with them.</p>
       <div class="cipher__stage">
-        <svg class="cipher__svg" viewBox="110 20 820 232" role="img" aria-labelledby="cipherSvgTitle">
-          <title id="cipherSvgTitle">The MANTHAI wordmark. In the first A, the H and the second A, small strokes form a rising sun, a crescent cradling a solar orb, and a waxing moon.</title>
+        <svg class="cipher__svg" viewBox="110 20 820 232" role="img" aria-label="The MANTHAI wordmark. In the first A, the H and the second A, small strokes form a rising sun, a crescent cradling a solar orb, and a waxing moon.">
           <defs>
             <filter id="cgGlow" x="-40%" y="-200%" width="180%" height="500%"><feGaussianBlur stdDeviation="2.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
             <radialGradient id="cgHalo" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#C9AF7E" stop-opacity=".32"/><stop offset="1" stop-color="#C9AF7E" stop-opacity="0"/></radialGradient>
@@ -474,7 +516,7 @@
       </div>
 
       <div class="ritual__copy">
-        <p class="eyebrow eyebrow--dark">Chapter II</p>
+        <p class="eyebrow eyebrow--dark">Chapter V &middot; The Ritual</p>
         <h2 class="display display--light" id="ritualTitle">The Unboxing &amp; Verification Ritual</h2>
         <p class="lede lede--dark">What arrives at your door, in the order you meet it. Play the ritual, or select an object and the camera will take you to it.</p>
         <ol class="parts" id="partsList"></ol>
@@ -631,12 +673,12 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="assets/js/catalog.js?v=20261127w"></script>
-<script src="assets/js/art.js?v=20261127w"></script>
-<script src="assets/js/core.js?v=20261127w"></script>
-<script src="assets/js/shop.js?v=20261127w"></script>
-<script src="assets/js/maison.js?v=20261127w"></script>
-<script src="assets/vendor/lenis.min.js?v=20261127w" defer></script>
-<script src="assets/js/flagship.js?v=20261127w" defer></script>
+<script src="assets/js/catalog.js?v=20261127x"></script>
+<script src="assets/js/art.js?v=20261127x"></script>
+<script src="assets/js/core.js?v=20261127x"></script>
+<script src="assets/js/shop.js?v=20261127x"></script>
+<script src="assets/js/maison.js?v=20261127x"></script>
+<script src="assets/vendor/lenis.min.js?v=20261127x" defer></script>
+<script src="assets/js/flagship.js?v=20261127x" defer></script>
 </body>
 </html>

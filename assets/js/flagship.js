@@ -288,4 +288,26 @@
     function sync() { root.classList.toggle('has-dialog', !!$$('dialog[open]').length); }
     C.on('open', sync); C.on('close', function () { setTimeout(sync, 0); });
   }
+
+  /* ---------- The Maison: the chapter bar marks the chapter in view and scrolls under the header ---------- */
+  (function () {
+    var links = $$('.chapnav a[data-chap]'); if (!links.length) return;
+    var secs = links.map(function (a) { return document.getElementById(a.getAttribute('data-chap')); });
+    function mark() {
+      if (document.documentElement.getAttribute('data-route') !== 'maison') return;
+      var line = (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h'), 10) || 72) + 120, cur = 0;
+      secs.forEach(function (s, i) { if (s && s.getBoundingClientRect().top <= line) cur = i; });
+      links.forEach(function (a, i) {
+        var on = i === cur;
+        if ((a.getAttribute('aria-current') === 'true') === on) return;
+        a.setAttribute('aria-current', on ? 'true' : 'false');
+        if (on) { var l = a.parentNode.parentNode; if (l.scrollWidth > l.clientWidth) l.scrollTo({ left: a.offsetLeft - 24, behavior: 'smooth' }); }
+      });
+    }
+    var tick = false;
+    window.addEventListener('scroll', function () { if (!tick) { tick = true; requestAnimationFrame(function () { tick = false; mark(); }); } }, { passive: true });
+    C.on('route', function () { setTimeout(mark, 60); });
+    links.forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); C.scrollTo(a.getAttribute('data-chap')); }); });
+    mark();
+  })();
 })();

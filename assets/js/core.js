@@ -101,7 +101,8 @@
   /* Short hops glide (Lenis when it is running). Long jumps pass under a brief obsidian veil instead of a long scroll. */
   C.scrollTo = function (id) {
     var el = document.getElementById(id); if (!el) return;
-    var off = -(parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h'), 10) || 72) + 1;
+    var cn = document.querySelector('.chapnav'), sub = cn && cn.offsetParent ? cn.offsetHeight : 0;
+    var off = -(parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h'), 10) || 72) - sub + 1;
     var top = el.getBoundingClientRect().top + window.scrollY + off, far = Math.abs(top - window.scrollY) > window.innerHeight * 1.6;
     var veil = C.$('#veil');
     function jump(smooth) {
