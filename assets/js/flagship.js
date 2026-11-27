@@ -216,7 +216,14 @@
     if (!window.Lenis || C.reduced() || !fine || C.lenis) return;
     try {
       var lenis = new window.Lenis({ duration: 1.15, easing: function (t) { return 1 - Math.pow(1 - t, 4); }, smoothWheel: true,
-        prevent: function (node) { return !!(node.closest && node.closest('dialog, .rail, .atelier-panel, .tabs')); } });
+        /* the Lookbook rail no longer blocks smooth scrolling: a vertical wheel over it keeps gliding the page,
+           and only a sideways trackpad swipe is left to the rail itself */
+        prevent: function (node) { return !!(node.closest && node.closest('dialog, .atelier-panel, .tabs')); },
+        virtualScroll: function (e) {
+          var ev = e.event, t = ev && ev.target;
+          if (t && t.closest && t.closest('.rail') && Math.abs(e.deltaX) > Math.abs(e.deltaY)) return false;
+          return true;
+        } });
       C.lenis = lenis;
       if (C.introHold) lenis.stop();
       function frame(t) { lenis.raf(t); requestAnimationFrame(frame); }

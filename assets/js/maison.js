@@ -272,7 +272,7 @@
   /* ======================= campaign rail ======================= */
   $('#rail').innerHTML = M.LOOKBOOK.map(function (l) {
     var lb = l.src ? l.src.slice(0, -5) : '';
-    var media = l.src ? '<img src="' + esc(l.src) + '" srcset="' + esc(lb + '-600.webp 600w, ' + lb + '-900.webp 900w, ' + l.src + ' 1000w') + '" sizes="(max-width: 768px) 82vw, 35vw" width="1000" height="1500" alt=""' + esc(l.caption) + '" loading="lazy" decoding="async">' : M.Art.look(l);
+    var media = l.src ? '<img src="' + esc(l.src) + '" srcset="' + esc(lb + '-600.webp 600w, ' + lb + '-900.webp 900w, ' + l.src + ' 1000w') + '" sizes="(max-width: 768px) 82vw, 35vw" width="1000" height="1500" alt="' + esc(l.caption) + '" loading="lazy" decoding="async">' : M.Art.look(l);
     return '<figure class="look"><span class="look__frame" data-media-slot="lookbook-' + l.id + '" data-prompt="' + esc(l.prompt) + '">' + media + '</span>' +
       '<figcaption class="look__cap"><h3>' + esc(l.title) + '</h3><p>' + esc(l.caption) + '</p><button class="link-btn" type="button" data-go="filter:' + esc(l.filter) + '">Shop this story</button></figcaption></figure>';
   }).join('');
