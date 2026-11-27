@@ -675,6 +675,7 @@
     var r = findItem(code) || sampleFor(code) ? recordFor(code) : recordFromLink(code), host = $('#ppPanel');
     var seal = '<svg class="pp__seal" viewBox="0 0 1000 860" aria-hidden="true"><use href="#spiral-seal"/></svg>';
     if (!r) {
+      host.removeAttribute('data-pp');
       host.innerHTML = '<div class="wrap pp__wrap pp__wrap--none">' + seal +
         '<p class="pp__k">House of MANTHAI &middot; Digital Product Passport</p>' +
         '<h1 class="pp__title" id="ppTitle">Passport record not found</h1>' +
@@ -683,6 +684,18 @@
         '<a class="pp__explore" href="/" data-route="home">Explore House of MANTHAI</a></div></div>';
       return { title: 'Passport Not Found | House of MANTHAI' };
     }
+    var record = rowsHTML(r, true) +
+          '<p class="cert__note">' + (r.sample ? 'A sample record for the ' + esc(r.p.short) + '. ' : '') + 'This page is the live record of the House registry. Tap the piece&rsquo;s Verification Card or scan the QR code on its certificate to return here at any time.</p>' +
+          actionsHTML(r, true) +
+          '<a class="pp__explore" href="/" data-route="home">Explore House of MANTHAI</a>';
+    /* the same passport rendered again (sign-in settling after a refresh): keep the photograph in place and
+       touch only the record, so the plate never flashes; nothing at all changes when the record is the same */
+    var key = r.id + '|' + r.p.id, rec = host.querySelector('.pp__record');
+    if (host.getAttribute('data-pp') === key && rec) {
+      if (rec.getAttribute('data-html') !== record) { rec.innerHTML = record; rec.setAttribute('data-html', record); }
+      return { title: 'Passport ' + r.id + ' | House of MANTHAI' };
+    }
+    host.setAttribute('data-pp', key);
     host.innerHTML = '<div class="wrap pp__wrap">' +
       '<header class="pp__head">' + seal +
         '<p class="pp__k">House of MANTHAI &middot; Digital Product Passport</p>' +
@@ -692,11 +705,7 @@
       '</header>' +
       '<div class="pp__grid">' +
         '<figure class="pp__plate">' + C.plateHTML(r.p, 'form', '(max-width: 768px) 90vw, 360px') + '</figure>' +
-        '<div class="pp__record">' + rowsHTML(r, true) +
-          '<p class="cert__note">' + (r.sample ? 'A sample record for the ' + esc(r.p.short) + '. ' : '') + 'This page is the live record of the House registry. Tap the piece&rsquo;s Verification Card or scan the QR code on its certificate to return here at any time.</p>' +
-          actionsHTML(r, true) +
-          '<a class="pp__explore" href="/" data-route="home">Explore House of MANTHAI</a>' +
-        '</div>' +
+        '<div class="pp__record" data-html="' + esc(record) + '">' + record + '</div>' +
       '</div></div>';
     return { title: 'Passport ' + r.id + ' | House of MANTHAI' };
   };
