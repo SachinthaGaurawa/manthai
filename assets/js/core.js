@@ -26,11 +26,13 @@
   C.emit = function (ev, data) { (handlers[ev] || []).forEach(function (fn) { fn(data); }); };
 
   /* ---------- state (persisted in this browser only) ---------- */
-  var DEFAULTS = { currency: 'LKR', bag: [], member: null, accounts: {}, orders: [], notify: {}, stylist: null, wishlist: [], gift: { on: false, note: '' }, addresses: [], fitSize: '' };
+  var DEFAULTS = { currency: 'LKR', bag: [], member: null, accounts: {}, orders: [], notify: {}, stylist: null, wishlist: [], gift: { on: false, note: '' }, addresses: [], fitSize: '',
+    profile: {}, security: {}, passkeys: {}, consults: [], savedSize: {}, stockAlerts: {} };
   C.state = JSON.parse(JSON.stringify(DEFAULTS));
   try {
     var raw = window.localStorage.getItem(M.CONFIG.storageKey);
-    if (raw) { var saved = JSON.parse(raw); Object.keys(DEFAULTS).forEach(function (k) { if (saved[k] !== undefined) C.state[k] = saved[k]; }); }
+    /* every saved key comes back, not only the ones listed in DEFAULTS (profile, date of birth, addresses, security...) */
+    if (raw) { var saved = JSON.parse(raw); if (saved && typeof saved === 'object') Object.keys(saved).forEach(function (k) { if (saved[k] !== undefined && saved[k] !== null || k === 'member' || k === 'stylist') C.state[k] = saved[k]; }); }
   } catch (e) { /* storage unavailable: run in memory */ }
   C.state.currency = M.MARKET.currency; /* Phase 1: storefront locked to Sri Lanka, LKR */
   C.state.bag = (C.state.bag || []).filter(function (l) { return C.product(l.id); });

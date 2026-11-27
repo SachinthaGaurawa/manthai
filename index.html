@@ -43,7 +43,7 @@
     try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (e) {}
     try {
       var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
-      if (nav && nav.type === 'reload' && location.hash) history.replaceState(null, '', location.pathname + location.search);
+      if (nav && nav.type === 'reload' && location.hash && !/^#r=/.test(location.hash)) history.replaceState(null, '', location.pathname + location.search);
     } catch (e) {}
     if (/\.github\.io$/i.test(location.hostname)) {
       var path = location.pathname.replace(/^\/manthai(\/|$)/i, '/');
@@ -54,13 +54,13 @@
 
 <link rel="preload" href="/assets/fonts/cormorant-garamond-latin-e99b45.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/tenor-sans-latin-0c77c1.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/fonts.css?v=20261128h">
-<link rel="stylesheet" href="/assets/css/tokens.css?v=20261128h">
-<link rel="stylesheet" href="/assets/css/site.css?v=20261128h">
-<link rel="stylesheet" href="/assets/css/flagship.css?v=20261128h">
-<link rel="stylesheet" href="/assets/css/gallery.css?v=20261128h">
-<link rel="stylesheet" href="/assets/css/unbox.css?v=20261128h">
-<link rel="stylesheet" href="/assets/css/cipher.css?v=20261128h">
+<link rel="stylesheet" href="/assets/css/fonts.css?v=20261128i">
+<link rel="stylesheet" href="/assets/css/tokens.css?v=20261128i">
+<link rel="stylesheet" href="/assets/css/site.css?v=20261128i">
+<link rel="stylesheet" href="/assets/css/flagship.css?v=20261128i">
+<link rel="stylesheet" href="/assets/css/gallery.css?v=20261128i">
+<link rel="stylesheet" href="/assets/css/unbox.css?v=20261128i">
+<link rel="stylesheet" href="/assets/css/cipher.css?v=20261128i">
 </head>
 <body>
 
@@ -703,16 +703,16 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="/assets/js/catalog.js?v=20261128h"></script>
-<script src="/assets/js/art.js?v=20261128h"></script>
-<script src="/assets/js/core.js?v=20261128h"></script>
-<script src="/assets/js/legal.js?v=20261128h"></script>
-<script src="/assets/js/shop.js?v=20261128h"></script>
-<script src="/assets/js/maison.js?v=20261128h"></script>
-<script src="/assets/js/auth.js?v=20261128h"></script>
-<script src="/assets/js/account.js?v=20261128h"></script>
-<script src="/assets/js/certificate.js?v=20261128h" defer></script>
-<script src="/assets/vendor/lenis.min.js?v=20261128h" defer></script>
-<script src="/assets/js/flagship.js?v=20261128h" defer></script>
+<script src="/assets/js/catalog.js?v=20261128i"></script>
+<script src="/assets/js/art.js?v=20261128i"></script>
+<script src="/assets/js/core.js?v=20261128i"></script>
+<script src="/assets/js/legal.js?v=20261128i"></script>
+<script src="/assets/js/shop.js?v=20261128i"></script>
+<script src="/assets/js/maison.js?v=20261128i"></script>
+<script src="/assets/js/auth.js?v=20261128i"></script>
+<script src="/assets/js/account.js?v=20261128i"></script>
+<script src="/assets/js/certificate.js?v=20261128i" defer></script>
+<script src="/assets/vendor/lenis.min.js?v=20261128i" defer></script>
+<script src="/assets/js/flagship.js?v=20261128i" defer></script>
 </body>
 </html>
