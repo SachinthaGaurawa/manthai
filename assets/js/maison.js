@@ -204,13 +204,29 @@
     video.addEventListener(ev, function () { setTimeout(revive, 120); });
   });
   video.addEventListener('error', function () { try { video.load(); } catch (e) {} setTimeout(revive, 400); });
-  var lastT = -1, frozen = 0;
+  /* A decoder can also freeze while the element still reports "playing" (seen in Safari): play() alone does
+     nothing then. After two still checks, step the playhead a frame forward to wake the decoder; if it is still
+     frozen after that, reload the source and resume at the same moment. */
+  var lastT = -1, frozen = 0, kicks = 0;
+  function unstick() {
+    var t = video.currentTime || 0, d = video.duration || 0;
+    if (kicks++ < 2) {
+      try { video.currentTime = d && t + 0.08 >= d ? 0 : t + 0.08; } catch (e) {}
+      revive();
+    } else {
+      kicks = 0;
+      var resume = function () { video.removeEventListener('loadedmetadata', resume); try { video.currentTime = t; } catch (e) {} revive(); };
+      video.addEventListener('loadedmetadata', resume);
+      try { video.load(); } catch (e) {}
+    }
+  }
   setInterval(function () {
-    if (!shouldRun() || video.readyState < 2) { frozen = 0; return; }
-    if (video.paused || Math.abs(video.currentTime - lastT) < 0.01) { if (++frozen >= 2) { frozen = 0; revive(); } }
-    else frozen = 0;
+    if (!shouldRun() || video.readyState < 1) { frozen = 0; lastT = -1; return; }
+    if (video.paused) { revive(); lastT = video.currentTime; return; }
+    if (Math.abs(video.currentTime - lastT) < 0.01) { if (++frozen >= 2) { frozen = 0; unstick(); } }
+    else { frozen = 0; kicks = 0; }
     lastT = video.currentTime;
-  }, 1500);
+  }, 1200);
   ['touchstart', 'pointerdown', 'keydown'].forEach(function (ev) {
     window.addEventListener(ev, function once() { if (video.paused && shouldRun()) revive(); }, { passive: true });
   });

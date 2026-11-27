@@ -24,6 +24,29 @@
     setTimeout(function () { root.classList.remove('intro'); if (intro) intro.hidden = true; }, left + 520);
     $('#introSkip').addEventListener('click', endIntro);
     ['keydown', 'wheel', 'touchstart'].forEach(function (ev) { window.addEventListener(ev, function once() { endIntro(); window.removeEventListener(ev, once); }, { passive: true }); });
+    /* A trackpad flick that skips the curtain keeps sending momentum wheel events for a second or more. Without this
+       the page would glide down under the curtain and the visitor would arrive mid-page instead of on the hero film.
+       Scrolling stays held at the top until the curtain is gone and the gesture has come to rest. */
+    C.introHold = true;
+    var restT = 0, introGone = false;
+    function release() {
+      if (!C.introHold || !introGone) return;
+      C.introHold = false; window.removeEventListener('wheel', swallow, { capture: true });
+      if (!location.hash) window.scrollTo(0, 0);
+      if (C.lenis) { C.lenis.scrollTo(0, { immediate: true, force: true }); C.lenis.start(); }
+    }
+    function swallow(e) {
+      if (!C.introHold) return;
+      e.preventDefault(); e.stopImmediatePropagation(); endIntro();
+      clearTimeout(restT); restT = setTimeout(release, 260);
+    }
+    window.addEventListener('wheel', swallow, { capture: true, passive: false });
+    var watch = setInterval(function () {
+      if (root.classList.contains('intro')) return;
+      clearInterval(watch); introGone = true;
+      if (!location.hash) window.scrollTo(0, 0);
+      clearTimeout(restT); restT = setTimeout(release, 260);
+    }, 50);
   } else if (intro) intro.hidden = true;
 
   /* ---------------- editorial pillars (60/40) ---------------- */
@@ -230,6 +253,7 @@
       var lenis = new window.Lenis({ duration: 1.15, easing: function (t) { return 1 - Math.pow(1 - t, 4); }, smoothWheel: true,
         prevent: function (node) { return !!(node.closest && node.closest('dialog, .rail, .atelier-panel, .tabs')); } });
       C.lenis = lenis;
+      if (C.introHold) lenis.stop();
       function frame(t) { lenis.raf(t); requestAnimationFrame(frame); }
       requestAnimationFrame(frame);
       root.style.scrollBehavior = 'auto';
