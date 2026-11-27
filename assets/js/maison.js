@@ -555,69 +555,162 @@
     });
     return found;
   }
+  /* One record drives the modal, the /passport/[id] page and the PDF. The owner, signed in, sees their own
+     name; anyone else who scans the piece sees it registered, never to whom. */
+  var recs = {};
+  function sampleFor(code) { return M.PRODUCTS.filter(function (p) { return 'MNT-' + hash(p.id) === code; })[0]; }
+  function b64e(o) { try { return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); } catch (e) { return ''; } }
+  function b64d(s) { try { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return JSON.parse(decodeURIComponent(escape(atob(s)))); } catch (e) { return null; } }
+  function verifyURL(r) { return location.origin + '/passport/' + encodeURIComponent(r.id) + (r.carry ? '#r=' + r.carry : ''); }
+  function buildRecord(id, p, opt) {
+    opt = opt || {};
+    var r = { id: id, p: p, piece: p.name, edition: opt.edition || (p.edition ? 'Piece ' + pad(pieceNo(p)) + ' of ' + p.edition : 'Atelier series'),
+      materials: p.materials, origin: p.provenance, care: p.care, sample: !!opt.sample, mine: !!opt.mine,
+      issuedISO: opt.date || new Date().toISOString() };
+    r.issued = fmtDate(r.issuedISO);
+    r.owner = r.sample ? 'Unclaimed. Registers to the first owner.' : opt.mine ? 'Registered to ' + opt.name : 'Registered to Private Owner (Verified)';
+    r.steward = r.sample ? 'Eligible for complimentary care guidance and the 14-day size exchange.' : 'Registered · Eligible for complimentary care guidance and transfer of ownership';
+    /* the link carries the public facts (never the owner), so the record also opens on a device that has never seen the order */
+    r.carry = r.sample ? '' : b64e({ p: p.id, n: p.archived ? p.name : undefined, e: r.edition, d: r.issuedISO.slice(0, 10) });
+    r.url = verifyURL(r);
+    recs[id] = r;
+    return r;
+  }
+  function recordFor(code, pid) {
+    var hit = code && findItem(code);
+    if (hit) {
+      var p = C.product(hit.it.id) || C.archivedProduct(hit.it);
+      var me = C.state.member, mine = !!(me && String(me.email || '').toLowerCase() === String(hit.o.email || '').toLowerCase());
+      return buildRecord(code, p, { edition: p.edition ? 'Piece ' + pad(pieceNo(p) + hit.ordinal) + ' of ' + p.edition : 'Atelier series', mine: mine, name: (me && me.name) || hit.o.name, date: hit.o.date });
+    }
+    var s = code ? sampleFor(code) : (pid && C.product(pid)) || M.PRODUCTS[0];
+    if (s) return buildRecord(code || 'MNT-' + hash(s.id), s, { sample: true });
+    return null;
+  }
+  /* a record carried in the link, for a device without the order */
+  function recordFromLink(code) {
+    var m = /(?:^|[#&])r=([A-Za-z0-9_-]+)/.exec(location.hash), o = m && b64d(m[1]);
+    if (!o || !/^MNT-[A-Z0-9]{4,10}$/.test(code)) return null;
+    var p = C.product(o.p) || (o.n ? C.archivedProduct({ id: o.p, name: o.n, short: o.n }) : null);
+    if (!p) return null;
+    return buildRecord(code, p, { edition: String(o.e || '').slice(0, 40) || undefined, date: /^\d{4}-\d{2}-\d{2}$/.test(o.d) ? o.d + 'T12:00:00' : undefined });
+  }
+  var CHECK = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
+  var OUT = '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M9 6h9v9M18 6L7 17" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>';
+  function actionsHTML(r) {
+    return '<div class="cert__acts">' +
+        '<button class="cert__dl" type="button" data-cert-pdf="' + esc(r.id) + '"><span class="cert__lbl">Download Certificate (PDF)</span></button>' +
+        '<div class="cert__linkrow">' +
+          '<button class="cert__copy" type="button" data-cert-copy="' + esc(r.id) + '"><span class="cert__lbl">Copy Live Verification Link</span></button>' +
+          '<a class="cert__open" href="' + esc(r.url) + '" target="_blank" rel="noopener" aria-label="Open the live verification page in a new tab" title="Open the live verification page">' + OUT + '</a>' +
+        '</div>' +
+      '</div>';
+  }
+  function rowsHTML(r, page) {
+    return '<dl class="cert__table">' +
+      '<div><dt>Piece</dt><dd>' + esc(r.piece) + '</dd></div>' +
+      '<div><dt>Edition number</dt><dd>' + esc(r.edition) + '</dd></div>' +
+      '<div><dt>Fibre composition</dt><dd>' + esc(r.materials) + '</dd></div>' +
+      '<div><dt>Craft origin</dt><dd>' + esc(r.origin) + '</dd></div>' +
+      '<div><dt>Garment care</dt><dd>' + esc(r.care) + '</dd></div>' +
+      '<div><dt>Registered owner</dt><dd>' + esc(r.owner) + (page && !r.sample && !r.mine ? '<span class="cert__sub">Owner name withheld for client discretion.</span>' : '') + '</dd></div>' +
+      '<div><dt>Issued &amp; certified by</dt><dd>House of Manthai (Private) Limited<span class="cert__sub">An Avantio Ventures Company &middot; Colombo, Sri Lanka</span></dd></div>' +
+      '<div><dt>Stewardship status</dt><dd>' + esc(r.steward) + '</dd></div>' +
+      (page ? '<div><dt>Date of issue</dt><dd>' + esc(r.issued) + '</dd></div>' : '') +
+    '</dl>';
+  }
   ui.openPassport = function (pid, code) {
-    var hit = code && findItem(code), p = (hit && (C.product(hit.it.id) || C.archivedProduct(hit.it))) || (pid && C.product(pid)) || M.PRODUCTS[0];
-    var id = code || ('MNT-' + hash(p.id)), n = pieceNo(p) + (hit ? hit.ordinal : 0);
-    /* the owner, signed in, sees their own name; anyone else who scans the piece sees it registered, never to whom */
-    var me = C.state.member, mine = hit && me && String(me.email || '').toLowerCase() === String(hit.o.email || '').toLowerCase();
-    var owner = hit ? (mine ? 'Registered to ' + (me.name || hit.o.name) : 'Registered to Private Owner (Verified)') : 'Unclaimed. Registers to the first owner.';
-    var sample = !hit;
-    var steward = hit ? 'Registered. Eligible for complimentary care guidance and transfer of ownership.' : 'Eligible for complimentary care guidance and the 14-day size exchange.';
+    var r = recordFor(code, pid) || recordFor(null, pid), p = r.p;
     /* A museum provenance certificate: plate, crest and ID on the left, the record on the right. Opens straight away, never behind a scanner. */
-    certRec = { id: id, piece: p.name, edition: p.edition ? 'Piece ' + pad(n) + ' of ' + p.edition : 'Atelier series', materials: p.materials, origin: p.provenance, care: p.care, owner: owner, steward: steward, sample: sample };
     $('#passportPanel').innerHTML = head('passportTitle', 'Digital Product Passport', 'Close passport') +
       '<div class="cert-body" id="certBody"><div class="cert">' +
         '<div class="cert__side">' +
           '<div class="cert__plate">' + C.plateHTML(p, 'form', '(max-width: 768px) 60vw, 320px') + '</div>' +
           '<svg class="cert__crest" viewBox="0 0 1000 860" aria-hidden="true"><use href="#spiral-seal"/></svg>' +
-          '<p class="cert__id"><span>Passport ID</span><b class="order-ref">' + esc(id) + '</b></p>' +
-          '<p class="cert__ok"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>Verified Authentic</p>' +
-          '<button class="cert__dl" type="button" data-cert-dl>Download Ownership Record</button>' +
+          '<p class="cert__id"><span>Passport ID</span><b class="order-ref">' + esc(r.id) + '</b></p>' +
+          '<p class="cert__ok">' + CHECK + 'Verified Authentic</p>' +
+          actionsHTML(r) +
         '</div>' +
         '<div class="cert__main">' +
           '<p class="cert__k">Museum Provenance Certificate<span class="cert__scale">Simulated preview, not shown at 1:1 scale' + C.dref(2) + '</span></p>' +
-          '<dl class="cert__table">' +
-            '<div><dt>Piece</dt><dd>' + esc(p.name) + '</dd></div>' +
-            '<div><dt>Edition number</dt><dd>' + (p.edition ? 'Piece ' + pad(n) + ' of ' + p.edition : 'Atelier series') + '</dd></div>' +
-            '<div><dt>Fibre composition</dt><dd>' + esc(p.materials) + '</dd></div>' +
-            '<div><dt>Craft origin</dt><dd>' + esc(p.provenance) + '</dd></div>' +
-            '<div><dt>Garment care</dt><dd>' + esc(p.care) + '</dd></div>' +
-            '<div><dt>Registered owner</dt><dd>' + esc(owner) + '</dd></div>' +
-            '<div><dt>Issued &amp; certified by</dt><dd>House of Manthai (Private) Limited<span class="cert__sub">An Avantio Ventures Company &middot; Colombo, Sri Lanka</span></dd></div>' +
-            '<div><dt>Stewardship status</dt><dd>' + esc(steward) + '</dd></div>' +
-          '</dl>' +
+          rowsHTML(r) +
           '<p class="cert__note">Every piece carries an NFC tag in its woven label and on its Verification Card. Hold a phone to either, or scan the card, and this record opens.</p>' +
-          (sample ? '<p class="cert__note">A sample certificate for the ' + esc(p.short) + '. Certificates for your own pieces appear in your Private Circle after you order.</p>' : '') +
+          (r.sample ? '<p class="cert__note">A sample certificate for the ' + esc(p.short) + '. Certificates for your own pieces appear in your Private Circle after you order.</p>' : '') +
         '</div>' +
       '</div></div>';
     $('#certBody').scrollTop = 0;
     C.open($('#layerPassport'));
-    requestAnimationFrame(function () { var b = $('#certBody'); if (b) b.scrollTop = 0; });
+    requestAnimationFrame(function () { var b = $('#certBody'); if (b) { b.scrollTop = 0; } });
   };
-  /* the Ownership Record: a self-contained, printable copy of the certificate the client can keep */
-  var certRec = null;
-  function recordHTML(r) {
-    var row = function (k, v) { return '<tr><th>' + esc(k) + '</th><td>' + esc(v) + '</td></tr>'; };
-    return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ownership Record ' + esc(r.id) + ' | House of MANTHAI</title>' +
-      '<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=Tenor+Sans&display=swap" rel="stylesheet">' +
-      '<style>body{margin:0;background:#F7F4EE;color:#141210;font:400 14px/1.7 "Tenor Sans",sans-serif}main{max-width:720px;margin:0 auto;padding:56px 32px}' +
-      '.k{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#755A2A;margin:0}h1{font:300 40px/1.1 "Cormorant Garamond",serif;margin:10px 0 6px}.id{letter-spacing:.14em;margin:0 0 28px;color:#59534B}' +
-      'table{width:100%;border-collapse:collapse}th,td{text-align:left;vertical-align:top;padding:12px 0;border-bottom:1px solid #DBD3C5}th{width:34%;font-weight:400;font-size:12px;letter-spacing:.04em;color:#59534B}td{font:400 17px/1.45 "Cormorant Garamond",serif}' +
-      '.sub{display:block;font:400 11px/1.6 "Tenor Sans",sans-serif;letter-spacing:.06em;color:#59534B}.note{margin-top:28px;font:italic 400 15px/1.6 "Cormorant Garamond",serif;color:#59534B}footer{margin-top:40px;padding-top:16px;border-top:1px solid #DBD3C5;font-size:10.5px;letter-spacing:.12em;color:#8E867A}' +
-      '@media print{main{padding:24px 0}}</style></head><body><main>' +
-      '<p class="k">House of MANTHAI &middot; Digital Product Passport</p><h1>Ownership Record</h1><p class="id">Passport ID ' + esc(r.id) + ' &middot; Verified Authentic</p>' +
-      '<table>' + row('Piece', r.piece) + row('Edition number', r.edition) + row('Fibre composition', r.materials) + row('Craft origin', r.origin) + row('Garment care', r.care) + row('Registered owner', r.owner) +
-      '<tr><th>Issued &amp; certified by</th><td>House of Manthai (Private) Limited<span class="sub">An Avantio Ventures Company &middot; Colombo, Sri Lanka</span></td></tr>' + row('Stewardship status', r.steward) + '</table>' +
-      '<p class="note">' + (r.sample ? 'A sample record, issued for illustration. ' : '') + 'Verify this piece at any time by tapping its Verification Card with an NFC-compatible phone, or by entering the Passport ID at manthai.vercel.app/account/vault.</p>' +
-      '<footer>Issued ' + esc(fmtDate(new Date().toISOString())) + ' &middot; HOUSE OF MANTHAI (PRIVATE) LIMITED &middot; An Avantio Ventures Company &middot; concierge@manthai.lk</footer></main></body></html>';
+
+  /* /passport/[id]: the live verification page anyone reaches from the QR, the NFC card or a shared link */
+  ui.renderPassportPage = function (code) {
+    code = String(code || '').toUpperCase();
+    var r = findItem(code) || sampleFor(code) ? recordFor(code) : recordFromLink(code), host = $('#ppPanel');
+    var seal = '<svg class="pp__seal" viewBox="0 0 1000 860" aria-hidden="true"><use href="#spiral-seal"/></svg>';
+    if (!r) {
+      host.innerHTML = '<div class="wrap pp__wrap pp__wrap--none">' + seal +
+        '<p class="pp__k">House of MANTHAI &middot; Digital Product Passport</p>' +
+        '<h1 class="pp__title" id="ppTitle">Passport record not found</h1>' +
+        '<p class="pp__lede">We could not find Passport ID <b class="order-ref">' + esc(code) + '</b> in the House registry. Please consult Colombo Client Care, who will verify your piece personally.</p>' +
+        '<div class="pp__cta"><a class="btn btn--solid" href="https://wa.me/94778787998?text=' + encodeURIComponent('Passport verification: ' + code) + '" target="_blank" rel="noopener"><span class="btn__label">Consult Colombo Client Care</span></a>' +
+        '<a class="pp__explore" href="/" data-route="home">Explore House of MANTHAI</a></div></div>';
+      return { title: 'Passport Not Found | House of MANTHAI' };
+    }
+    host.innerHTML = '<div class="wrap pp__wrap">' +
+      '<header class="pp__head">' + seal +
+        '<p class="pp__k">House of MANTHAI &middot; Digital Product Passport</p>' +
+        '<h1 class="pp__title" id="ppTitle">Certificate of Authenticity &amp; Ownership</h1>' +
+        '<p class="pp__id"><span>Passport ID</span><b class="order-ref">' + esc(r.id) + '</b></p>' +
+        '<p class="cert__ok pp__ok">' + CHECK + 'Verified Authentic</p>' +
+      '</header>' +
+      '<div class="pp__grid">' +
+        '<figure class="pp__plate">' + C.plateHTML(r.p, 'form', '(max-width: 768px) 90vw, 360px') + '</figure>' +
+        '<div class="pp__record">' + rowsHTML(r, true) +
+          '<p class="cert__note">' + (r.sample ? 'A sample record for the ' + esc(r.p.short) + '. ' : '') + 'This page is the live record of the House registry. Tap the piece&rsquo;s Verification Card or scan the QR code on its certificate to return here at any time.</p>' +
+          actionsHTML(r) +
+          '<a class="pp__explore" href="/" data-route="home">Explore House of MANTHAI</a>' +
+        '</div>' +
+      '</div></div>';
+    return { title: 'Passport ' + r.id + ' | House of MANTHAI' };
+  };
+
+  /* signing in or out changes whose name the page may show */
+  C.on('member', function () { if (document.documentElement.getAttribute('data-route') === 'passport' && ui.curSlug) ui.renderPassportPage(ui.curSlug()); });
+
+  /* Download Certificate (PDF) and Copy Live Verification Link */
+  function flash(btn, html, ms) {
+    var lbl = btn.querySelector('.cert__lbl'), was = btn.getAttribute('data-was') || lbl.innerHTML;
+    btn.setAttribute('data-was', was); lbl.innerHTML = html; btn.classList.add('is-done');
+    clearTimeout(btn._t); btn._t = setTimeout(function () { lbl.innerHTML = was; btn.classList.remove('is-done'); }, ms);
+  }
+  function copyText(t) {
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(t);
+    return new Promise(function (res, rej) {
+      var ta = document.createElement('textarea'); ta.value = t; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy') ? res() : rej(new Error('copy')); } catch (e) { rej(e); } ta.remove();
+    });
   }
   document.addEventListener('click', function (e) {
-    if (!e.target.closest || !e.target.closest('[data-cert-dl]') || !certRec) return;
-    var blob = new Blob([recordHTML(certRec)], { type: 'text/html' }), url = URL.createObjectURL(blob), a = document.createElement('a');
-    a.href = url; a.download = 'MANTHAI-Ownership-Record-' + certRec.id + '.html';
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
-    C.toast('Your Ownership Record has been saved.');
+    var t = e.target.closest && e.target.closest('[data-cert-pdf], [data-cert-copy]');
+    if (!t) return;
+    var pdf = t.hasAttribute('data-cert-pdf'), r = recs[t.getAttribute(pdf ? 'data-cert-pdf' : 'data-cert-copy')];
+    if (!r) return;
+    if (!pdf) {
+      copyText(r.url).then(function () { flash(t, CHECK + 'Verification Link Copied', 2200); }, function () { C.toast(r.url); });
+      return;
+    }
+    if (t.getAttribute('aria-busy') === 'true' || !M.certificate) return;
+    var lbl = t.querySelector('.cert__lbl'), was = lbl.innerHTML;
+    t.setAttribute('aria-busy', 'true'); t.disabled = true; lbl.textContent = 'Preparing PDF…';
+    M.certificate.download(r).then(function () {
+      t.removeAttribute('aria-busy'); t.disabled = false; lbl.innerHTML = was;
+      flash(t, CHECK + 'Certificate Saved', 2200);
+    }, function () {
+      t.removeAttribute('aria-busy'); t.disabled = false; lbl.innerHTML = was;
+      C.toast('The certificate could not be prepared. Please check your connection and try again.');
+    });
   });
 
   /* ======================= Private Circle ======================= */
@@ -891,6 +984,8 @@
   ROUTES.confirmed = { path: '/checkout/confirmed', title: 'Acquisition Confirmed | House of MANTHAI', og: 'Acquisition Confirmed | House of MANTHAI', desc: 'Your Digital Acquisition Record from House of MANTHAI.' };
   ROUTES.account = { path: '/account', title: 'Private Circle | House of MANTHAI', og: 'Private Circle | House of MANTHAI', desc: 'The Private Circle of House of MANTHAI: your acquisitions, Digital Vault, saved silhouettes, addresses and Colombo stylist concierge.' };
   ROUTES.legal = { path: '/legal/' };
+  ROUTES.passport = { path: '/passport/' };
+  function passFromPath(p) { var m = /\/passport\/([A-Za-z0-9-]{4,24})\/?$/.exec(p || location.pathname); return m ? m[1].toUpperCase() : null; }
   var LEGAL_DOCS = ['terms', 'shipping-exchanges', 'privacy', 'authenticity'];
   function docFromPath(p) { var m = /\/legal\/([a-z-]+)\/?$/.exec(p || location.pathname); return m && LEGAL_DOCS.indexOf(m[1]) > -1 ? m[1] : null; }
   var ACCOUNT_TABS = ['overview', 'orders', 'vault', 'saved', 'profile', 'concierge'];
@@ -898,10 +993,10 @@
   var robots = document.querySelector('meta[name="robots"]'), robotsBase = robots && robots.content;
   var canon = document.querySelector('link[rel="canonical"]'), curSlug = null;
   function slugFromPath(p) { var m = /\/pieces\/([a-z0-9-]+)\/?$/.exec(p || location.pathname); return m && C.product(m[1]) ? m[1] : null; }
-  function routeFromPath(p) { p = p || location.pathname; return /\/the-maison\/?$/.test(p) ? 'maison' : /\/checkout\/confirmed\/?$/.test(p) ? 'confirmed' : /\/checkout\/?$/.test(p) ? 'checkout' : docFromPath(p) ? 'legal' : tabFromPath(p) ? 'account' : slugFromPath(p) ? 'piece' : 'home'; }
+  function routeFromPath(p) { p = p || location.pathname; return /\/the-maison\/?$/.test(p) ? 'maison' : /\/checkout\/confirmed\/?$/.test(p) ? 'confirmed' : /\/checkout\/?$/.test(p) ? 'checkout' : docFromPath(p) ? 'legal' : passFromPath(p) ? 'passport' : tabFromPath(p) ? 'account' : slugFromPath(p) ? 'piece' : 'home'; }
   function curRoute() { return document.documentElement.getAttribute('data-route') || 'home'; }
-  function pathFor(name, slug) { return name === 'piece' ? '/pieces/' + slug : name === 'legal' ? '/legal/' + slug : name === 'account' ? '/account' + (slug && slug !== 'overview' ? '/' + slug : '') : (ROUTES[name] || ROUTES.home).path; }
-  function slugFor(name, p) { return name === 'account' ? tabFromPath(p) : name === 'legal' ? docFromPath(p) : slugFromPath(p); }
+  function pathFor(name, slug) { return name === 'piece' ? '/pieces/' + slug : name === 'legal' ? '/legal/' + slug : name === 'passport' ? '/passport/' + slug : name === 'account' ? '/account' + (slug && slug !== 'overview' ? '/' + slug : '') : (ROUTES[name] || ROUTES.home).path; }
+  function slugFor(name, p) { return name === 'account' ? tabFromPath(p) : name === 'legal' ? docFromPath(p) : name === 'passport' ? passFromPath(p) : slugFromPath(p); }
   function applyRoute(name, slug) {
     var r = ROUTES[name] || ROUTES.home, title = r.title, d = r.desc, og = r.og;
     if (name === 'piece') {
@@ -911,6 +1006,9 @@
     } else if (name === 'legal') {
       var L = M.legal.render(slug); curSlug = slug;
       title = L.title + ' | House of MANTHAI'; og = title; d = L.desc;
+    } else if (name === 'passport') {
+      var P = ui.renderPassportPage(slug); curSlug = slug;
+      title = P.title; og = title; d = 'The live House registry record for MANTHAI Digital Product Passport ' + slug + ': authenticity, edition and stewardship of the piece.';
     } else if (name === 'account') { slug = ACCOUNT_TABS.indexOf(slug) > -1 ? slug : 'overview'; curSlug = slug; if (M.account) M.account.render(slug); }
     else curSlug = null;
     /* an empty bag has nothing to acquire, and a record needs an order: both fall back to the home shell */
@@ -918,7 +1016,7 @@
       name = 'home'; r = ROUTES.home; title = r.title; d = r.desc; og = r.og;
       try { history.replaceState({ route: 'home', slug: null }, '', '/'); } catch (e) { /* file:// */ }
     }
-    if (robots) robots.content = name === 'checkout' || name === 'confirmed' || name === 'account' ? 'noindex, nofollow' : robotsBase;
+    if (robots) robots.content = name === 'checkout' || name === 'confirmed' || name === 'account' || name === 'passport' ? 'noindex, nofollow' : robotsBase;
     document.documentElement.setAttribute('data-route', name);
     document.title = title;
     if (canon) canon.href = 'https://manthai.vercel.app' + pathFor(name, slug);
@@ -929,9 +1027,9 @@
   }
   function scrollTopNow() { if (C.lenis) C.lenis.scrollTo(0, { immediate: true }); window.scrollTo(0, 0); }
   ui.route = function (name, target, push, slug) {
-    if (!ROUTES[name] || (name === 'piece' && !C.product(slug)) || (name === 'legal' && LEGAL_DOCS.indexOf(slug) < 0)) name = 'home';
+    if (!ROUTES[name] || (name === 'piece' && !C.product(slug)) || (name === 'legal' && LEGAL_DOCS.indexOf(slug) < 0) || (name === 'passport' && !slug)) name = 'home';
     if (name === 'account' && ACCOUNT_TABS.indexOf(slug) < 0) slug = 'overview';
-    var same = name === curRoute() && ((name !== 'piece' && name !== 'account' && name !== 'legal') || slug === curSlug);
+    var same = name === curRoute() && ((name !== 'piece' && name !== 'account' && name !== 'legal' && name !== 'passport') || slug === curSlug);
     var finish = function () {
       if (target && document.getElementById(target)) C.scrollTo(target); else if (!same) scrollTopNow();
     };
@@ -945,7 +1043,7 @@
         if (!el) return; el.classList.remove('route-in'); void el.offsetWidth; el.classList.add('route-in');
       });
       requestAnimationFrame(function () { requestAnimationFrame(finish); });
-      var h = name === 'maison' ? $('#maisonPageTitle') : name === 'piece' ? $('#pdpTitle') : name === 'checkout' ? $('#cxTitle') : name === 'confirmed' ? $('#recTitle') : name === 'account' ? $('#acctTitle') : name === 'legal' ? $('#legalTitle') : $('#hero h1');
+      var h = name === 'maison' ? $('#maisonPageTitle') : name === 'piece' ? $('#pdpTitle') : name === 'checkout' ? $('#cxTitle') : name === 'confirmed' ? $('#recTitle') : name === 'account' ? $('#acctTitle') : name === 'legal' ? $('#legalTitle') : name === 'passport' ? $('#ppTitle') : $('#hero h1');
       if (h) { h.setAttribute('tabindex', '-1'); try { h.focus({ preventScroll: true }); } catch (e) { h.focus(); } }
     };
     swap();
@@ -964,7 +1062,7 @@
   };
   window.addEventListener('popstate', function () {
     var name = routeFromPath(), slug = slugFor(name);
-    if (name !== curRoute() || ((name === 'piece' || name === 'account' || name === 'legal') && slug !== curSlug) || name === 'checkout') { applyRoute(name, slug); scrollTopNow(); }
+    if (name !== curRoute() || ((name === 'piece' || name === 'account' || name === 'legal' || name === 'passport') && slug !== curSlug) || name === 'checkout') { applyRoute(name, slug); scrollTopNow(); }
     var id = location.hash.slice(1);
     if (id && document.getElementById(id)) requestAnimationFrame(function () { baseScrollTo(id); });
   });
