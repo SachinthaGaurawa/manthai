@@ -222,28 +222,29 @@
     } else stage.classList.add('is-drawn');
   }
 
-  /* ---------------- verification card: QR pattern and tilt ---------------- */
-  var qr = $('.vcard__qr');
-  if (qr) {
-    var cells = '', seed = 7;
-    function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
-    for (var y = 0; y < 21; y++) for (var x = 0; x < 21; x++) {
-      var finder = (x < 7 && y < 7) || (x > 13 && y < 7) || (x < 7 && y > 13);
-      if (finder) {
-        var fx = x > 13 ? x - 14 : x, fy = y > 13 ? y - 14 : y;
-        if (fx === 0 || fx === 6 || fy === 0 || fy === 6 || (fx > 1 && fx < 5 && fy > 1 && fy < 5)) cells += '<rect x="' + x + '" y="' + y + '" width="1" height="1"/>';
-      } else if (rnd() > 0.52) cells += '<rect x="' + x + '" y="' + y + '" width="1" height="1"/>';
-    }
-    qr.innerHTML = '<svg viewBox="-1 -1 23 23" aria-hidden="true"><g fill="currentColor">' + cells + '</g></svg>';
-  }
+  /* ---------------- verification card: the same card as in the box; tilt, sheen and turn ---------------- */
   var card = $('#vcard');
-  if (card && fine && !C.reduced()) {
-    var raf = 0, tx = 0, ty = 0;
-    card.addEventListener('pointermove', function (e) {
-      var r = card.getBoundingClientRect(); tx = (e.clientX - r.left) / r.width - 0.5; ty = (e.clientY - r.top) / r.height - 0.5;
-      if (!raf) raf = requestAnimationFrame(function () { raf = 0; card.style.setProperty('--rx', (-ty * 12).toFixed(2) + 'deg'); card.style.setProperty('--ry', (tx * 14).toFixed(2) + 'deg'); card.style.setProperty('--sx', ((tx + 0.5) * 100).toFixed(1) + '%'); });
-    });
-    card.addEventListener('pointerleave', function () { card.style.setProperty('--rx', '0deg'); card.style.setProperty('--ry', '0deg'); card.style.setProperty('--sx', '50%'); });
+  if (card) {
+    var turnT = 0;
+    function turn() {
+      card.classList.add('is-turning'); clearTimeout(turnT);
+      turnT = setTimeout(function () { card.classList.remove('is-turning'); }, 1150);
+      card.setAttribute('aria-pressed', String(card.getAttribute('aria-pressed') !== 'true'));
+    }
+    card.addEventListener('click', turn);
+    card.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); turn(); } });
+    if ('IntersectionObserver' in window) {
+      var vio = new IntersectionObserver(function (en) { if (en[0].isIntersecting) { card.classList.add('is-seen'); vio.disconnect(); } }, { threshold: 0.6 });
+      vio.observe(card);
+    }
+    if (fine && !C.reduced()) {
+      var raf = 0, tx = 0, ty = 0;
+      card.addEventListener('pointermove', function (e) {
+        var r = card.getBoundingClientRect(); tx = (e.clientX - r.left) / r.width - 0.5; ty = (e.clientY - r.top) / r.height - 0.5;
+        if (!raf) raf = requestAnimationFrame(function () { raf = 0; card.style.setProperty('--rx', (-ty * 10).toFixed(2) + 'deg'); card.style.setProperty('--ry', (tx * 12).toFixed(2) + 'deg'); var sx = card.getAttribute('aria-pressed') === 'true' ? tx + 0.5 : 0.5 - tx; card.style.setProperty('--shx', (sx * 100).toFixed(1) + '%'); });
+      });
+      card.addEventListener('pointerleave', function () { card.style.setProperty('--rx', '0deg'); card.style.setProperty('--ry', '0deg'); card.style.setProperty('--shx', '130%'); });
+    }
   }
 
   /* ---------------- smooth inertial scroll (Lenis, desktop pointer only) ---------------- */
