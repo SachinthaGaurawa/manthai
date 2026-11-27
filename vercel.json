@@ -95,6 +95,10 @@
     {
       "source": "/legal/:doc",
       "destination": "/"
+    },
+    {
+      "source": "/passport/:id",
+      "destination": "/"
     }
   ]
 }
