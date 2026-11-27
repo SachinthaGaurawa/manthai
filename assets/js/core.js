@@ -18,7 +18,16 @@
       (reg.length ? '<p class="issuer__reg">' + reg.map(function (x) { return C.esc(x[0]) + ' ' + C.esc(x[1]); }).join(' · ') + '</p>' : '') + '</div>';
   };
   C.reduced = function () { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; };
-  C.product = function (id) { return M.PRODUCTS.filter(function (p) { return p.id === id; })[0]; };
+  /* pieces from earlier collections resolve to the live Phase 1 piece that took their place, so every
+     order, passport and Vault card reads its name, edition, fibre and care from the live catalogue */
+  C.LEGACY = {
+    'meridian-blazer': 'vespera-blazer', 'meridian-trousers': 'vespera-trousers',
+    'meridian-silk-shirt': 'alabaster-slip', 'mantai-silk-trouser': 'vespera-trousers',
+    'alstroemeria-gown': 'aurelia-gown', 'ceylon-rosette-mullet': 'solstice-midi', 'mahatittha-lace-midi': 'solstice-midi',
+    'anuradhapura-silk-midi': 'solstice-midi', 'serendib-column': 'alabaster-slip', 'kotiya-noir-mini': 'alabaster-slip',
+    'sovereign-wave-blazer': 'vespera-blazer', 'mannar-pearl-cape': 'nocturne-cape-top'
+  };
+  C.product = function (id) { id = C.LEGACY[id] || id; return M.PRODUCTS.filter(function (p) { return p.id === id; })[0]; };
 
   /* ---------- tiny event bus ---------- */
   var handlers = {};
@@ -154,8 +163,9 @@
   };
 
   /* ---------- older saved orders: renamed pieces keep their link, and every order carries a delivery date ---------- */
-  var RENAMED = { 'meridian-blazer': 'vespera-blazer', 'meridian-trousers': 'vespera-trousers' };
+  var RENAMED = C.LEGACY;
   (C.state.wishlist || []).forEach(function (id, i, a) { if (RENAMED[id]) a[i] = RENAMED[id]; });
+  if (C.state.wishlist) C.state.wishlist = C.state.wishlist.filter(function (id, i, a) { return a.indexOf(id) === i; });
   (C.state.orders || []).forEach(function (o) {
     (o.items || []).forEach(function (it) {
       if (!RENAMED[it.id]) return;
@@ -170,7 +180,25 @@
   C.archivePlate = function () { return '<span class="plate-archive" aria-hidden="true"><svg viewBox="0 0 1000 860"><use href="#spiral-seal"/></svg></span>'; };
   /* the passport still opens for such a piece, from what its order recorded */
   C.archivedProduct = function (it) {
-    return { id: it.id, name: it.name, short: it.short || it.name, archived: true, media: {}, materials: 'Recorded in the House archive', provenance: 'Cut and hand-finished in Colombo', care: 'Follow the care notes on the Story Card that came with the piece.' };
+    return { id: it.id, name: it.name, short: it.short || it.name, archived: true, media: {}, edition: 0, remaining: 0,
+      materials: 'Natural silk and fine wool, as woven on the origin label set beneath the back facing.',
+      provenance: 'Cut on the stand and hand-finished in the Colombo atelier',
+      care: 'Steam on the reverse at a distance and never press. Store hanging in the supplied garment bag.' };
+  };
+  /* "Edition 01 \u00b7 Piece 05 of 15": numbered editions and small batches share one form; offset numbers a second piece of the same order */
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  C.editionLabel = function (p, offset) {
+    var total = p && (p.edition || p.batch);
+    if (!total) return 'Edition 01';
+    var n = Math.min(total, Math.max(1, total - (p.remaining || 0) + 1 + (offset || 0)));
+    return 'Edition 01 \u00b7 Piece ' + pad2(n) + ' of ' + pad2(total);
+  };
+  /* an edition string carried by an older link (an older "Piece 3 of 15" form) is re-read in today's form */
+  C.normEdition = function (e, p) {
+    e = String(e || '');
+    if (/^Edition \d+ \u00b7 Piece \d+ of \d+$/.test(e)) return e;
+    var m = /Piece (\d+) of (\d+)/.exec(e);
+    return m ? 'Edition 01 \u00b7 Piece ' + pad2(+m[1]) + ' of ' + pad2(+m[2]) : C.editionLabel(p);
   };
 
   /* ---------- plate html (real photo wins over placeholder) ---------- */
