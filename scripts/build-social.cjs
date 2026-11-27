@@ -4,7 +4,7 @@
    in index.html (Unbounded Spiral Seal + MANTHAI wordmark) and the catalog.
 
    Usage (from the repository root, with the site served at SITE):
-     SITE=http://127.0.0.1:8124 node scripts/build-social.js
+     SITE=http://127.0.0.1:8124 node scripts/build-social.cjs
      python3 scripts/pack-social.py      # flattens + quantises PNGs under budget
    Requires Playwright with Chromium. Nothing here ships to the browser.
    ========================================================================== */
@@ -109,10 +109,14 @@ function passport() {
 }
 
 /* ---------- 4. icon: gold-foil Seal on obsidian, 22% breathing room, +2% optical counterweight ---------- */
+/* the Seal's glyph fills about 86% of its own box; ICON_FILL is the share of the
+   icon the glyph should span: generous on tab favicons (16 to 48 px) so it reads beside other sites, calmer on
+   home-screen icons, which iOS and Android mask into rounded shapes */
+const ICON_FILL = { 16: 0.84, 32: 0.83, 48: 0.82, 180: 0.66, 192: 0.64, 512: 0.64 };
 function icon(size) {
-  const pad = Math.round(size * 0.22), w = size - pad * 2;
+  const w = Math.round(size * ICON_FILL[size] / 0.864 * 10) / 10;
   return `<style>*{margin:0;padding:0}html,body{width:${size}px;height:${size}px;overflow:hidden;background:#0E0D0C}</style>
-    <body><div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;background:#0E0D0C">${seal(w, 'url(#foil)', Math.round(size * 0.02 * 10) / 10)}</div></body>`;
+    <body><div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;background:#0E0D0C">${seal(w, 'url(#foil)')}</div></body>`;
 }
 
 (async () => {
@@ -127,9 +131,11 @@ function icon(size) {
     await pg.close();
     console.log('rendered', path.relative(ROOT, file));
   }
-  await shot(monolith(), path.join(OUT, 'og-manthai-flagship.png'), 1200, 630);
-  await shot(passport(), path.join(OUT, 'og-passport.png'), 1200, 630);
-  for (const p of M.PRODUCTS) await shot(piece(p), path.join(OUT, 'og-piece-' + p.id + '.png'), 1200, 630);
+  if (!process.env.ICONS_ONLY) {
+    await shot(monolith(), path.join(OUT, 'og-manthai-flagship.png'), 1200, 630);
+    await shot(passport(), path.join(OUT, 'og-passport.png'), 1200, 630);
+    for (const p of M.PRODUCTS) await shot(piece(p), path.join(OUT, 'og-piece-' + p.id + '.png'), 1200, 630);
+  }
   const ic = path.join(ROOT, 'scripts/.icons'); fs.mkdirSync(ic, { recursive: true });
   for (const s of [512, 192, 180, 48, 32, 16]) await shot(icon(s), path.join(ic, 'icon-' + s + '.png'), s, s);
   await b.close();
