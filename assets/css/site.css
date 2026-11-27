@@ -455,7 +455,8 @@ body::after {
 
 /* film modal */
 .film-stage { position: relative; overflow: hidden; min-height: 0; }
-.film-stage video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.film-stage video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #0E0D0C; } /* the film carries type: never crop it */
+.film-stage:has(video) { background: #0E0D0C; }
 .film-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 16px var(--gutter) calc(16px + env(safe-area-inset-bottom)); background: #050506; border-top: 1px solid var(--hairline-soft); }
 .film-bar p { flex: 1; min-width: 200px; font-size: 1rem; color: var(--muted-stone); }
 .film-bar p b { font-weight: 400; color: var(--sovereign-gold); }

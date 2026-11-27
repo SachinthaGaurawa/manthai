@@ -13,7 +13,7 @@
     /* Maison concierge WhatsApp number, international format, digits only. */
     whatsapp: '94778787998',
     /* Atelier film. Add real files and the film modal plays them instead of the placeholder reel. */
-    film: { webm: '', mp4: '', poster: '/assets/media/hero/hero-poster.webp' },
+    film: { mp4: '/assets/media/film/temp/atelier-film.mp4', webm: '/assets/media/film/temp/atelier-film.webm', poster: '/assets/media/film/temp/atelier-film-poster.webp' }, /* TEMPORARY cut from the placeholder photographs (scripts/build-film.cjs); replace with the finished film before launch */
     /* Optional ambient bed. When empty the page synthesises a very quiet drone. */
     ambientSrc: '',
     /* Google Identity Services client id. Empty means the Private Circle sign-in runs in demo mode. */
