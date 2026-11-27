@@ -847,8 +847,10 @@
   /* ======================= routes: the home shell and /the-maison ======================= */
   /* One document, two views. Sections carry data-view; html[data-route] hides the other view.
      Vercel rewrites /the-maison to this file, so the address is shareable and survives a reload. */
-  var ROUTES = { home: { path: '/', title: document.title },
-                 maison: { path: '/the-maison', title: 'The Maison | House of MANTHAI, Colombo' } };
+  var desc = document.querySelector('meta[name="description"]'), ogUrl = document.querySelector('meta[property="og:url"]'), ogTitle = document.querySelector('meta[property="og:title"]');
+  var ROUTES = { home: { path: '/', title: document.title, desc: desc && desc.content, og: ogTitle && ogTitle.content },
+                 maison: { path: '/the-maison', title: 'The Maison | House of MANTHAI, Colombo', og: 'The Maison | House of MANTHAI',
+                   desc: 'The Maison of MANTHAI: the Colombo atelier, the Unbounded Spiral Seal, and the unboxing ritual of every piece, from the lacquered gatefold box to the Elite Club case and its Verification Card.' } };
   var canon = document.querySelector('link[rel="canonical"]');
   function routeFromPath(p) { return /\/the-maison\/?$/.test(p || location.pathname) ? 'maison' : 'home'; }
   function curRoute() { return document.documentElement.getAttribute('data-route') || 'home'; }
@@ -857,6 +859,9 @@
     document.documentElement.setAttribute('data-route', name);
     document.title = r.title;
     if (canon) canon.href = 'https://manthai.vercel.app' + r.path;
+    if (ogUrl) ogUrl.content = 'https://manthai.vercel.app' + r.path;
+    if (desc && r.desc) desc.content = r.desc;
+    if (ogTitle && r.og) ogTitle.content = r.og;
     C.emit('route', name);
   }
   function scrollTopNow() { if (C.lenis) C.lenis.scrollTo(0, { immediate: true }); window.scrollTo(0, 0); }

@@ -176,3 +176,7 @@ html[data-route='maison'] [data-view='home'] { display: none !important; }
 .circle-tab[aria-selected='true']::after { transform: scaleX(1); }
 .circle-panel { display: grid; min-height: 220px; align-content: start; }
 .circle-panel > .salon-card:first-child { border-top: 0; }
+
+/* typographic polish: headings and product names break into balanced lines, never a lone last word */
+h1, h2, h3, .card__name, .display { text-wrap: balance; }
+p { text-wrap: pretty; }
