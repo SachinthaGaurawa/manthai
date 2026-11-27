@@ -285,30 +285,47 @@
   /* ======================= unboxing ritual: cinematic gatefold box ======================= */
   var ub = $('#unbox'), ubCam = $('#unboxCam'), ubCap = $('#unboxCap'), boxBtn = $('#boxToggle'), playBtn = $('#boxPlay');
   var SHOTS = {
-    closed:  ['I', 'Matte black linen, closed on hidden magnets.'],
+    closed:  ['I', 'Matte midnight navy linen, closed on hidden magnets.'],
     open:    ['II', 'The doors part from the centre, lined in velvet garnet.'],
-    box:     ['III', 'The Unbounded Spiral Seal, in burnished gold foil.'],
-    garment: ['IV', 'Your piece, folded in acid-free tissue under a gold wafer.'],
-    label:   ['V', 'The woven silk-damask neck label.'],
-    card:    ['VI', 'The Verification Card. Select it to turn it over.']
+    garment: ['III', 'Your piece, folded in acid-free tissue under a gold wafer.'],
+    label:   ['IV', 'The woven label and its origin and size label, set under the back facing.'],
+    insert:  ['V', 'Beneath the piece, a velvet insert cut to hold the Elite Club case.'],
+    elite:   ['VI', 'MANTHAI Elite Club. Sovereignty in Every Detail.'],
+    card:    ['VII', 'The black metal Verification Card. Select it to turn it over.']
   };
-  var PART_SHOT = { box: 'box', garment: 'garment', label: 'label', card: 'card' };
-  var moveT = 0, capT = 0, playT = [], playing = false;
+  var ORDER = ['closed', 'open', 'garment', 'label', 'insert', 'elite', 'card'];
+  var PART_SHOT = { box: 'closed', garment: 'garment', label: 'label', elite: 'elite', card: 'card' };
+  var moveT = 0, capT = 0, cutT = 0, playT = [], playing = false;
   $('#partsList').innerHTML = M.RITUAL.map(function (r) {
     return '<li><button class="part-btn" type="button" data-part="' + r.id + '" aria-pressed="false"><span class="part-btn__name">' + esc(r.name) + '</span><span class="part-btn__spec">' + esc(r.spec) + '</span></button></li>';
   }).join('');
   $('#partDetail').textContent = 'Select a part to see what it is made of.';
+  /* Moving between the tissue layer and the Elite Club layer is a cinematic cut:
+     a short dip to black hides the swap, so no two layers ever cross in 3D. */
+  var TOP = { open: 1, garment: 1, label: 1 }, CASE = { insert: 1, elite: 1, card: 1 };
   function shot(name, opts) {
     opts = opts || {};
-    if (ub.getAttribute('data-state') === name && !opts.force) return;
+    var cur = ub.getAttribute('data-state');
+    if (cur === name && !opts.force) return;
+    clearTimeout(cutT); ub.classList.remove('is-swap');
+    var cut = !C.reduced() && ((TOP[cur] && CASE[name]) || (CASE[cur] && (TOP[name] || name === 'closed')));
+    if (!cut) { ub.classList.remove('is-cut'); apply(name); return; }
+    ub.classList.add('is-cut');
+    ubCap.classList.remove('is-on');
+    cutT = setTimeout(function () {
+      ub.classList.add('is-swap'); apply(name); void ub.offsetWidth;
+      cutT = setTimeout(function () { ub.classList.remove('is-swap', 'is-cut'); }, 60);
+    }, 420);
+  }
+  function apply(name) {
     ub.setAttribute('data-state', name);
     if (name !== 'card') ub.setAttribute('data-flip', 'false');
-    var open = name !== 'closed' && name !== 'box';
+    var open = name !== 'closed';
     boxBtn.setAttribute('aria-pressed', String(open)); boxBtn.textContent = open ? 'Close the box' : 'Open the box';
-    if (!C.reduced()) { ub.classList.add('is-moving'); clearTimeout(moveT); moveT = setTimeout(function () { ub.classList.remove('is-moving'); }, 1900); }
+    if (!C.reduced()) { ub.classList.add('is-moving'); clearTimeout(moveT); moveT = setTimeout(function () { ub.classList.remove('is-moving'); }, 2200); }
     ubCap.classList.remove('is-on'); clearTimeout(capT);
     capT = setTimeout(function () { var c = SHOTS[name]; ubCap.innerHTML = '<b>' + c[0] + '</b>' + esc(c[1]); ubCap.classList.add('is-on'); }, C.reduced() ? 0 : 700);
-    var part = { box: 'box', garment: 'garment', label: 'label', card: 'card' }[name];
+    var part = { closed: 'box', garment: 'garment', label: 'label', insert: 'elite', elite: 'elite', card: 'card' }[name];
     $$('.part-btn').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-part') === part)); });
     var r = part && M.RITUAL.filter(function (x) { return x.id === part; })[0];
     $('#partDetail').textContent = r ? r.name + '. ' + r.text : 'Select a part to see what it is made of.';
@@ -317,7 +334,7 @@
   function play() {
     if (playing) { stopPlay(); return; }
     playing = true; playBtn.textContent = 'Stop';
-    var seq = [['closed', 0], ['box', 1400], ['open', 4600], ['garment', 8000], ['label', 11400], ['card', 14800], ['flip', 18200], ['open', 21600]];
+    var seq = [['closed', 0], ['open', 1600], ['garment', 5000], ['label', 8400], ['insert', 12000], ['elite', 15600], ['card', 19200], ['flip', 22800], ['elite', 26000]];
     if (C.reduced()) seq = seq.map(function (s, i) { return [s[0], i * 2600]; });
     seq.forEach(function (s, i) {
       playT.push(setTimeout(function () {
@@ -336,17 +353,22 @@
   ub.addEventListener('click', function (e) {
     stopPlay();
     var h = e.target.closest('[data-hit]'), st = ub.getAttribute('data-state'), k = h && h.getAttribute('data-hit');
-    if (k === 'vcard' || k === 'card') { if (st === 'card') ub.setAttribute('data-flip', String(ub.getAttribute('data-flip') !== 'true')); else shot('card'); return; }
-    if (k === 'label' && st !== 'closed' && st !== 'box') { shot('label'); return; }
-    if (k === 'garment' && st !== 'closed' && st !== 'box') { shot('garment'); return; }
-    if (k === 'door' && st === 'box') { shot('open'); return; }
-    if (k === 'door' && st === 'closed') { shot('open'); return; }
-    if (st === 'closed') shot('open'); else if (st !== 'open') shot('open'); else shot('closed');
+    if (st === 'closed') { shot('open'); return; }
+    if (k === 'vcard') { if (st === 'card') ub.setAttribute('data-flip', String(ub.getAttribute('data-flip') !== 'true')); else shot(st === 'elite' ? 'card' : 'elite'); return; }
+    if (k === 'case' || k === 'story') { shot(st === 'elite' ? 'card' : 'elite'); return; }
+    if (k === 'label') { shot('label'); return; }
+    if (k === 'garment') { shot(st === 'garment' || st === 'label' ? 'insert' : 'garment'); return; }
+    shot(st === 'open' ? 'closed' : 'open');
   });
   ub.setAttribute('tabindex', '0'); ub.setAttribute('role', 'img'); ub.setAttribute('aria-describedby', 'unboxDesc');
-  ub.setAttribute('aria-label', 'Interactive MANTHAI box. Use the list of parts or the buttons below to move the camera.');
-  ub.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); stopPlay(); shot(ub.getAttribute('data-state') === 'closed' ? 'open' : 'closed'); } });
-  boxBtn.addEventListener('click', function () { stopPlay(); var st = ub.getAttribute('data-state'); shot(st === 'closed' || st === 'box' ? 'open' : 'closed'); });
+  ub.setAttribute('aria-label', 'Interactive MANTHAI box. Use the arrow keys, the list of parts or the buttons below to move the camera.');
+  ub.addEventListener('keydown', function (e) {
+    var i = ORDER.indexOf(ub.getAttribute('data-state'));
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); stopPlay(); shot(i === 0 ? 'open' : 'closed'); }
+    else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); stopPlay(); shot(ORDER[Math.min(i + 1, ORDER.length - 1)]); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); stopPlay(); shot(ORDER[Math.max(i - 1, 0)]); }
+  });
+  boxBtn.addEventListener('click', function () { stopPlay(); var st = ub.getAttribute('data-state'); shot(st === 'closed' ? 'open' : 'closed'); });
   playBtn.addEventListener('click', function () { if (!playing) frameBox(); play(); });
   /* a gentle hand-held drift that follows the pointer */
   if (!C.reduced() && window.matchMedia('(hover: hover)').matches) {
