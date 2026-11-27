@@ -2,7 +2,7 @@
    MANTHAI · Cinematic gatefold box (The Unboxing & Verification Ritual)
    A rigid apparel box in high-gloss midnight navy lacquer, built in CSS 3D.
    Two magnetic doors open from the centre. Under the folded piece, a
-   velvet insert holds the MANTHAI Elite Club case and the Story Card.
+   velvet insert holds the MANTHAI Private Circle Presentation Case and the Story Card.
    The camera glides between eight shots:
    closed · open · garment · label · insert · elite · card (lift, flip) · story.
    Camera script: on every move the crane (angle and travel) leads and the
@@ -102,7 +102,7 @@
 .ub-story__l { display: block; height: 2px; background: rgba(117, 90, 42, .32); }
 .ub-story__l { width: 22%; }
 
-/* ---------------- MANTHAI Elite Club case ---------------- */
+/* ---------------- MANTHAI Private Circle Presentation Case ---------------- */
 .ub-case { --cw: calc(var(--W) * .56); --cd: calc(var(--W) * .3733); --ch: calc(var(--H) * .42);
   left: calc(var(--W) * -.28); top: calc(var(--D) * -.01 - var(--W) * .18665); width: var(--cw); height: var(--cd); translate: 0 0 0; transform: translateZ(calc(var(--zr) + 3px));
   transition: translate 1.1s cubic-bezier(.55, 0, .25, 1) .7s, transform .9s cubic-bezier(.5, 0, .3, 1) 1.7s; }
@@ -188,7 +188,7 @@
 .ub-wafer { visibility: visible; transition: opacity .6s ease; }
 .unbox:not([data-state='closed']):not([data-state='open']) .ub-wafer { opacity: 0; visibility: hidden; transition: opacity .6s ease, visibility 0s .6s; }
 /* the whole bed lifts up and back out of the box, revealing the insert */
-/* the tissue layer is set aside for the Elite Club shots (the swap happens inside the cut) */
+/* the tissue layer is set aside for the Presentation Case shots (the swap happens inside the cut) */
 .unbox:is([data-state='insert'], [data-state='elite'], [data-state='card'], [data-state='story']) .ub-pack { transform: translate3d(0, calc(var(--D) * -1.7), calc(var(--zi) + var(--H) * 2)); }
 
 /* ---------------- the two magnetic doors ---------------- */
@@ -239,7 +239,7 @@
   .unbox { max-width: none; }
 }
 
-/* cinematic cut between the tissue layer and the Elite Club layer */
+/* cinematic cut between the tissue layer and the Presentation Case layer */
 .unbox__veil { position: absolute; inset: 0; z-index: 3; background: var(--obsidian-void, #0E0D0C); opacity: 0; pointer-events: none; transition: opacity .7s cubic-bezier(.4, 0, .2, 1); }
 .unbox.is-cut .unbox__veil { opacity: 1; transition-duration: .4s; }
 .unbox.is-swap :is(.unbox__cam, .ub-case, .ub-story, .ub-pack, .ub-insert, .ub-vcard, .ub-tissue, .ub-door) { transition: none !important; }

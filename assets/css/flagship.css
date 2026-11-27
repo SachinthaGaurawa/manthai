@@ -194,7 +194,7 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select { cursor
 .vcard-copy { display: grid; gap: 22px; justify-items: start; }
 .vcard-copy__title { font: 300 clamp(1.7rem, 1.2rem + 1.6vw, 2.6rem)/1.1 var(--serif); color: var(--alabaster-silk); }
 .vcard-wrap { perspective: 1400px; display: grid; justify-items: center; gap: 22px; }
-/* the Verification Card: the very card that sits in the Elite Club case (faces styled in unbox.css), shown here at hand size */
+/* the Verification Card: the very card that sits in the Private Circle Presentation Case (faces styled in unbox.css), shown here at hand size */
 .vcard { --rx: 0deg; --ry: 0deg; --turn: 0deg; --shx: 130%; --foil: #C9AF7E; position: relative; width: min(100%, 460px); aspect-ratio: .2 / .126; container-type: inline-size; transform-style: preserve-3d; transform: rotateX(var(--rx)) rotateY(var(--ry)) rotateY(var(--turn)); transition: transform 1.1s var(--ease); cursor: pointer; border-radius: .8cqw; outline: none; -webkit-tap-highlight-color: transparent; }
 .vcard::before { content: ''; position: absolute; left: 6%; right: 6%; bottom: -7%; height: 18%; background: radial-gradient(closest-side, rgba(0, 0, 0, .55), transparent); filter: blur(10px); transform: translateZ(-40px); pointer-events: none; }
 .vcard[aria-pressed='true'] { --turn: 180deg; }

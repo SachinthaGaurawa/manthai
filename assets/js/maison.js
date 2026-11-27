@@ -34,7 +34,6 @@
     else if (k === 'seal') C.scrollTo('seal');
     else if (k === 'product') M.shop.openProduct(v);
     else if (k === 'stylist') ui.openStylist();
-    else if (k === 'fitting') ui.openStylist(null, M.FITTING);
     else if (k === 'salon') ui.openSalon();
     else if (k === 'film') ui.openFilm();
     else if (k === 'anchor') C.scrollTo(v);
@@ -289,8 +288,8 @@
     open:    ['II', 'The doors part from the centre, lined in velvet garnet.'],
     garment: ['III', 'Your piece, folded in acid-free tissue under a gold wafer.'],
     label:   ['IV', 'The woven label and its origin and size label, set under the back facing.'],
-    insert:  ['V', 'Beneath the piece, a velvet insert cut to hold the Elite Club case.'],
-    elite:   ['VI', 'MANTHAI Elite Club. Sovereignty in Every Detail.'],
+    insert:  ['V', 'Beneath the piece, a velvet insert cut to hold the Private Circle Presentation Case.'],
+    elite:   ['VI', 'The Private Circle Presentation Case. Crafted to Endure.'],
     card:    ['VII', 'The black metal Verification Card. Select it to turn it over.'],
     story:   ['VIII', 'Beneath the case, cut to its exact size, the Story Card of your piece.']
   };
@@ -312,7 +311,7 @@
   holdDetail();
   var hdT = 0; window.addEventListener('resize', function () { clearTimeout(hdT); hdT = setTimeout(holdDetail, 150); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(holdDetail);
-  /* Moving between the tissue layer and the Elite Club layer is a cinematic cut:
+  /* Moving between the tissue layer and the Presentation Case layer is a cinematic cut:
      a short dip to black hides the swap, so no two layers ever cross in 3D. */
   var TOP = { open: 1, garment: 1, label: 1 }, CASE = { insert: 1, elite: 1, card: 1, story: 1 };
   function shot(name, opts) {
@@ -486,7 +485,7 @@
   var styView = 'form', styRef = null;
   function waLink(text) { return 'https://wa.me/' + M.CONFIG.whatsapp + '?text=' + encodeURIComponent(text); }
   function tomorrow() { var d = new Date(); d.setDate(d.getDate() + 1); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
-  var SLOTS = ['10:00', '12:00', '15:00', '17:00'], TOPICS = [M.FITTING, 'Sizing and fit', 'Choosing a piece', 'Styling for an occasion', 'A gift', 'Delivery and exchanges', 'Care and repair'];
+  var SLOTS = ['10:00', '12:00', '15:00', '17:00'], TOPICS = ['Occasion & Wardrobe Styling', 'Size & Silhouette Guidance', 'Private Gift Curation', 'Garment Care & Exchange Support'];
   var FORMATS = ['Video styling appointment', 'In person at the Colombo atelier', 'WhatsApp call'];
   function renderStylist(pid, topic) {
     var p = pid && C.product(pid), s = C.state.stylist || {}, mem = C.state.member || {};
@@ -552,41 +551,38 @@
     });
     return found;
   }
-  var NFC = '<svg viewBox="0 0 64 64" width="72" height="72" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M22 44c5-8 5-16 0-24"/><path d="M30 50c8-12 8-24 0-36"/><path d="M38 56c11-16 11-32 0-48"/></svg>';
-  var scanT;
   ui.openPassport = function (pid, code) {
     var hit = code && findItem(code), p = (hit && C.product(hit.it.id)) || (pid && C.product(pid)) || M.PRODUCTS[0];
     var id = code || ('MNT-' + hash(p.id)), n = pieceNo(p) + (hit ? hit.ordinal : 0);
     var owner = hit ? (C.state.member ? 'Registered to ' + (C.state.member.name || 'you') : 'Registered to ' + hit.o.name) : 'Unclaimed. Registers to the first owner.';
     var sample = !hit;
+    var steward = hit ? 'Registered. Eligible for complimentary care guidance and transfer of ownership.' : 'Eligible for complimentary care guidance and the 14-day size exchange.';
+    /* A museum provenance certificate: plate, crest and ID on the left, the record on the right. Opens straight away, never behind a scanner. */
     $('#passportPanel').innerHTML = head('passportTitle', 'Digital Product Passport', 'Close passport') +
-      '<div class="panel-body"><p class="lede lede--dark">Every MANTHAI piece carries an NFC tag in its label. Hold a phone to it and the piece proves where and how it was made.</p>' +
-      '<div class="phone" id="phone"><div class="nfc">' + NFC + '</div><p id="phoneMsg" class="fine-print">Hold your phone near the woven label.</p>' +
-      '<div class="passport" id="passportOut" hidden aria-live="polite">' +
-        '<svg class="seal-mark seal-mark--record" viewBox="0 0 1000 860" aria-hidden="true"><use href="#spiral-seal"/></svg>' +
-        '<span class="verified"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>Authenticated by the House</span>' +
-        '<dl><div><dt>Piece</dt><dd>' + esc(p.name) + '</dd></div>' +
-        '<div><dt>Edition</dt><dd>' + (p.edition ? 'Piece ' + pad(n) + ' of ' + p.edition : 'Atelier series') + '</dd></div>' +
-        '<div><dt>Provenance</dt><dd>' + esc(p.provenance) + '</dd></div>' +
-        '<div><dt>Materials</dt><dd>' + esc(p.materials) + '</dd></div>' +
-        '<div><dt>Care</dt><dd>' + esc(p.care) + '</dd></div>' +
-        '<div><dt>Passport ID</dt><dd class="order-ref">' + esc(id) + '</dd></div>' +
-        '<div><dt>Ownership</dt><dd>' + esc(owner) + '</dd></div></dl></div></div>' +
-      '<button class="btn btn--gold btn--block" type="button" id="scanBtn">' + (hit ? 'Scan the label' : 'Simulate an NFC tap') + '</button>' +
-      (sample ? '<p class="fine-print">This is a sample passport for the ' + esc(p.short) + '. Passports for your own pieces appear after you order.</p>' : '') + '</div>';
+      '<div class="cert">' +
+        '<div class="cert__side">' +
+          '<div class="cert__plate">' + C.plateHTML(p, 'form') + '</div>' +
+          '<svg class="cert__crest" viewBox="0 0 1000 860" aria-hidden="true"><use href="#spiral-seal"/></svg>' +
+          '<p class="cert__id"><span>Passport ID</span><b class="order-ref">' + esc(id) + '</b></p>' +
+          '<p class="cert__ok"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>Verified Authentic</p>' +
+        '</div>' +
+        '<div class="cert__main">' +
+          '<p class="cert__k">Museum Provenance Certificate</p>' +
+          '<dl class="cert__table">' +
+            '<div><dt>Piece</dt><dd>' + esc(p.name) + '</dd></div>' +
+            '<div><dt>Edition number</dt><dd>' + (p.edition ? 'Piece ' + pad(n) + ' of ' + p.edition : 'Atelier series') + '</dd></div>' +
+            '<div><dt>Fibre composition</dt><dd>' + esc(p.materials) + '</dd></div>' +
+            '<div><dt>Craft origin</dt><dd>' + esc(p.provenance) + '</dd></div>' +
+            '<div><dt>Garment care</dt><dd>' + esc(p.care) + '</dd></div>' +
+            '<div><dt>Owner</dt><dd>' + esc(owner) + '</dd></div>' +
+            '<div><dt>Stewardship status</dt><dd>' + esc(steward) + '</dd></div>' +
+          '</dl>' +
+          '<p class="cert__note">Every piece carries an NFC tag in its woven label and on its Verification Card. Hold a phone to either, or scan the card, and this record opens.</p>' +
+          (sample ? '<p class="cert__note">A sample certificate for the ' + esc(p.short) + '. Certificates for your own pieces appear in your Private Circle after you order.</p>' : '') +
+        '</div>' +
+      '</div>';
     C.open($('#layerPassport'));
-    if (hit) { clearTimeout(scanT); scanT = setTimeout(scan, 500); }
   };
-  function scan() {
-    var ph = $('#phone'); if (!ph) return;
-    var btn = $('#scanBtn'), msg = $('#phoneMsg'), out = $('#passportOut');
-    out.hidden = true; msg.hidden = false; msg.textContent = 'Reading the tag…'; ph.classList.add('is-scanning'); btn.disabled = true;
-    scanT = setTimeout(function () {
-      ph.classList.remove('is-scanning'); msg.hidden = true; out.hidden = false; btn.disabled = false; btn.textContent = 'Scan again';
-    }, C.reduced() ? 100 : 1500);
-  }
-  $('#passportPanel').addEventListener('click', function (e) { if (e.target.closest('#scanBtn')) scan(); });
-  C.on('close', function (d) { if (d.id === 'layerPassport') clearTimeout(scanT); });
 
   /* ======================= Private Circle ======================= */
   var salonView = 'in', salonEmail = '', pendingCb = null, salonMsg = '', salonTab = 'vault';
@@ -671,7 +667,7 @@
       }).join('') + '</div>' : '<p>Save a silhouette from any piece and it waits for you here.</p>';
     var fit = C.state.fitSize || '';
     var fHtml = '<div class="field"><label for="fitSize">Your usual size</label><select id="fitSize" data-fit-size><option value="">Not set</option>' + M.SIZECHART.sizes.map(function (z) { return '<option' + (z === fit ? ' selected' : '') + '>' + z + '</option>'; }).join('') + '</select></div>' +
-      '<p class="fine-print">We preselect it on every piece. For the closest fit, book a private atelier fitting in Colombo.</p><button class="link-btn" type="button" data-fitting>Book a private atelier fitting</button>';
+      '<p class="fine-print">We preselect it on every piece.</p>';
     var sHtml = '<p>A named stylist in the Colombo atelier answers you personally, by WhatsApp or a video appointment.</p>' +
       '<div class="salon-actions"><a class="btn btn--ghost btn--sm" href="https://wa.me/' + M.CONFIG.whatsapp + '?text=' + encodeURIComponent('Good day, I am a Private Circle client and would like to speak with my Maison Stylist.') + '" target="_blank" rel="noopener">Message on WhatsApp</a><button class="btn btn--ghost btn--sm" type="button" data-stylist-open>Book an appointment</button></div>';
     var aHtml = addrs.length ? '<ul class="addr-list">' + addrs.map(function (a) { return '<li>' + esc(a) + '</li>'; }).join('') + '</ul>' : '<p>Your delivery address is saved from your first acquisition.</p>';
@@ -715,7 +711,6 @@
     if (e.target.closest('[data-signout]')) { if (FB && C.state.member && C.state.member.fb) FB.A.signOut(FB.auth).catch(noop); C.state.member = null; C.save(); C.emit('member'); salonView = 'in'; renderSalon(); C.toast('You have left the Private Circle on this device.'); return; }
     if ((t = e.target.closest('[data-unwish]'))) { M.shop.toggleWish(t.getAttribute('data-unwish')); renderSalon(); return; }
     if (e.target.closest('[data-stylist-open]')) { ui.openStylist(); return; }
-    if (e.target.closest('[data-fitting]')) { ui.openStylist(null, M.FITTING); return; }
     if ((t = e.target.closest('[data-pass]'))) { ui.openPassport(null, t.getAttribute('data-pass')); return; }
     if (e.target.closest('[data-pass-sample]')) { ui.openPassport(); return; }
     if ((t = e.target.closest('[data-product]'))) { var id = t.getAttribute('data-product'); C.close($('#layerSalon')); later(function () { M.shop.openProduct(id); }); }
@@ -889,7 +884,7 @@
   var desc = document.querySelector('meta[name="description"]'), ogUrl = document.querySelector('meta[property="og:url"]'), ogTitle = document.querySelector('meta[property="og:title"]');
   var ROUTES = { home: { path: '/', title: document.title, desc: desc && desc.content, og: ogTitle && ogTitle.content },
                  maison: { path: '/the-maison', title: 'The Maison | House of MANTHAI, Colombo', og: 'The Maison | House of MANTHAI',
-                   desc: 'The Maison of MANTHAI: the Colombo atelier, the Unbounded Spiral Seal, and the unboxing ritual of every piece, from the lacquered gatefold box to the Elite Club case and its Verification Card.' } };
+                   desc: 'The Maison of MANTHAI: the Colombo atelier, the Unbounded Spiral Seal, and the unboxing ritual of every piece, from the lacquered gatefold box to the Private Circle Presentation Case and its Verification Card.' } };
   var canon = document.querySelector('link[rel="canonical"]');
   function routeFromPath(p) { return /\/the-maison\/?$/.test(p || location.pathname) ? 'maison' : 'home'; }
   function curRoute() { return document.documentElement.getAttribute('data-route') || 'home'; }

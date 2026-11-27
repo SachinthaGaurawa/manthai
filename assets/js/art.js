@@ -62,7 +62,7 @@
       s += '<path d="M70 330 L104 338 L102 350 L68 342 Z M330 330 L296 338 L298 350 L332 342 Z" fill="#fff6e2" opacity=".7"/>';
       return s;
     },
-    /* Meridian High-Waist Wide Silk Trousers */
+    /* Vespera High-Waist Wide Silk Trousers */
     trouser: function (id, p, r) {
       var s = '<defs>' + grad(id + 't', '#3a3a40', '#08080a', { x1: 0, y1: 0, x2: 1, y2: 1 }) + '</defs>';
       s += '<path d="M138 70 L262 70 L266 110 L134 110 Z" fill="#1c1c20" stroke="' + G + '" stroke-opacity=".5"/>';
@@ -122,7 +122,7 @@
       s += '<path d="M150 424 L146 480 L168 480 L176 436 Z M218 410 L226 480 L248 480 L246 400 Z" fill="#8d6a4c" opacity=".8"/>';
       return s;
     },
-    /* Meridian Structured Ivory Tailored Blazer */
+    /* Vespera Structured Ivory Tailored Blazer */
     blazer: function (id, p, r) {
       var s = '<defs>' + grad(id + 'w', '#f7f2e5', '#c9bd9c', { x1: 0, y1: 0, x2: 1, y2: 1 }) + grad(id + 's', '#fffbf1', '#d3c6a4') + '</defs>';
       s += '<path d="M128 100 L84 160 L58 332 L98 340 L126 204 Z M272 100 L316 160 L342 332 L302 340 L274 204 Z" fill="url(#' + id + 'w)" stroke="#a89972" stroke-opacity=".5"/>';

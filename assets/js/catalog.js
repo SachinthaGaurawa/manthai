@@ -34,11 +34,10 @@
   M.TABS = ['All', 'Evening Gowns', 'Midi & Cocktail', 'Tailoring', 'Silk Separates', 'Limited Editions'];
   /* Occasion-led discovery. Each product lists the occasions it is cut for. */
   M.OCCASIONS = ['Evening & Gala', 'Cocktail & Private Dinner', 'Modern Reception', 'Elevated Day-to-Evening'];
-  /* Fit consensus, from atelier fittings: 0 runs small, 1 true to size, 2 runs large (decimals sit between). */
+  /* Fit consensus, from our fit notes: 0 runs small, 1 true to size, 2 runs large (decimals sit between). */
   M.FIT_LABELS = ['Runs small', 'True to size', 'Runs large'];
 
   /* ---------- Fit information ---------- */
-  M.FITTING = 'Private Colombo Atelier Fitting';
   M.MODEL = { height: '173 cm / 5′8″', size: 'S' };
   /* International size conversion for women's apparel */
   M.SIZE_INTL = { UK: [6, 8, 10, 12, 14], EU: [34, 36, 38, 40, 42], US: [2, 4, 6, 8, 10] };
@@ -83,7 +82,7 @@
       drape: 'Cut on the stand with an asymmetric neckline. Fully lined in silk crepe de chine, so it never clings.',
       care: 'Silk-velvet crushes under pressure: never iron or press the pile. Steam from the reverse at a distance and store hanging in the supplied garment bag.',
       palette: ['#3a2618', '#100b08', '#C9AF7E'],
-      occasions: ['Evening & Gala'], fit: 1, pairs: ['nocturne-cape-top', 'meridian-blazer'],
+      occasions: ['Evening & Gala'], fit: 1, pairs: ['nocturne-cape-top', 'vespera-blazer'],
       media: { form: 'assets/media/products/temp/aurelia-gown-form.webp', back: '', detail: 'assets/media/products/temp/aurelia-gown-detail.webp', move: 'assets/media/products/temp/aurelia-gown-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
       prompt: 'Liquid silk-velvet evening gown with a sculpted asymmetric neckline, deep warm sheen, chiaroscuro golden light, 35mm editorial photography'
     },
@@ -102,14 +101,14 @@
       drape: 'Bias-released skirt from a single twisted waist. Lined in silk crepe to the hem.',
       care: 'Satin twill waterspots: keep dry and blot at once. Steam on the reverse.',
       palette: ['#4C1722', '#1d070c', '#8a2a3a'],
-      occasions: ['Cocktail & Private Dinner', 'Modern Reception'], fit: 1, pairs: ['meridian-blazer', 'nocturne-cape-top'],
+      occasions: ['Cocktail & Private Dinner', 'Modern Reception'], fit: 1, pairs: ['vespera-blazer', 'nocturne-cape-top'],
       media: { form: 'assets/media/products/temp/solstice-midi-form.webp', back: '', detail: 'assets/media/products/temp/solstice-midi-detail.webp', move: 'assets/media/products/temp/solstice-midi-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
       prompt: 'Velvet-garnet satin twill midi dress with a sculpted waist twist and fluid hem, soft window light on ivory, editorial womenswear'
     },
     {
-      id: 'meridian-blazer',
-      name: 'Meridian Structured Ivory Tailored Blazer',
-      short: 'Meridian Ivory Blazer',
+      id: 'vespera-blazer',
+      name: 'Vespera Structured Ivory Tailored Blazer',
+      short: 'Vespera Ivory Blazer',
       tabs: ['Tailoring'], collection: 'Architectural Tailoring',
       price: 115000, edition: 20, stock: { XS: 3, S: 4, M: 4, L: 3, XL: 2 }, kind: 'blazer', sizing: 'apparel', hollow: 64,
       summary: 'Tropical virgin wool-silk, a sharp sculpted shoulder and a concealed horn clasp.',
@@ -121,14 +120,14 @@
       drape: 'Half-canvassed for shape, lined in silk twill. Single concealed horn clasp at the waist.',
       care: 'Brush gently with a soft garment brush after wearing. Steam, never press the lapel roll flat.',
       palette: ['#2a2018', '#0E0D0C', '#C9AF7E'],
-      occasions: ['Elevated Day-to-Evening', 'Cocktail & Private Dinner'], fit: 1, pairs: ['meridian-trousers', 'alabaster-slip'],
-      media: { form: 'assets/media/products/temp/meridian-blazer-form.webp', back: '', detail: 'assets/media/products/temp/meridian-blazer-detail.webp', move: 'assets/media/products/temp/meridian-blazer-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
+      occasions: ['Elevated Day-to-Evening', 'Cocktail & Private Dinner'], fit: 1, pairs: ['vespera-trousers', 'alabaster-slip'],
+      media: { form: 'assets/media/products/temp/vespera-blazer-form.webp', back: '', detail: 'assets/media/products/temp/vespera-blazer-detail.webp', move: 'assets/media/products/temp/vespera-blazer-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
       prompt: 'Structured ivory tailored blazer in tropical wool-silk with a sharp shoulder and concealed horn clasp, soft window light, editorial womenswear'
     },
     {
-      id: 'meridian-trousers',
-      name: 'Meridian High-Waist Wide Silk Trousers',
-      short: 'Meridian Wide Silk Trousers',
+      id: 'vespera-trousers',
+      name: 'Vespera High-Waist Wide Silk Trousers',
+      short: 'Vespera Wide Silk Trousers',
       tabs: ['Tailoring', 'Silk Separates'], collection: 'Architectural Tailoring',
       price: 62000, edition: 0, batch: 24, stock: { XS: 4, S: 6, M: 6, L: 5, XL: 3 }, kind: 'trouser', sizing: 'apparel', hollow: 128,
       summary: 'Double-faced crepe, a high waist with a tailored pleat and silk-lined pockets.',
@@ -140,8 +139,8 @@
       drape: 'Unlined double-faced crepe, finished clean inside. Silk-lined pockets and a silk waistband facing.',
       care: 'Hang by the waistband on a padded clip hanger. Steam on the reverse; never press the pleat flat.',
       palette: ['#26262a', '#0E0D0C', '#C9AF7E'],
-      occasions: ['Elevated Day-to-Evening'], fit: 0.9, pairs: ['meridian-blazer', 'alabaster-slip'],
-      media: { form: 'assets/media/products/temp/meridian-trousers-form.webp', back: '', detail: 'assets/media/products/temp/meridian-trousers-detail.webp', move: 'assets/media/products/temp/meridian-trousers-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
+      occasions: ['Elevated Day-to-Evening'], fit: 0.9, pairs: ['vespera-blazer', 'alabaster-slip'],
+      media: { form: 'assets/media/products/temp/vespera-trousers-form.webp', back: '', detail: 'assets/media/products/temp/vespera-trousers-detail.webp', move: 'assets/media/products/temp/vespera-trousers-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
       prompt: 'High-waist wide-leg double-faced crepe trousers with a tailored pleat, fluid motion, soft light on an ivory wall'
     },
     {
@@ -152,14 +151,14 @@
       price: 76000, edition: 0, batch: 18, stock: { XS: 2, S: 3, M: 4, L: 3, XL: 2 }, kind: 'column', sizing: 'apparel', hollow: 120,
       summary: '19-momme mulberry silk, cut on the bias and finished with hand-rolled French seams.',
       provenance: 'Cut on the bias and hand-finished in the Colombo atelier',
-      story: 'Cut on the bias so the silk follows the body without a single dart, then finished inside with hand-rolled French seams. Worn alone for evening, or under the Meridian blazer by day.',
+      story: 'Cut on the bias so the silk follows the body without a single dart, then finished inside with hand-rolled French seams. Worn alone for evening, or under the Vespera blazer by day.',
       materials: '19-momme mulberry silk charmeuse. Hand-rolled French seams. Adjustable silk rouleau straps.',
       feel: { fabric: '19-Momme Mulberry Silk', hand: 'Cool, liquid and weightless, with a soft pearl lustre that moves with the body', gsm: 82 },
       weight: 'Light weight, 82 GSM. Floats on the body and layers without bulk.',
       drape: 'Bias-cut, so it drapes and skims without darts. Unlined, with hand-rolled French seams throughout.',
       care: 'Mulberry silk waterspots: keep dry and blot at once. Steam on the reverse at a distance.',
       palette: ['#2a2018', '#0E0D0C', '#C9AF7E'],
-      occasions: ['Modern Reception', 'Cocktail & Private Dinner'], fit: 1.1, pairs: ['meridian-blazer', 'nocturne-cape-top'],
+      occasions: ['Modern Reception', 'Cocktail & Private Dinner'], fit: 1.1, pairs: ['vespera-blazer', 'nocturne-cape-top'],
       media: { form: 'assets/media/products/temp/alabaster-slip-form.webp', back: '', detail: 'assets/media/products/temp/alabaster-slip-detail.webp', move: 'assets/media/products/temp/alabaster-slip-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
       prompt: 'Ivory bias-cut mulberry silk slip dress, liquid pearl sheen, hand-rolled seams, soft window light, editorial womenswear'
     },
@@ -178,7 +177,7 @@
       drape: 'Floats from the shoulder over a silk crepe bandeau. Closes with a single hook at the neck.',
       care: 'Beadwork snags easily: remove rings when dressing. Steam at a distance, never press, and store flat in tissue.',
       palette: ['#16110a', '#0E0D0C', '#C9AF7E'],
-      occasions: ['Evening & Gala', 'Modern Reception'], fit: 1, pairs: ['aurelia-gown', 'meridian-trousers'],
+      occasions: ['Evening & Gala', 'Modern Reception'], fit: 1, pairs: ['aurelia-gown', 'vespera-trousers'],
       media: { form: 'assets/media/products/temp/nocturne-cape-top-form.webp', back: '', detail: 'assets/media/products/temp/nocturne-cape-top-detail.webp', move: 'assets/media/products/temp/nocturne-cape-top-move.webp' }, /* TEMPORARY reference photos for the test build: replace with the MANTHAI shoot before launch */
       prompt: 'Sheer silk organza cape top with tonal hand-beading catching the light, numbered atelier edition, dark warm chiaroscuro'
     }
@@ -196,7 +195,7 @@
   M.NAV = [
     { key: 'new', label: 'New Arrivals', action: 'filter:All' },
     { key: 'collections', label: 'Collections', title: 'Ladies ready-to-wear, cut in the Colombo atelier.',
-      product: 'aurelia-gown', image: 'Aurelia, Meridian and Alabaster', src: 'assets/media/editorial/temp/collections-panel.webp', /* TEMPORARY reference photos */
+      product: 'aurelia-gown', image: 'Aurelia, Vespera and Alabaster', src: 'assets/media/editorial/temp/collections-panel.webp', /* TEMPORARY reference photos */
       groups: [
         { title: 'Categories', links: [
           { label: 'Evening & Gala Gowns', action: 'filter:Evening Gowns' },
@@ -219,7 +218,7 @@
   /* ---------- Editorial pillars (60/40 category showcase) ---------- */
   M.PILLARS = [
     { title: 'Evening Sculpture', text: 'Silk-velvet and organza cut on the stand for the evenings that are remembered.', product: 'aurelia-gown', action: 'filter:Evening Gowns', link: 'Explore evening gowns' },
-    { title: 'Modern Tailoring', text: 'A sharp shoulder, a high waist and a wide silk leg that answer each other.', product: 'meridian-blazer', action: 'filter:Tailoring', link: 'Explore tailoring' },
+    { title: 'Modern Tailoring', text: 'A sharp shoulder, a high waist and a wide silk leg that answer each other.', product: 'vespera-blazer', action: 'filter:Tailoring', link: 'Explore tailoring' },
     { title: 'Fluid Silk Editions', text: 'Bias-cut mulberry silk and garnet satin that move a beat after you do.', product: 'alabaster-slip', action: 'filter:Silk Separates', link: 'Explore silk separates' }
   ];
 
@@ -261,12 +260,12 @@
       text: 'Your piece is folded by hand on a bed of acid-free Alabaster tissue, wrapped in two leaves and sealed with a small gold wafer bearing the Seal. It lifts out as one, tissue and all, so the silk is never handled twice.' },
     { id: 'label',   name: 'Woven Neck and Origin Labels', spec: 'Silk damask, set under the back facing', parts: ['label'],
       text: 'Inside the back neck, under the facing, sits a woven silk-damask label with the MANTHAI wordmark in gold. Beneath it, a soft satin label gives the size and the words Crafted in Sri Lanka. Both are woven in proportion to the garment and stitched into the neck seam, so nothing rests against the skin.' },
-    { id: 'elite',   name: 'MANTHAI Elite Club Case', spec: 'Magnetic lid, velvet tray, domed resin Seal', parts: ['card'],
-      text: 'Under the piece, a velvet insert holds the MANTHAI Elite Club case. Its lid closes on magnets and is lined with the words Sovereignty in Every Detail. Step Into Privilege. Inside, a velvet tray holds your Verification Card and the Seal, cast in gold under a clear resin dome.' },
+    { id: 'elite',   name: 'Private Circle Presentation Case', spec: 'Magnetic lid, velvet tray, domed resin Seal', parts: ['card'],
+      text: 'Under the piece, a velvet insert holds the Private Circle Presentation Case. Its lid closes on magnets and is lined with the words The Private Circle, House of MANTHAI, Crafted to Endure. Inside, a velvet tray holds your Verification Card and the Seal, cast in gold under a clear resin dome.' },
     { id: 'card',    name: 'Verification Card', spec: 'Brushed black metal, QR and NFC', parts: ['card'],
       text: 'The Verification Card is cut from brushed black metal with gold edge plates. Its face carries only the Seal; its back carries your edition number and an NFC and QR link to the authenticity record.' },
     { id: 'story',   name: 'Story Card', spec: 'Thick cotton, cut to the case', parts: ['card'],
-      text: 'Beneath the Elite Club case lies a thick cotton Story Card, cut to exactly the same size as the case so that nothing shifts in transit. It records where, and by whose hands, your piece was made.' }
+      text: 'Beneath the Private Circle Presentation Case lies a thick cotton Story Card, cut to exactly the same size as the case so that nothing shifts in transit. It records where, and by whose hands, your piece was made.' }
   ];
 
   /* ---------- Short policy texts for the footer info layer ---------- */
