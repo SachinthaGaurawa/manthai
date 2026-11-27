@@ -1027,6 +1027,20 @@
         .then(function () { try { window.localStorage.setItem('manthai.emailForSignIn', email); } catch (e) { /* ignore */ } });
     },
     errText: function (e) { return FB_ERR[(e && e.code) || ''] || 'We could not send your key just now. Please try again, or continue with Google.'; },
+    /* the signed-in member's Firebase ID token, for the passkey server (waits for a restored session after a reload) */
+    idToken: function () {
+      return fbLoad().then(function () { return FB.auth.authStateReady ? FB.auth.authStateReady() : null; })
+        .then(function () { var u = FB.auth.currentUser; if (!u) { var e = new Error('sign_in_required'); e.code = 'sign_in_required'; throw e; } return u.getIdToken(); });
+    },
+    /* a server-verified passkey returns a Firebase sign-in token: the same account, its cloud record and orders, on any device */
+    tokenSignIn: function (token) {
+      return fbLoad().then(function () { return FB.A.signInWithCustomToken(FB.auth, token); }).then(function (res) {
+        fbSync(res.user); salonView = 'in';
+        if ($('#layerSalon').open) renderSalon();
+        welcomeToast(false);
+        return C.state.member;
+      });
+    },
     googleIcon: function () { return gIcon(); }
   };
   ui.googleSignIn = function (cb) {

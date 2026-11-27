@@ -1118,6 +1118,13 @@ html:not([data-route='legal']) [data-view='legal'] { display: none !important; }
 .pc-passkey__meta dt { font: 400 10px/1.9 var(--sans); letter-spacing: .18em; text-transform: uppercase; color: var(--warm-umber); }
 .pc-passkey__meta dd { margin: 0; font: 400 13px/1.6 var(--sans); }
 .pc-passkey__row { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.pc-passkey__body { display: grid; gap: 14px; min-height: 44px; }
+.pc-pks { display: grid; margin: 0; border-top: 1px solid var(--alabaster-rule); }
+.pc-pk { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--alabaster-rule); }
+.pc-pk__txt { min-width: 0; }
+.pc-pk__n { font: 400 1.05rem/1.35 var(--serif); overflow-wrap: anywhere; }
+.pc-pk__s { margin-top: 2px !important; font: 400 12px/1.55 var(--sans); color: var(--warm-umber); overflow-wrap: anywhere; }
+.pc-pk .acct-link { flex: none; }
 .acct-select { background-color: var(--atelier-ivory); color: var(--ink-noir); }
 
 /* ---------------- route change: the new view settles in (0.4s fade, 8px glide) ---------------- */

@@ -1,0 +1,11 @@
+{
+  "name": "manthai-flagship",
+  "private": true,
+  "type": "module",
+  "description": "House of MANTHAI static flagship. Dependencies here serve only the Vercel functions in /api.",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@simplewebauthn/server": "14.0.3",
+    "firebase-admin": "14.5.0"
+  }
+}
