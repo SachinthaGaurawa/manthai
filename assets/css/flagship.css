@@ -131,9 +131,11 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select { cursor
 .chip button { display: grid; place-items: center; width: 22px; height: 22px; color: var(--accent-text); }
 
 /* ---------------- maison statement with parallax ---------------- */
-.maison__statement { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: clamp(36px, 7vw, 128px); align-items: center; }
+.maison__statement { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: clamp(36px, 7vw, 128px); align-items: center; }
 .maison__plate { position: relative; display: grid; gap: 14px; margin: 0; }
-.maison__plate-inner { display: block; aspect-ratio: 5 / 4; overflow: hidden; background: #1c1c1f; }
+.maison__plate-inner { display: block; aspect-ratio: 2 / 3; height: min(86vh, 960px); max-width: 100%; overflow: hidden; background: #1c1c1f; }
+/* the full-length photograph is shown whole, uncropped */
+.maison__plate-inner > img { height: 100% !important; animation: none !important; }
 .maison__plate-inner > svg, .maison__plate-inner > img { width: 100%; height: 110%; display: block; object-fit: cover; will-change: transform; }
 .maison__plate figcaption { font: 400 12px/1.3 var(--sans); letter-spacing: .08em; color: var(--muted-stone); }
 @supports (animation-timeline: view()) {
@@ -295,7 +297,7 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select { cursor
   .pillar__copy { padding-bottom: 0; }
   .pillar__frame, .pillar--2 .pillar__frame { aspect-ratio: 4 / 5; }
   .decoder__stage { order: -1; }
-  .maison__plate-inner { aspect-ratio: 4 / 5; }
+  .maison__plate-inner { aspect-ratio: 2 / 3; height: auto; width: 100%; }
   .decoder__seal { width: min(78vw, 420px); }
   #apLinks { grid-template-columns: minmax(0, 1fr); }
   .pdp { grid-template-columns: minmax(0, 1fr); }
