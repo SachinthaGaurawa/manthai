@@ -139,7 +139,7 @@
           '<p class="stock-cue" id="stockCue" aria-live="polite"></p>' +
           '<p class="model-note">Model is ' + M.MODEL.height + ' and wears Size ' + M.MODEL.size + '.</p>' +
           '<div class="fitbar"><p class="fitbar__title">Fit consensus <span>' + esc(fitWord) + '</span></p>' +
-            '<div class="fitbar__track" role="img" aria-label="Fit consensus from atelier fittings: ' + esc(fitWord.toLowerCase()) + '"><span class="fitbar__mark" style="left:' + (fit / 2 * 100).toFixed(0) + '%"></span></div>' +
+            '<div class="fitbar__track" role="img" aria-label="Fit consensus: ' + esc(fitWord.toLowerCase()) + '"><span class="fitbar__mark" style="left:' + (fit / 2 * 100).toFixed(0) + '%"></span></div>' +
             '<div class="fitbar__labels" aria-hidden="true">' + M.FIT_LABELS.map(function (l, i) { return '<span' + (i === fitIdx ? ' class="is-on"' : '') + '>' + l + '</span>'; }).join('') + '</div></div>' +
         '</div>' +
         '<div class="pdp__cta">' +
@@ -149,14 +149,14 @@
         '</div>' +
         '<div class="assure">' +
           '<p><b id="pdpShip"></b><span id="pdpWhen"></span></p>' +
-          '<p>Exchanges and complimentary atelier alterations within 14 days of delivery.</p>' +
+          '<p>14-day complimentary size exchange, or a transparent refund to your original payment method.</p>' +
         '</div>' +
         (feel.fabric ? '<div class="feel"><p class="feel__k">Feel &amp; Drape</p><p class="feel__v">' + esc(feel.fabric) + ' · ' + esc(feel.hand) + ' · ' + feel.gsm + ' GSM</p></div>' : '') +
         '<div class="pdp__acc">' +
           '<details><summary>Fabric weight</summary><p>' + esc(p.weight || '') + '</p><p>' + esc(p.story) + '</p><p><b>Materials.</b> ' + esc(p.materials) + '</p><p><b>Provenance.</b> ' + esc(p.provenance) + '.</p></details>' +
           '<details><summary>Drape &amp; lining</summary><p>' + esc(p.drape || '') + '</p></details>' +
           '<details><summary>Garment care</summary><p>' + esc(p.care) + '</p><ul class="care-list">' + M.CARE.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul></details>' +
-          '<details><summary>Packaging &amp; verification card</summary><p>Your piece arrives in a rigid black linen box stamped with the Unbounded Spiral Seal, folded in acid-free tissue inside a cotton garment bag. A Story Card and a micro-foil Verification Card with your edition number travel with it; tap the card or scan its code to open the authenticity record.</p><button class="link-btn" type="button" data-passport="' + p.id + '">Open a sample record</button></details>' +
+          '<details><summary>Packaging &amp; verification card</summary><p>Your piece arrives in a rigid gatefold box in high-gloss midnight navy lacquer, lined in velvet garnet and stamped in gold foil with the Unbounded Spiral Seal. Inside, it rests folded in acid-free tissue under a gold wafer, with a woven silk neck label. Beneath it, the Private Circle Presentation Case holds a brushed black metal Verification Card with NFC and QR, and under the case lies a thick cotton Story Card. Tap the card or scan its code to open the authenticity record.</p><button class="link-btn" type="button" data-passport="' + p.id + '">Open a sample record</button></details>' +
         '</div>' +
         (pairs.length ? '<section class="pairing" aria-labelledby="pairTitle"><h3 id="pairTitle">Style With</h3><div class="pairing__list">' + pairs.map(function (q) {
           return '<button class="pair" type="button" data-pair="' + q.id + '"><span class="pair__plate">' + C.plateHTML(q, 'form') + '</span><span class="pair__name">' + esc(q.short) + '</span><span class="pair__price">' + P(q.price) + '</span></button>';
@@ -202,7 +202,6 @@
     if (loupeApi) loupeApi.refresh();
   }
 
-  function fittingBooked() { return !!(C.state.stylist && C.state.stylist.topic === M.FITTING); }
   function addToBag() {
     var p = pdp.p, err = $('#sizeError');
     if (p.sizing === 'apparel' && !pdp.size) {
@@ -311,13 +310,13 @@
           row('Bust', S.bust) + row('Waist', S.waist) + row('Hip', S.hip) + row('Hollow-to-Hem', hollow) +
           ['UK', 'EU', 'US'].map(function (k) { return '<tr class="intl"><th scope="row">' + k + ' size</th>' + M.SIZE_INTL[k].map(function (v) { return '<td>' + v + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>' +
         '<p class="field__hint">Hollow-to-Hem is measured from the hollow at the base of the neck, straight down to the hem. Between sizes, choose the larger, or ask the stylist.</p>' +
-        '<button class="btn btn--gold btn--block" type="button" data-size-fitting>Book a private atelier fitting</button>' +
+        '<p class="sg-ask">Unsure of your size? Our stylist replies on WhatsApp.</p>' +
+        '<a class="btn btn--ghost btn--block" href="' + esc(shop.stylistHref(p, null)) + '" target="_blank" rel="noopener" data-wa>Consult Our Colombo Stylist</a>' +
       '</div>';
   }
   shop.openSize = function (pid) { renderSize(pid); C.open($('#layerSize')); };
   $('#sizePanel').addEventListener('click', function (e) {
     var u = e.target.closest('[data-sunit]'); if (u) { guideUnit = u.getAttribute('data-sunit'); renderSize($('#sizePanel').getAttribute('data-product')); var b = $('#sizePanel [data-sunit="' + guideUnit + '"]'); if (b) b.focus(); return; }
-    if (e.target.closest('[data-size-fitting]')) { var id = $('#sizePanel').getAttribute('data-product'); C.close($('#layerSize')); setTimeout(function () { M.ui.openStylist(id, M.FITTING); }, 620); }
   });
 
   /* ======================= bag and checkout ======================= */
@@ -469,7 +468,7 @@
     var timeline = [
       ['Acquisition confirmed', C.fmtDay(new Date(o.date))],
       ['Atelier inspection and pressing', C.fmtDay(new Date(o.date))],
-      [o.ship === 'atelier' ? 'Sealed and ready at the atelier' : 'Sealed in linen and dispatched', C.fmtDay(dispatched)],
+      [o.ship === 'atelier' ? 'Sealed and ready at the atelier' : 'Sealed in the lacquered box and dispatched', C.fmtDay(dispatched)],
       [o.ship === 'atelier' ? 'Collection from the Colombo atelier' : 'Delivered to your door', C.fmtDay(arrive)]
     ];
     panel.innerHTML = bagHead() +
