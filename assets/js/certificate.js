@@ -8,7 +8,7 @@
 (function () {
   'use strict';
   var M = window.MANTHAI, C = M.core;
-  var STAMP = '20261128p';
+  var STAMP = '20261128q';
   var INK = '#141210', UMBER = '#59534B', BRONZE = '#755A2A', GOLD = '#C9AF7E', RULE = '#DBD3C5', IVORY = '#F7F4EE', FINE = '#8E867A';
   var ready = null;
 

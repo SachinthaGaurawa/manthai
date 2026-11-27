@@ -247,7 +247,7 @@ html[data-route='maison'] section[id] { scroll-margin-top: calc(var(--header-h) 
 .house__head { display: grid; justify-items: center; text-align: center; gap: 20px; margin-bottom: clamp(56px, 7vw, 104px); }
 .house__head .eyebrow, .savoir__head .eyebrow { letter-spacing: .22em; }
 .house__title { font-weight: 300; font-size: clamp(3rem, 5.5vw, 5.2rem); line-height: 1.08; letter-spacing: -.015em; color: var(--ink); }
-.house__say { max-width: 46ch; font: italic 400 clamp(1.1rem, 1rem + .4vw, 1.3rem)/1.55 var(--serif); color: var(--warm-umber); }
+.house__say { max-width: 52ch; text-wrap: balance; font: italic 400 clamp(1.1rem, 1rem + .4vw, 1.3rem)/1.55 var(--serif); color: var(--warm-umber); }
 .house__ipa { font-style: normal; color: var(--antique-bronze); }
 .house .maison__statement { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
 .house .maison__copy { gap: 22px; }
