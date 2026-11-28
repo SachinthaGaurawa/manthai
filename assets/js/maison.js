@@ -571,7 +571,10 @@
   /* One record drives the modal, the /passport/[id] page and the PDF. The owner, signed in, sees their own
      name; anyone else who scans the piece sees it registered, never to whom. */
   var recs = {};
-  function sampleFor(code) { return M.PRODUCTS.filter(function (p) { return 'MNT-' + hash(p.id) === code; })[0]; }
+  /* specimen passports use lookalike-free ids; ids printed by earlier specimens still open */
+  function sampleId(p) { var h = 2166136261, s = 'specimen:' + p.id; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return 'MNT-' + C.safeCode(h, 7); }
+  ui.sampleId = sampleId;
+  function sampleFor(code) { return M.PRODUCTS.filter(function (p) { return sampleId(p) === code || 'MNT-' + hash(p.id) === code; })[0]; }
   function b64e(o) { try { return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); } catch (e) { return ''; } }
   function b64d(s) { try { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return JSON.parse(decodeURIComponent(escape(atob(s)))); } catch (e) { return null; } }
   /* the public facts ride in the query string (?r=), which survives a refresh, a share and a QR scan; #r= links from earlier certificates still open */
@@ -606,7 +609,7 @@
       return buildRecord(code, p, { edition: C.editionLabel(p, hit.ordinal), mine: mine, name: (me && me.name) || hit.o.name, date: hit.o.date });
     }
     var s = code ? sampleFor(code) : (pid && C.product(pid)) || M.PRODUCTS[0];
-    if (s) return buildRecord(code || 'MNT-' + hash(s.id), s, { sample: true });
+    if (s) return buildRecord(code && code === 'MNT-' + hash(s.id) ? sampleId(s) : code || sampleId(s), s, { sample: true });
     return null;
   }
   ui.passportRecord = function (code) { return recordFor(code); };
@@ -660,7 +663,7 @@
         '<div class="cert__main">' +
           '<p class="cert__k">Museum Provenance Certificate<span class="cert__scale">Simulated preview, not shown at 1:1 scale' + C.dref(2) + '</span></p>' +
           rowsHTML(r) +
-          '<p class="cert__note">Every piece carries an NFC tag in its woven label and on its Verification Card. Hold a phone to either, or scan the card, and this record opens.</p>' +
+          '<p class="cert__note">Every piece carries a concealed Authenticity Seal in its lower-left inner seam. Hold a phone to it, or scan the QR code on its certificate, and this record opens.</p>' +
           (r.sample ? '<p class="cert__note">A sample certificate for the ' + esc(p.short) + '. Certificates for your own pieces appear in your Private Circle after you order.</p>' : '') +
         '</div>' +
       '</div></div>';
@@ -685,7 +688,7 @@
       return { title: 'Passport Not Found | House of MANTHAI' };
     }
     var record = rowsHTML(r, true) +
-          '<p class="cert__note">' + (r.sample ? 'A sample record for the ' + esc(r.p.short) + '. ' : '') + 'This page is the live record of the House registry. Tap the piece&rsquo;s Verification Card or scan the QR code on its certificate to return here at any time.</p>' +
+          '<p class="cert__note">' + (r.sample ? 'A sample record for the ' + esc(r.p.short) + '. ' : '') + 'This page is the live record of the House registry. Tap the garment&rsquo;s concealed Authenticity Seal or scan the QR code on its certificate to return here at any time.</p>' +
           actionsHTML(r, true) +
           '<a class="pp__explore" href="/" data-route="home">Explore House of MANTHAI</a>';
     /* the same passport rendered again (sign-in settling after a refresh): keep the photograph in place and

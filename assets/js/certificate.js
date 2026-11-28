@@ -8,11 +8,12 @@
 (function () {
   'use strict';
   var M = window.MANTHAI, C = M.core;
-  var STAMP = '20261128u';
+  var STAMP = '20261128w';
   var INK = '#141210', UMBER = '#59534B', BRONZE = '#755A2A', GOLD = '#C9AF7E', SEAL = '#9F824C', RULE = '#DBD3C5', IVORY = '#F7F4EE', LIMESTONE = '#EFEAE0', FINE = '#8E867A';
   var PT = 0.3528;
-  /* the Atelier Director's signature, the same stroke as the 3D certificate in the ritual (index.html, .ub-cert__sig) */
-  var SIGNATURE = 'M6 40C10 31 15 19 20 13C23 9.5 26 10 25.5 15C25 21 23 30 23.5 36C26 27 31 16 36 12C39.5 9.5 41.5 11.5 40.5 17C39.5 23 38 30 39.5 35C42.5 29 46.5 23.5 50.5 23C53.5 22.7 53.5 26.5 52 30C50.8 33 51.5 35.5 54.5 35C59 34.3 62.5 27.5 66.5 26.5C69.5 25.8 70 28.5 68.8 31.5C67.8 34 68.8 35.6 71.8 35C77 34 81 25 86 24C89.6 23.3 90 26.4 88.6 29.6C87.6 32 88.4 34 91.4 33.4C98 32 104 21 111 17.5C114.5 15.8 116.5 17.5 115 21.5C113.2 26.5 111 31 113.5 32C118 33.6 126 26 132 24.6M13 47C42 41.5 82 39 128 36.5C140 35.8 150 35.6 158 36';
+  /* who signs, and the signature itself: assets/js/signatory.js, shared with the 3D certificate */
+  var SIG = M.SIGNATORY || {};
+  var SIGNATURE = SIG.PLACEHOLDER_PATH || '';
   var ready = null;
 
   function script(src) {
@@ -29,15 +30,32 @@
       return btoa(s);
     });
   }
+  /* the founder's signature image, when signatory.js names one: rasterised at high DPI on a canvas */
+  function signatureImage() {
+    var url = SIG.SIGNATURE_IMAGE_URL;
+    if (!url) return null;
+    return new Promise(function (res) {
+      var img = new Image();
+      img.onload = function () {
+        var k = Math.min(2400 / img.naturalWidth, 760 / img.naturalHeight, 4), c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(img.naturalWidth * k)); c.height = Math.max(1, Math.round(img.naturalHeight * k));
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        try { res({ data: c.toDataURL('image/png'), w: c.width, h: c.height }); } catch (e) { res(null); }
+      };
+      img.onerror = function () { res(null); };
+      img.src = url;
+    });
+  }
   function load() {
     if (ready) return ready;
     ready = Promise.all([
       window.jspdf ? null : script('/assets/vendor/jspdf.umd.min.js?v=' + STAMP),
       window.qrcode ? null : script('/assets/vendor/qrcode-generator.js?v=' + STAMP),
-      font('/assets/fonts/pdf-cormorant-400.ttf'),
-      font('/assets/fonts/pdf-cormorant-italic-400.ttf'),
-      font('/assets/fonts/pdf-tenor-sans-400.ttf')
-    ]).then(function (r) { return { serif: r[2], serifItalic: r[3], sans: r[4] }; })
+      font('/assets/fonts/pdf-cormorant-lf-400.ttf?v=' + STAMP),
+      font('/assets/fonts/pdf-cormorant-lf-italic-400.ttf?v=' + STAMP),
+      font('/assets/fonts/pdf-tenor-sans-400.ttf?v=' + STAMP),
+      signatureImage()
+    ]).then(function (r) { return { serif: r[2], serifItalic: r[3], sans: r[4], sig: r[5] }; })
       .catch(function (e) { ready = null; throw e; });
     return ready;
   }
@@ -212,7 +230,7 @@
       { k: 'Craft Origin', v: [r.origin] },
       { k: 'Garment Stewardship & Care', v: [r.care] },
       { k: 'Registered Owner', v: [r.owner], italic: r.sample },
-      { k: 'Provenance & Transfer', v: String(r.provenance).split(' · ') },
+      { k: 'Provenance & Transfer', v: [String(r.provenance).split(' · ').join('  |  ')] },
       { k: 'Issued & Certified By', v: ['House of Manthai (Private) Limited'], sub: ['An Avantio Ventures Company', 'Colombo, Sri Lanka'] },
       { k: 'Date of Issue', v: [r.issued] }
     ];
@@ -231,16 +249,22 @@
       doc.setDrawColor(RULE); doc.setLineWidth(0.25 * PT); doc.line(L, y, R, y);
     });
 
-    /* attestation: the Atelier Director's signature over a champagne hairline; the House stamp */
+    /* attestation: the Maison Director's signature over a champagne hairline; the House stamp */
     y += 6;
-    var sigW = 50, sigS = sigW / 164;
-    doc.setDrawColor(INK); doc.setLineCap('round'); doc.setLineJoin('round');
-    doc.setLineWidth(0.32); doc.path(trace(SIGNATURE, 0, 0, sigS, L + 3, y)).stroke();
-    doc.setLineWidth(0.14); doc.path(trace(SIGNATURE, 0, 0.55, sigS, L + 3.1, y)).stroke();
-    var hy = y + 52 * sigS + 1.5;
+    var sigW = 50, box = SIG.BOX || [164, 52], sigS = sigW / box[0], sigH = box[1] * sigS;
+    if (faces.sig) {
+      /* the official signature, fitted (contain) inside the same locked box as the placeholder stroke */
+      var k = Math.min(sigW / faces.sig.w, sigH / faces.sig.h), iw = faces.sig.w * k, ih = faces.sig.h * k;
+      doc.addImage(faces.sig.data, 'PNG', L + 3 + (sigW - iw) / 2, y + (sigH - ih), iw, ih);
+    } else {
+      doc.setDrawColor(INK); doc.setLineCap('round'); doc.setLineJoin('round');
+      doc.setLineWidth(0.32); doc.path(trace(SIGNATURE, 0, 0, sigS, L + 3, y)).stroke();
+      doc.setLineWidth(0.14); doc.path(trace(SIGNATURE, 0, 0.55, sigS, L + 3.1, y)).stroke();
+    }
+    var hy = y + sigH + 1.5;
     doc.setDrawColor(GOLD); doc.setLineWidth(0.4 * PT); doc.line(L, hy, L + 52, hy);
-    setFace(doc, 'Tenor', 'normal', 6.2, BRONZE); tracked(doc, 'AUTHORIZED SIGNATORY', L, hy + 4.2, 0.7);
-    setFace(doc, 'Cormorant', 'italic', 9.2, UMBER); joined(doc, ['The Atelier Director', 'House of Manthai (Private) Limited'], L, hy + 8.4, { dot: BRONZE });
+    setFace(doc, 'Tenor', 'normal', 6.2, BRONZE); tracked(doc, SIG.SIGNATORY_LABEL || 'AUTHORIZED SIGNATORY', L, hy + 4.2, 0.7);
+    setFace(doc, 'Cormorant', 'italic', 9.2, UMBER); joined(doc, [SIG.SIGNATORY_TITLE || 'Maison Director', SIG.SIGNATORY_ENTITY || 'House of Manthai (Private) Limited'], L, hy + 8.4, { bar: true });
     stamp(doc, L + (R - L) * 0.55 + (R - L) * 0.45 / 2, y + 11.5, 11);
     y = hy + 14;
 
@@ -252,7 +276,7 @@
     var TX = L + pad + QS + 7, TW = R - TX - 6, ty = y + pad + 3.2;
     setFace(doc, 'Tenor', 'normal', 7.5, BRONZE); tracked(doc, 'LIVE REGISTRY VERIFICATION', TX, ty, 0.9);
     setFace(doc, 'Cormorant', 'italic', 9.6, UMBER);
-    var copy = doc.splitTextToSize('Confirm real-time authenticity and ownership status by scanning this QR code, tapping the piece’s NFC Verification Card, or visiting the live House registry:', TW);
+    var copy = doc.splitTextToSize('Confirm real-time authenticity and ownership status by scanning this QR code, tapping the garment’s concealed Authenticity Seal, or visiting the live House registry:', TW);
     ty += 4.6; doc.text(copy, TX, ty, { lineHeightFactor: 1.25 });
     ty += copy.length * 9.6 * PT * 1.25 + 0.9;
     var shown = location.origin.replace(/^https?:\/\//, '') + '/passport/' + r.id;
