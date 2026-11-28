@@ -15,38 +15,8 @@
    Without them every operation answers 503 "not_configured": nothing can be
    inscribed, and there is no sample, demo or bypass in production.
    ========================================================================== */
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
+import { init, who, body } from '../_fb.js';
 import * as L from './_logic.js';
-
-let admin = null;
-function init() {
-  if (admin) return admin;
-  const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
-  if (!raw) return null;
-  let sa;
-  try { sa = JSON.parse(raw); } catch (e) { return null; }
-  if (sa.private_key) sa.private_key = sa.private_key.replace(/\\n/g, '\n');
-  const app = getApps()[0] || initializeApp({ credential: cert(sa), projectId: sa.project_id });
-  admin = { auth: getAuth(app), db: getFirestore(app) };
-  return admin;
-}
-
-/* the signed-in member, when a Firebase ID token is presented; otherwise null */
-async function who(req, a) {
-  const m = /^Bearer (.+)$/.exec(req.headers.authorization || '');
-  if (!m) return null;
-  try {
-    const t = await a.auth.verifyIdToken(m[1], true);
-    return { uid: t.uid, email: String(t.email || '').toLowerCase(), emailVerified: !!t.email_verified };
-  } catch (e) { return null; }
-}
-function body(req) {
-  const b = req.body;
-  if (b && typeof b === 'object') return b;
-  try { return JSON.parse(b || '{}'); } catch (e) { return {}; }
-}
 
 const POST = new Set(['tap', 'session', 'claim', 'transfer-start', 'transfer-cancel', 'transfer-view', 'transfer-accept']);
 const GET = new Set(['status', 'piece', 'mine', 'acquisitions']);
