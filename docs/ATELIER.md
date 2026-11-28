@@ -39,35 +39,95 @@ The page is not linked anywhere, is not indexed, and holds no secret. The server
 
 Orders are typed by hand for now. Checkout is still a demo, so there is no live order list to pick from yet.
 
-## 4. Encoding chips (atelier computer, ACS ACR1252U)
+## 4. Two ways the reader is used
+
+The House uses an **ACS ACR1552U** (USB-C). ACR1252U, Identiv uTrust 3700 F and any PC/SC contactless reader also work. The reader has two modes, and each desk uses one of them.
+
+| | Mode 1 · Founder Encoding Station | Mode 2 · Atelier Packing Desk |
+| --- | --- | --- |
+| Job | Turns factory-blank chips into House seals | Pairs a sealed garment with its Vault Card |
+| Reader mode | PC/SC (CCID) | Keyboard Emulation: 7-byte UID, MSB-first, Hex, then Enter |
+| Software | Node.js + `scripts/encoder` | Only a browser on `/admin/atelier#enter` |
+| Computer | One trusted computer that holds `.env.local` | Any Windows, macOS, Linux computer, or a phone |
+| Keys on the computer | NFC_SDM_MAC_KEY (and the master key for production) | None |
+
+**Mode 2 at the packing desk.** Click the seal field in Pair & Seal and tap the garment on the reader. The reader types the UID and presses Enter. The portal tidies the UID and moves to the Vault Card field; Enter never sends the form early. It warns if the reader is set up wrongly:
+- *"This UID appears reversed (LSB-first)…"*: switch Keyboard Emulation to MSB-first.
+- *"Reader output appears to be Decimal…"*: switch Keyboard Emulation to Hex.
+
+A UID typed by the reader cannot prove the chip was encoded with the House key. Its signature is checked the first time the seal is tapped on a phone. Where possible, tap the garment once with a phone and paste the tap URL instead: that URL is checked when you seal.
+
+Keyboard Emulation and PC/SC are configured with ACS's own setup tool for the ACR1552U. In Keyboard Emulation mode the reader does not appear to the encoder; `npm run doctor` says so.
+
+## 5. Mode 1 · setting up the Founder Encoding Station
 
 Chips are bought **factory-blank** and encoded here. The House SDM key is never sent to a supplier.
 
-Once:
+### Every computer
+1. Install **Node.js 22 LTS** from nodejs.org (20 LTS also works).
+2. Get the project onto the computer (git clone or download).
+3. Copy `.env.local.example` to `.env.local` at the project root and fill in the three values. It is never committed.
+
+### macOS (Apple Silicon and Intel)
+- PC/SC is built in and CCID readers need no driver. Plug the ACR1552U in directly.
+- The reader library compiles once during install. It needs Apple's command line tools: `xcode-select --install`.
 ```
 cd scripts/encoder
 npm install
-cp ../../.env.local.example ../../.env.local   # then fill in the three values
-```
-On Linux, also install and start `pcscd`. macOS and Windows already have PC/SC.
-
-**Test mode (default).** Key 0 stays at the factory value, so the chip can be encoded again.
-```
-node encode-ntag424.mjs
+npm run doctor
 ```
 
-**Production lock.** For chips that go into garments. Key 0 becomes `ATELIER_CHIP_MASTER_KEY` and write access is removed for good. You must type `SEAL` to confirm.
+### Windows 10 / 11 (PowerShell)
+- The ACR1552U works with the built-in Windows CCID driver. Install the official ACS PC/SC driver only if Device Manager shows a warning.
+- The Smart Card service must be running:
 ```
-node encode-ntag424.mjs --production-lock
+Get-Service SCardSvr
+Set-Service SCardSvr -StartupType Automatic   # as administrator, if it is not running
+Start-Service SCardSvr
 ```
+- The reader library compiles once during install. It needs **Visual Studio Build Tools** with the "Desktop development with C++" workload, and Python 3 (both free from Microsoft and python.org).
+```
+cd scripts\encoder
+npm install
+npm run doctor
+```
+
+### Linux (Ubuntu / Debian / Fedora)
+```
+# Ubuntu / Debian
+sudo apt install pcscd libccid libpcsclite-dev build-essential python3
+# Fedora
+sudo dnf install pcsc-lite pcsc-lite-ccid pcsc-lite-devel gcc-c++ make python3
+
+sudo systemctl enable --now pcscd
+cd scripts/encoder
+npm install
+npm run doctor
+```
+If the doctor reports "Access denied", run it from the desktop session rather than over SSH, or allow your user in polkit for pcscd.
+
+### Encoding (all systems)
+
+`npm run doctor` checks Node, the smart card service, the readers and `.env.local`. It writes nothing. The reader list marks each slot as `PICC [Selected]` or `SAM [Skipped]`; the ACR1552U and ACR1252U each show a contactless PICC slot and a contact SAM slot, and the SAM slot is never used.
+
+| Command | What it does |
+| --- | --- |
+| `npm run encode:test` | Test mode. Key 0 stays at the factory value, so the chip can be encoded again. |
+| `npm run encode:prod` | Production lock, for chips that go into garments. Key 0 becomes `ATELIER_CHIP_MASTER_KEY` and write access is removed for good. You must type `SEAL`. |
+| `npm run encode:test -- --reader "uTrust"` | Picks a reader by part of its name, when more than one is plugged in. |
+| `npm run encode:test -- --allow-test-domain` | Allows a vercel.app address, for a throwaway test chip only. |
 
 Safety gates:
-- A `vercel.app` or local `SDM_BASE_URL` is refused. `--allow-test-domain` permits one for a throwaway test chip, and it is never allowed together with `--production-lock`.
-- Each chip is read back like a phone and its MAC is verified with the House key. Only then does the encoder print `✓ Chip Encoded, Verified & Ready for Stitching — UID: …` and the tap URL to paste into Pair & Seal.
+- A `vercel.app` or local `SDM_BASE_URL` is refused. `--allow-test-domain` lifts this for test chips, and it never works together with the production lock.
+- Each chip is read back like a phone would read it, and its MAC is verified with the House key. Only then does the encoder print `✓ Chip Encoded, Verified & Ready for Stitching — UID: …` together with the tap URL to paste into Pair & Seal.
 
-Recommended first run: encode 2 or 3 chips in test mode with `--allow-test-domain`. Tap them with a phone on the live site, pair one in the portal, then claim it in the Private Circle. Only once that is done, switch to the House domain and `--production-lock`.
+Recommended first run:
+1. Encode 2 or 3 chips with `npm run encode:test -- --allow-test-domain`.
+2. Tap them with a phone on the live site.
+3. Pair one in the portal, then claim it in the Private Circle.
+4. Only then set the House domain and use `npm run encode:prod`.
 
-## 5. The seal byte contract (for engineers)
+## 6. The seal byte contract (for engineers)
 
 - URL: `{SDM_BASE_URL}/v?uid=<14 hex>&ctr=<6 hex, most significant byte first>&cmac=<16 hex>`
 - File 02 settings:
