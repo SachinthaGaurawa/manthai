@@ -8,7 +8,7 @@
 (function () {
   'use strict';
   var M = window.MANTHAI, C = M.core;
-  var STAMP = '20261128y';
+  var STAMP = '20261128z';
   var INK = '#141210', UMBER = '#59534B', BRONZE = '#755A2A', GOLD = '#C9AF7E', SEAL = '#9F824C', RULE = '#DBD3C5', IVORY = '#F7F4EE', LIMESTONE = '#EFEAE0', FINE = '#8E867A';
   var PT = 0.3528;
   /* who signs, and the signature itself: assets/js/signatory.js, shared with the 3D certificate */
