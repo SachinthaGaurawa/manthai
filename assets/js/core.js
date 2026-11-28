@@ -291,14 +291,16 @@
         }
         var seed = fnv(it.passport);
         it.serial = String(1 + (seed % 9)) + digits(7, seed); it.key = digits(4, seed ^ 0x5bd1e995);
-        var nm = C.splitName(o.name);
+        /* runs while core.js is still loading, before C.splitName exists: split the older full name here */
+        var w = String(o.name || '').trim().split(/\s+/).filter(Boolean), nm = { first: w[0] || '', last: w.slice(1).join(' ') };
         REG[it.passport] = { id: it.passport, pid: it.id, size: it.size, edition: '', serial: it.serial, key: it.key, status: 'CLAIMED', keySealed: true, via: 'acquisition',
           owner: { title: '', first: nm.first, last: nm.last, email: String(o.email || '').toLowerCase() }, inscribedAt: o.date, order: o.ref, buyer: String(o.email || '').toLowerCase(), issued: o.date, prior: [] };
       });
     });
     if (changed) regSave();
   };
-  reg.fromOrders();
+  /* a registry problem must never stop the rest of the House from loading */
+  try { reg.fromOrders(); } catch (e) { if (window.console) console.warn('MANTHAI registry', e); }
   reg.merge(C.state.inscriptions);
 
   /* a piece from an earlier collection, no longer in the catalogue: the House Seal stands in for its photograph */

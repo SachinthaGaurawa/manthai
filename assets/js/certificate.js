@@ -8,7 +8,7 @@
 (function () {
   'use strict';
   var M = window.MANTHAI, C = M.core;
-  var STAMP = '20261128x';
+  var STAMP = '20261128y';
   var INK = '#141210', UMBER = '#59534B', BRONZE = '#755A2A', GOLD = '#C9AF7E', SEAL = '#9F824C', RULE = '#DBD3C5', IVORY = '#F7F4EE', LIMESTONE = '#EFEAE0', FINE = '#8E867A';
   var PT = 0.3528;
   /* who signs, and the signature itself: assets/js/signatory.js, shared with the 3D certificate */
@@ -116,7 +116,7 @@
   function joined(doc, parts, x, y, o) {
     o = o || {};
     var track = o.track || 0, size = doc.getFontSize() * PT, gap = o.bar ? 0 : size * 0.62 + track * 1.6, r = size * 0.075;
-    var sep = o.bar ? '  |  ' : '', sw = o.bar ? spaced(doc, sep, track) : gap * 2;
+    var sep = o.bar ? (o.sep || '  |  ') : '', sw = o.bar ? spaced(doc, sep, track) : gap * 2;
     var total = parts.reduce(function (n, t, i) { return n + spaced(doc, t, track) + (i ? sw : 0); }, 0);
     var cx = o.align === 'center' ? x - total / 2 : x;
     parts.forEach(function (t, i) {
@@ -128,6 +128,11 @@
       cx += tracked(doc, t, cx, y, track);
     });
     return total;
+  }
+
+  function joinedWidth(doc, parts, track) {
+    var sw = spaced(doc, '   |   ', track);
+    return parts.reduce(function (n, t, i) { return n + spaced(doc, t, track) + (i ? sw : 0); }, 0);
   }
 
   /* the embossed House stamp: double ring, curved legend, the Seal at its heart */
@@ -210,7 +215,7 @@
     y += wmH + 7.5;
     setFace(doc, 'Tenor', 'normal', 7.5, BRONZE);
     joined(doc, ['HOUSE OF MANTHAI', 'DIGITAL PRODUCT PASSPORT'], CX, y, { bar: true, track: 0.85, align: 'center' });
-    y += 10;
+    y += 9.2;
     setFace(doc, 'Cormorant', 'normal', 20, INK);
     tracked(doc, 'Certificate of Authenticity & Ownership', CX, y, 0.12, 'center');
 
@@ -219,7 +224,7 @@
     doc.setDrawColor(GOLD); doc.setLineWidth(0.3 * PT); doc.line(30, y, 180, y); doc.line(30, y + 7, 180, y + 7);
     setFace(doc, 'Tenor', 'normal', 6.6, UMBER);
     joined(doc, ['PASSPORT ID: ' + r.id, 'STATUS: ' + (r.sample ? 'ARCHIVE SPECIMEN' : 'VERIFIED AUTHENTIC'), 'EDITION: ' + String(r.edition).split(' · ')[0].toUpperCase()], CX, y + 4.55, { track: 0.55, align: 'center', dot: GOLD });
-    y += 7 + 6.5;
+    y += 7 + 5.6;
 
     /* the record: labels 36% in bronze tracked caps, values 64% in ink, 0.25pt alabaster rules */
     var L = 24, R = 186, V = L + (R - L) * 0.36, VW = R - V, VS = 10.2, lh = VS * PT * 1.3;
@@ -234,15 +239,38 @@
       { k: 'Issued & Certified By', v: ['House of Manthai (Private) Limited'], sub: ['An Avantio Ventures Company', 'Colombo, Sri Lanka'] },
       { k: 'Date of Issue', v: [r.issued] }
     ];
+    /* ---- vertical budget. The foot is locked to fixed baselines; the verification box must end at
+       least 6mm of clear ivory above the first footer line. Measure every row first, then set the
+       row padding so the whole record fits, compressing it (never the type) when copy runs long. ---- */
+    var FOOT = r.sample ? [265.6, 269.6, 275.5, 279.0] : [269.5, 273.5, 279.0];
+    var BH = 33, QS = 24, GAP_T = 5, SIGBLK = 0, BOX_MAX = Math.min(261, FOOT[0] - 1.8 - 6);   /* 1.8mm = cap height of the 7pt footer line */
+    var nlh, bodySum, SIGTAIL = 12.5, sigH0 = (SIG.BOX || [164, 52])[1] * 50 / (SIG.BOX || [164, 52])[0];
+    function measure() {
+      lh = VS * PT * 1.3; nlh = (VS - 0.8) * PT * 1.3;
+      rows.forEach(function (row) {
+        setFace(doc, 'Cormorant', row.italic ? 'italic' : 'normal', VS, INK);
+        row.lines = row.dots ? [''] : [].concat.apply([], row.v.map(function (t) { return doc.splitTextToSize(String(t || ''), VW); }));
+        setFace(doc, 'Cormorant', 'italic', VS - 0.8, UMBER);
+        row.noteLines = row.note ? doc.splitTextToSize(row.note, VW) : [];
+        row.body = row.lines.length * lh + (row.sub ? 3.9 : 0) + (row.noteLines.length ? row.noteLines.length * nlh + 1.2 : 0);
+      });
+      bodySum = rows.reduce(function (n, row) { return n + row.body; }, 0);
+      SIGBLK = sigH0 + 1.5 + SIGTAIL;
+      return BOX_MAX - y - bodySum - GAP_T - SIGBLK - BH;
+    }
+    /* PAD is the space a row adds around its text: 3.6mm by default, down to 2.4mm when copy runs long.
+       Only if that is still not enough do the attestation gaps close up, and last of all the value
+       type steps down (never below 9pt), so the box can never reach the footer. */
+    var room = measure();
+    if (room < 2.4 * rows.length) { GAP_T = 3.5; SIGTAIL = 11; room = measure(); }
+    while (room < 2.4 * rows.length && VS > 9) { VS = Math.round((VS - 0.2) * 10) / 10; room = measure(); }
+    var PAD = Math.max(2.4, Math.min(3.6, room / rows.length));
+    var TOPOFF = 4.2 - (3.6 - PAD) * 0.5;
     doc.setDrawColor(RULE); doc.setLineWidth(0.25 * PT); doc.line(L, y, R, y);
     rows.forEach(function (row) {
+      var lines = row.lines, note = row.noteLines;
       setFace(doc, 'Cormorant', row.italic ? 'italic' : 'normal', VS, INK);
-      var lines = row.dots ? [''] : [].concat.apply([], row.v.map(function (t) { return doc.splitTextToSize(String(t || ''), VW); }));
-      /* a quiet italic note under the value: the single-run archival guarantee */
-      setFace(doc, 'Cormorant', 'italic', VS - 0.8, UMBER);
-      var note = row.note ? doc.splitTextToSize(row.note, VW) : [], nlh = (VS - 0.8) * PT * 1.3;
-      setFace(doc, 'Cormorant', row.italic ? 'italic' : 'normal', VS, INK);
-      var top = y + 4.7, h = lines.length * lh + (row.sub ? 3.9 : 0) + (note.length ? note.length * nlh + 1.2 : 0) + 4.4;
+      var top = y + TOPOFF, h = row.body + PAD;
       setFace(doc, 'Tenor', 'normal', 6.4, BRONZE);
       tracked(doc, row.k.toUpperCase(), L, top - 0.15, 0.55);
       setFace(doc, 'Cormorant', row.italic ? 'italic' : 'normal', VS, INK);
@@ -255,7 +283,7 @@
     });
 
     /* attestation: the Maison Director's signature over a champagne hairline; the House stamp */
-    y += 6;
+    y += GAP_T;
     var sigW = 50, box = SIG.BOX || [164, 52], sigS = sigW / box[0], sigH = box[1] * sigS;
     if (faces.sig) {
       /* the official signature, fitted (contain) inside the same locked box as the placeholder stroke */
@@ -271,10 +299,10 @@
     setFace(doc, 'Tenor', 'normal', 6.2, BRONZE); tracked(doc, SIG.SIGNATORY_LABEL || 'AUTHORIZED SIGNATORY', L, hy + 4.2, 0.7);
     setFace(doc, 'Cormorant', 'italic', 9.2, UMBER); joined(doc, [SIG.SIGNATORY_TITLE || 'Maison Director', SIG.SIGNATORY_ENTITY || 'House of Manthai (Private) Limited'], L, hy + 8.4, { bar: true });
     stamp(doc, L + (R - L) * 0.55 + (R - L) * 0.45 / 2, y + 11.5, 11);
-    y = hy + 14;
+    y = hy + SIGTAIL;
 
-    /* live registry verification band */
-    var BH = 31, QS = 24, pad = (BH - QS) / 2;
+    /* live registry verification band: 4.5mm of limestone above and below the QR */
+    var pad = (BH - QS) / 2;
     doc.setFillColor(LIMESTONE); doc.setDrawColor(RULE); doc.setLineWidth(0.75 * PT); doc.rect(L, y, R - L, BH, 'FD');
     qrTile(doc, r.url, L + pad, y + pad, QS);
     doc.link(L + pad, y + pad, QS, QS, { url: r.url });
@@ -291,12 +319,24 @@
     doc.setFont('courier', 'normal'); doc.setFontSize(7.5); doc.setTextColor(UMBER);
     doc.text('ARCHIVAL DIGEST: ' + r.digest, TX, ty);
 
-    /* foot: the legal entity line and the registry note */
-    setFace(doc, 'Tenor', 'normal', 6.2, UMBER);
-    joined(doc, ['HOUSE OF MANTHAI (PRIVATE) LIMITED', 'An Avantio Ventures Company', 'Colombo, Sri Lanka', 'concierge@manthai.lk'], CX, 271.5, { bar: true, track: 0.3, align: 'center' });
-    setFace(doc, 'Cormorant', 'italic', 6.8, FINE);
-    tracked(doc, 'This certificate reflects the House of MANTHAI digital registry at the time of issue. Live verification status on the official registry always governs.', CX, 276.2, 0.02, 'center');
-    if (r.sample) tracked(doc, 'A specimen certificate, issued for illustration.', CX, 279.4, 0.02, 'center');
+    var boxBottom = y + BH;
+
+    /* foot: two balanced, centred lines and the registry note, every line held inside the box width */
+    var FW = R - L;
+    function fit(size, parts, track, bar) {
+      while (size > 5 && (bar ? joinedWidth(doc, parts, track) : spaced(doc, parts[0], track)) > FW) { size -= 0.1; doc.setFontSize(size); }
+    }
+    setFace(doc, 'Tenor', 'normal', 7, UMBER);
+    var f1 = ['HOUSE OF MANTHAI (PRIVATE) LIMITED', 'AN AVANTIO VENTURES COMPANY'];
+    fit(7, f1, 0.35, true); joined(doc, f1, CX, FOOT[0], { bar: true, track: 0.35, align: 'center', sep: '   |   ' });
+    setFace(doc, 'Tenor', 'normal', 6.8, '#6E675E');
+    var f2 = ['Colombo, Sri Lanka', 'concierge@manthai.lk'];
+    fit(6.8, f2, 0.2, true); joined(doc, f2, CX, FOOT[1], { bar: true, track: 0.2, align: 'center', sep: '   |   ' });
+    setFace(doc, 'Cormorant', 'italic', 6.2, FINE);
+    var disc = 'This certificate reflects the House of MANTHAI digital registry at the time of issue. Live verification status on the official registry always governs.';
+    fit(6.2, [disc], 0.02, false); tracked(doc, disc, CX, FOOT[2], 0.02, 'center');
+    if (r.sample) { doc.setFontSize(6.2); tracked(doc, 'A specimen certificate, issued for illustration.', CX, FOOT[3], 0.02, 'center'); }
+    M.certificate.lastLayout = { pad: PAD, boxTop: boxBottom - BH, boxBottom: boxBottom, foot: FOOT, gap: FOOT[0] - 1.8 - boxBottom };
     return doc;
   }
 
