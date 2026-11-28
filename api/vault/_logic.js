@@ -158,6 +158,7 @@ export async function claim(a, env, b, who) {
       owner: { uid: who.uid, email: who.email, title: person.title, first: person.first, last: person.last } };
     if (p.isGift) upd.giftStatus = 'INSCRIBED_BY_RECIPIENT';
     tx.update(pRef, upd);
+    if (p.cardId) tx.update(a.db.collection('vault_cards').doc(p.cardId), { status: 'CLAIMED' });
     tx.delete(sRef);
     if (at.exists) tx.delete(aRef);
     return { piece: { ...p, ...upd } };

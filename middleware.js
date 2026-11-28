@@ -11,7 +11,7 @@
 export const config = { matcher: ['/the-maison', '/pieces/:slug', '/passport/:id', '/verify', '/v'] };
 
 const ORIGIN = 'https://manthai.vercel.app';
-const V = '20261129a';
+const V = '20261129b';
 const card = (file) => ORIGIN + '/assets/og/' + file + '?v=' + V;
 
 function esc(s) {

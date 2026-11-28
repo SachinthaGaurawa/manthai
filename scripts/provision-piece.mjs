@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 /* ==========================================================================
    House of MANTHAI | Atelier pairing: one garment seal + one Solid Metal Vault Card
+   FALLBACK ONLY. The everyday path is the Private Atelier portal
+   (/admin/atelier#enter, Pair & Seal Piece), which also checks the card
+   against the imported pool. Use this script only if the portal is down.
    Run at the atelier, on the House's own computer, when a piece is sealed in
    its lacquered box. It writes the item record to the House Archive; the
    Archive Serial and Vault Key are stored only as peppered digests.

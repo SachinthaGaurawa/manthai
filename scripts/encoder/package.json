@@ -1,0 +1,14 @@
+{
+  "name": "manthai-seal-encoder",
+  "private": true,
+  "type": "module",
+  "description": "Local-only NTAG 424 DNA encoder for the atelier computer (ACS ACR1252U). Never deployed.",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test-mode": "node encode-ntag424.mjs --test-mode",
+    "production-lock": "node encode-ntag424.mjs --production-lock"
+  },
+  "dependencies": {
+    "nfc-pcsc": "0.8.1"
+  }
+}

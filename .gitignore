@@ -3,3 +3,7 @@
 node_modules
 scripts/.icons/
 scripts/.film/
+.env
+.env.local
+.env.*.local
+*.local.env

@@ -3,7 +3,15 @@
    The Concealed Authenticity Seal is an NXP NTAG 424 DNA chip. Each tap
    produces a fresh URL:  /v?uid=<7-byte UID>&ctr=<3-byte counter>&cmac=<8-byte MAC>
    (plain UID and counter mirroring, MAC over an empty input, as in NXP
-   application note AN12196). The MAC is keyed with the chip's SDM File Read
+   application note AN12196).
+   Byte contract (scripts/encoder must match it exactly):
+     uid   14 hex  the 7-byte UID, as mirrored
+     ctr    6 hex  SDMReadCtr as mirrored: most significant byte FIRST
+     cmac  16 hex  the truncated SDMMAC
+     SV2   = 3CC3 0001 0080 || UID || SDMReadCtr (least significant byte first)
+     KSes  = AES-CMAC(SDM File Read key, SV2)
+     MAC   = AES-CMAC(KSes, empty input), keeping bytes 1,3,5..15 (0-based)
+   Checked against AN12196: uid 041E3C8A2D6B80, ctr 000006 -> 4B00064004B0B3D3. The MAC is keyed with the chip's SDM File Read
    key, so a URL cannot be forged without the key, and the counter rises on
    every tap, so an old URL cannot be replayed.
    Files starting with "_" are helpers, not Vercel routes.
@@ -45,14 +53,15 @@ export function cmac(key, msg) {
 }
 
 const HEX = /^[0-9a-f]+$/i;
-/* -> { uid: '04DE5F1EACC040', counter: 61 } when the MAC is genuine, otherwise null */
+/* -> { uid: '041E3C8A2D6B80', counter: 6 } when the MAC is genuine, otherwise null */
 export function verifySun(keyHex, uidHex, ctrHex, macHex) {
   if (!keyHex || !HEX.test(keyHex) || keyHex.length !== 32) return null;
   if (!uidHex || !HEX.test(uidHex) || uidHex.length !== 14) return null;
   if (!ctrHex || !HEX.test(ctrHex) || ctrHex.length !== 6) return null;
   if (!macHex || !HEX.test(macHex) || macHex.length !== 16) return null;
-  const key = Buffer.from(keyHex, 'hex'), uid = Buffer.from(uidHex, 'hex'), ctr = Buffer.from(ctrHex, 'hex');
-  /* SV2 = 3CC3 0001 0080 || UID || SDMReadCtr (as mirrored, least significant byte first) */
+  const key = Buffer.from(keyHex, 'hex'), uid = Buffer.from(uidHex, 'hex');
+  /* the URL carries the counter most significant byte first; SV2 takes it least significant byte first */
+  const ctrMsb = Buffer.from(ctrHex, 'hex'), ctr = Buffer.from([ctrMsb[2], ctrMsb[1], ctrMsb[0]]);
   const sv2 = Buffer.concat([Buffer.from('3CC300010080', 'hex'), uid, ctr]);
   const ses = cmac(key, sv2);
   const full = cmac(ses, Buffer.alloc(0));
@@ -61,4 +70,13 @@ export function verifySun(keyHex, uidHex, ctrHex, macHex) {
   const given = Buffer.from(macHex, 'hex');
   if (!crypto.timingSafeEqual(mac, given)) return null;
   return { uid: uidHex.toUpperCase(), counter: ctr[0] | (ctr[1] << 8) | (ctr[2] << 16) };
+}
+
+/* the URL parameters a genuine chip with this key would produce at this counter (tests and the local encoder) */
+export function signSun(keyHex, uidHex, counter) {
+  const uid = Buffer.from(uidHex, 'hex'), le = Buffer.from([counter & 255, (counter >> 8) & 255, (counter >> 16) & 255]);
+  const ses = cmac(Buffer.from(keyHex, 'hex'), Buffer.concat([Buffer.from('3CC300010080', 'hex'), uid, le]));
+  const full = cmac(ses, Buffer.alloc(0)), mac = Buffer.alloc(8);
+  for (let i = 0; i < 8; i++) mac[i] = full[i * 2 + 1];
+  return { uid: uidHex.toUpperCase(), ctr: Buffer.from([le[2], le[1], le[0]]).toString('hex').toUpperCase(), cmac: mac.toString('hex').toUpperCase() };
 }
