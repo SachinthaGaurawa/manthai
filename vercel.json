@@ -103,6 +103,10 @@
     {
       "source": "/verify",
       "destination": "/"
+    },
+    {
+      "source": "/v",
+      "destination": "/"
     }
   ]
 }

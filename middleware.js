@@ -8,10 +8,10 @@
    through to the normal static rewrite, untouched.
    Passport previews carry the passport ID only, never an owner's name.
    ========================================================================== */
-export const config = { matcher: ['/the-maison', '/pieces/:slug', '/passport/:id', '/verify'] };
+export const config = { matcher: ['/the-maison', '/pieces/:slug', '/passport/:id', '/verify', '/v'] };
 
 const ORIGIN = 'https://manthai.vercel.app';
-const V = '20261128z';
+const V = '20261129a';
 const card = (file) => ORIGIN + '/assets/og/' + file + '?v=' + V;
 
 function esc(s) {
@@ -57,7 +57,7 @@ async function metaFor(request, path) {
     return { title: 'The Maison | MANTHAI', url: ORIGIN + '/the-maison', image: card('og-manthai-flagship.png'), alt: 'MANTHAI · The Maison',
       desc: 'Discover House of MANTHAI: our savoir-faire, the Unbounded Spiral Seal, and our signature presentation ritual.' };
   }
-  if (/^\/verify\/?$/.test(path)) {
+  if (/^\/(verify|v)\/?$/.test(path)) {
     return { title: 'Register Your Piece | MANTHAI', url: ORIGIN + '/verify', image: card('og-passport.png'), alt: 'MANTHAI · Private Vault',
       desc: 'Verify a MANTHAI piece and inscribe it in your name with the Archive Serial and Vault Key of its Solid Metal Vault Card.' };
   }
