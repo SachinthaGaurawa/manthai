@@ -130,4 +130,21 @@ const c3 = chip('04123456789A80');
 c3.send = ((orig) => async (ap) => { const r = await orig(ap); if (ap[1] === 0xc4) c3.keys[2] = crypto.randomBytes(16); return r; })(c3.send);
 await assert.rejects(encodeChip(c3.send, { baseUrl: base, macKey: MAC }), /readback_mac/);
 
+/* reader choice, argument parsing and configuration (scripts/encoder/_local.js) */
+const L = await import('../scripts/encoder/_local.js');
+assert.equal(L.readerRank('ACS ACR1552 1S CL Reader SAM 0', ''), -1);
+assert.equal(L.readerRank('ACS ACR1552 1S CL Reader PICC 0', ''), 2);
+assert.equal(L.readerRank('Identiv uTrust 3700 F CL Reader 0', ''), 2);
+assert.equal(L.readerRank('Generic Smart Card Reader 0', ''), 1);
+assert.equal(L.readerRank('ACS ACR1252 1S CL Reader PICC 0', 'uTrust'), -1);
+assert.equal(L.readerRank('Identiv uTrust 3700 F CL Reader 0', 'utrust'), 2);
+assert.deepEqual(L.parseArgs(['--reader=ACR1552', '--once'], ['--once'], ['--reader']).values, { '--reader': 'ACR1552' });
+assert.deepEqual(L.parseArgs(['--reader'], [], ['--reader']).unknown, ['--reader needs a value']);
+const cfg = (o, opt) => L.checkConfig({ file: 'x', get: (k) => o[k] || '' }, opt || {});
+assert.equal(cfg({ SDM_BASE_URL: 'https://www.houseofmanthai.com', NFC_SDM_MAC_KEY: MAC }).errors.length, 0);
+assert.equal(cfg({ SDM_BASE_URL: 'https://manthai.vercel.app', NFC_SDM_MAC_KEY: MAC }).errors.length, 1);
+assert.equal(cfg({ SDM_BASE_URL: 'https://manthai.vercel.app', NFC_SDM_MAC_KEY: MAC }, { allowTest: true }).errors.length, 0);
+assert.ok(cfg({ SDM_BASE_URL: 'https://manthai.vercel.app', NFC_SDM_MAC_KEY: MAC, ATELIER_CHIP_MASTER_KEY: MASTER }, { lock: true, allowTest: true }).errors.length >= 1);
+assert.ok(/Access denied.*polkit/.test(L.explainPcsc('SCardEstablishContext error: Access denied.(0x8010006a)')));
+
 console.log('encoder ok');

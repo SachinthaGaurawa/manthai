@@ -105,11 +105,36 @@
     if (p.edition) { var n = parseInt(f.no, 10); return n >= 1 && n <= p.edition ? 'Edition 01 · Piece ' + pad2(n) + ' of ' + pad2(p.edition) : ''; }
     return 'Edition 01 · Batch of ' + pad2(p.batch || 0);
   }
+  /* The garment seal input takes a tap URL, or a UID typed by a reader in Keyboard Emulation
+     (with or without colons, hyphens or spaces). NXP NTAG 424 DNA UIDs always start with 04. */
+  var MSG_REV = 'This UID appears reversed (LSB-first). Switch your ACR1552U Keyboard Emulation output to MSB-first Hex.';
+  var MSG_DEC = 'Reader output appears to be Decimal. Configure ACR1552U Keyboard Emulation to 7-byte MSB-first Hex.';
+  function uidCheck(c) {
+    if (/^[0-9a-f]{14}$/i.test(c)) {
+      c = c.toLowerCase();
+      if (c.slice(0, 2) === '04') return { uid: c };
+      return { bad: true, why: c.slice(-2) === '04' ? MSG_REV : 'This is not an NXP NTAG 424 DNA UID: those always start with 04.' };
+    }
+    if (/^\d+$/.test(c)) return { bad: true, why: MSG_DEC };
+    return { bad: true, why: 'This is not a seal URL or a 14-character UID.' };
+  }
   function sealInfo(v) {
     var t = String(v || '').trim(); if (!t) return null;
-    if (/^[0-9a-f]{14}$/i.test(t)) return { uid: t.toUpperCase(), tap: false };
-    var m = /[?&]uid=([0-9a-f]{14})/i.exec(t); if (!m) return { bad: true };
-    return { uid: m[1].toUpperCase(), tap: /[?&]ctr=[0-9a-f]{6}/i.test(t) && /[?&]cmac=[0-9a-f]{16}/i.test(t) };
+    var m = /[?&]uid=([^&#\s]*)/i.exec(t);
+    if (m) {
+      var u = uidCheck(decodeURIComponent(m[1]).replace(/[\s:-]/g, ''));
+      if (u.bad) return u;
+      u.tap = /[?&]ctr=[0-9a-f]{6}(&|#|$)/i.test(t) && /[?&]cmac=[0-9a-f]{16}(&|#|$)/i.test(t);
+      u.value = u.tap ? t : u.uid;
+      return u;
+    }
+    if (/^[a-z]+:\/\//i.test(t)) return { bad: true, why: 'This link has no seal UID in it.' };
+    var r = uidCheck(t.replace(/[\s:-]/g, '')); r.value = r.uid; return r;
+  }
+  function sealMsg(s) {
+    if (!s) return '';
+    if (s.bad) return esc(s.why);
+    return s.tap ? '&#10003; Tap URL read · UID ' + esc(s.uid) + ' · its signature is checked when you seal' : '&#10003; UID ' + esc(s.uid) + ' · a tap URL is preferred: it proves the chip was encoded with the House key';
   }
   function pairHTML() {
     if (S.result) return certHTML(S.result);
@@ -136,8 +161,8 @@
           '<p class="at-fine">The buyer will see only the piece and a neutral status, never the recipient&rsquo;s keys or certificate.</p></div>' : '') +
       '</fieldset>' +
       '<fieldset class="at-set"><legend><span class="at-set__n">3</span>The Concealed Authenticity Seal</legend>' +
-        '<label class="at-f at-f--wide"><span>Tap the garment seal on the reader, or paste its tap URL or UID</span><input id="atNfc" data-f="nfc" autocomplete="off" spellcheck="false" value="' + esc(f.nfc || '') + '" placeholder="https://…/v?uid=…&amp;ctr=…&amp;cmac=…"></label>' +
-        '<p class="at-ok' + (seal && seal.bad ? ' is-bad' : '') + '" aria-live="polite">' + (!seal ? '' : seal.bad ? 'This is not a seal URL or a 14-character UID.' : seal.tap ? '&#10003; Tap URL read · UID ' + esc(seal.uid) + ' · its signature is checked when you seal' : 'UID ' + esc(seal.uid) + ' · a tap URL is preferred: it proves the chip was encoded with the House key') + '</p>' +
+        '<label class="at-f at-f--wide"><span>Tap the garment seal on the reader, or paste its tap URL or UID</span><input id="atNfc" data-f="nfc" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="next" aria-describedby="atNfcMsg" value="' + esc(f.nfc || '') + '" placeholder="https://…/v?uid=…&amp;ctr=…&amp;cmac=…"></label>' +
+        '<p class="at-ok' + (seal && seal.bad ? ' is-bad' : '') + '" id="atNfcMsg" aria-live="polite">' + sealMsg(seal) + '</p>' +
       '</fieldset>' +
       '<fieldset class="at-set"><legend><span class="at-set__n">4</span>The Solid Metal Vault Card</legend>' +
         '<div class="at-scan" id="atScan" data-state="' + (S.scanning ? 'live' : 'idle') + '"><video id="atVideo" playsinline muted aria-hidden="true"></video><span class="at-scan__beam" aria-hidden="true"></span></div>' +
@@ -217,7 +242,7 @@
     card_used: 'This Vault Card is already paired to another piece.',
     seal_paired: 'This garment seal is already paired to another piece.',
     seal_invalid: 'The tap URL did not verify with the House key. Re-encode the chip, or tap again.',
-    seal_format: 'Tap the seal, or paste its tap URL or 14-character UID.',
+    seal_format: 'Tap the seal, or paste its tap URL or 14-character UID.', seal_reversed: MSG_REV,
     edition_taken: 'This edition number is already sealed for this garment.',
     edition_format: 'Choose the garment and its piece number.', piece_format: 'Choose the garment.', size_format: 'Choose the size.',
     email_invalid: 'Check the email address.', gift_buyer_email: 'A gift needs the buyer email, so the buyer sees it as dispatched.',
@@ -297,6 +322,21 @@
     if ((t = e.target.closest('[data-concierge]'))) { S.concierge = { id: t.getAttribute('data-concierge') }; S.err = ''; paint('#atConc input'); return; }
     if (e.target.closest('[data-conc-cancel]')) { S.concierge = null; paint(); return; }
   });
+  function showSeal(el) {
+    var s = sealInfo(el.value), ok = $('#atNfcMsg');
+    if (ok) { ok.classList.toggle('is-bad', !!(s && s.bad)); ok.innerHTML = sealMsg(s); }
+    el.setAttribute('aria-invalid', s && s.bad ? 'true' : 'false');
+    return s;
+  }
+  /* a keyboard-wedge reader types the UID and then presses Enter: normalise it and move on to the Vault Card, never submit */
+  document.addEventListener('keydown', function (e) {
+    if (e.target.id !== 'atNfc' || (e.key !== 'Enter' && e.keyCode !== 13)) return;
+    e.preventDefault(); e.stopPropagation();
+    var el = e.target, s = showSeal(el);
+    if (!s || s.bad) { el.select(); return; }
+    if (!s.tap) { el.value = s.uid; S.form.nfc = s.uid; }
+    var next = $('#atSerial'); if (next) { next.focus(); next.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+  }, true);
   document.addEventListener('keydown', function (e) {
     var t = e.target.closest && e.target.closest('[role="tab"]'); if (!t || (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft')) return;
     var i = TABS.map(function (x) { return x[0]; }).indexOf(t.getAttribute('data-tab')), n = TABS[(i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length][0];
@@ -310,7 +350,7 @@
     if (k === 'serial' || k === 'key') { checkCard(); return; }
     if (k === 'pid' || k === 'gift') { if (k === 'pid') S.form.no = ''; paint('[data-f="' + k + '"]'); return; }
     if (k === 'no') { var ed = $('.at-ed'); if (ed) ed.textContent = editionLabel(S.form) || 'Enter the piece number from the edition register.'; return; }
-    if (k === 'nfc') { var s = sealInfo(el.value), ok = el.closest('.at-set').querySelector('.at-ok'); if (ok) { ok.classList.toggle('is-bad', !!(s && s.bad)); ok.innerHTML = !s ? '' : s.bad ? 'This is not a seal URL or a 14-character UID.' : s.tap ? '&#10003; Tap URL read · UID ' + esc(s.uid) + ' · its signature is checked when you seal' : 'UID ' + esc(s.uid) + ' · a tap URL is preferred: it proves the chip was encoded with the House key'; } }
+    if (k === 'nfc') showSeal(el);
   });
   document.addEventListener('change', function (e) {
     if (e.target.id === 'atCsvFile' && e.target.files && e.target.files[0]) {
@@ -329,10 +369,10 @@
     }
     if (f.id === 'atPair') {
       var F = S.form, p = product(F.pid), ed = editionLabel(F);
-      S.err = !p ? ERR.piece_format : !F.size ? ERR.size_format : !ed ? ERR.edition_format : !sealInfo(F.nfc) || sealInfo(F.nfc).bad ? ERR.seal_format : digits(F.serial).length < 8 || digits(F.key).length !== 4 ? ERR.keys_format : '';
+      S.err = !p ? ERR.piece_format : !F.size ? ERR.size_format : !ed ? ERR.edition_format : !sealInfo(F.nfc) ? ERR.seal_format : sealInfo(F.nfc).bad ? sealInfo(F.nfc).why : digits(F.serial).length < 8 || digits(F.key).length !== 4 ? ERR.keys_format : '';
       if (S.err) { paint('.at-err'); return; }
       S.busy = true; paint();
-      api('pair', { pid: p.id, name: p.name, size: F.size, edition: ed, nfc: F.nfc, serial: F.serial, key: F.key, orderRef: F.orderRef, buyerEmail: F.buyerEmail,
+      api('pair', { pid: p.id, name: p.name, size: F.size, edition: ed, nfc: sealInfo(F.nfc).value, serial: F.serial, key: F.key, orderRef: F.orderRef, buyerEmail: F.buyerEmail,
         gift: !!F.gift, recipient: F.gift ? { title: F.rTitle || '', first: F.rFirst, last: F.rLast } : null })
         .then(function (r) { S.busy = false; S.result = r.piece; S.pool = r.pool; S.card = null; S.cardMsg = ''; paint('.at-cert__t'); }, fail);
       return;

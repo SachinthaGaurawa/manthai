@@ -116,13 +116,20 @@ export async function cardCheck(a, env, b) {
 }
 
 /* the garment seal, as a raw UID or as the URL of a tap on this reader or a phone */
+/* a raw UID (keyboard-wedge readers may add colons, hyphens or spaces) -> 14 upper-case hex; NXP UIDs start with 04 */
+function rawUid(t) {
+  const c = String(t || '').replace(/[\s:-]/g, '');
+  if (!/^[0-9a-f]{14}$/i.test(c)) return null;
+  if (!/^04/i.test(c)) throw new HttpError(400, /04$/i.test(c) ? 'seal_reversed' : 'seal_format');
+  return c.toUpperCase();
+}
 export function readSeal(env, input) {
   const t = String(input || '').trim();
-  if (/^[0-9a-f]{14}$/i.test(t)) return { uid: t.toUpperCase(), counter: -1, verified: false };
+  if (!/uid=/i.test(t)) { const u = rawUid(t); if (u) return { uid: u, counter: -1, verified: false }; throw new HttpError(400, 'seal_format'); }
   let q; try { q = new URL(t).searchParams; } catch (e) { q = new URLSearchParams(t.replace(/^[^?]*\?/, '')); }
   const uid = q.get('uid'), ctr = q.get('ctr'), mac = q.get('cmac');
   if (!uid) throw new HttpError(400, 'seal_format');
-  if (!ctr || !mac) { if (/^[0-9a-f]{14}$/i.test(uid)) return { uid: uid.toUpperCase(), counter: -1, verified: false }; throw new HttpError(400, 'seal_format'); }
+  if (!ctr || !mac) { const u = rawUid(uid); if (u) return { uid: u, counter: -1, verified: false }; throw new HttpError(400, 'seal_format'); }
   if (!env.NFC_SDM_MAC_KEY) throw new HttpError(503, 'not_configured');
   const ok = verifySun(env.NFC_SDM_MAC_KEY, uid, ctr, mac);
   if (!ok) throw new HttpError(400, 'seal_invalid');

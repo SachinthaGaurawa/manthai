@@ -104,4 +104,11 @@ assert.deepEqual(await A.pool(a), { available: 1, paired: 0, claimed: 2 });
 // seal input forms
 assert.deepEqual(A.readSeal(env, '04a1b2c3d4e5f6'), { uid: '04A1B2C3D4E5F6', counter: -1, verified: false });
 assert.throws(() => A.readSeal(env, 'hello'), /seal_format/);
+assert.deepEqual(A.readSeal(env, '04:A1:B2:C3:D4:E5:F6'), { uid: '04A1B2C3D4E5F6', counter: -1, verified: false });
+assert.deepEqual(A.readSeal(env, '04 a1 b2 c3 d4 e5 f6'), { uid: '04A1B2C3D4E5F6', counter: -1, verified: false });
+assert.deepEqual(A.readSeal(env, '04-A1-B2-C3-D4-E5-F6'), { uid: '04A1B2C3D4E5F6', counter: -1, verified: false });
+assert.throws(() => A.readSeal(env, 'f6e5d4c3b2a104'), /seal_reversed/);
+assert.throws(() => A.readSeal(env, '12345678901234'), /seal_format/);
+assert.throws(() => A.readSeal(env, '1234567890'), /seal_format/);
+assert.deepEqual(A.readSeal(env, 'https://x.example/v?uid=04a1b2c3d4e5f6'), { uid: '04A1B2C3D4E5F6', counter: -1, verified: false });
 console.log('atelier ok');

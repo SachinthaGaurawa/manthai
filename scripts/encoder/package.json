@@ -2,11 +2,12 @@
   "name": "manthai-seal-encoder",
   "private": true,
   "type": "module",
-  "description": "Local-only NTAG 424 DNA encoder for the atelier computer (ACS ACR1252U). Never deployed.",
+  "description": "Local-only NTAG 424 DNA encoder for the Founder Encoding Station (ACS ACR1552U, ACR1252U, Identiv uTrust 3700 F or any PC/SC reader). Windows, macOS and Linux. Never deployed.",
   "engines": { "node": ">=20" },
   "scripts": {
-    "test-mode": "node encode-ntag424.mjs --test-mode",
-    "production-lock": "node encode-ntag424.mjs --production-lock"
+    "doctor": "node doctor.mjs",
+    "encode:test": "node encode-ntag424.mjs --test-mode",
+    "encode:prod": "node encode-ntag424.mjs --production-lock"
   },
   "dependencies": {
     "nfc-pcsc": "0.8.1"
