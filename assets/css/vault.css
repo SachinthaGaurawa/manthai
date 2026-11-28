@@ -1,0 +1,274 @@
+/* ==========================================================================
+   MANTHAI  |  The Private Vault layer
+   /verify (the dual-key ritual), the ownership states of /passport/[id],
+   Complete Your Salon Profile, the Private Gifting Atelier in checkout,
+   Wardrobe & Digital Vault transfers. Ivory chapter, square-cut, bronze
+   hairlines; champagne gold only on the obsidian viewfinder and the ceremony.
+   ========================================================================== */
+
+/* ---------------- /verify ---------------- */
+html:not([data-route='verify']) [data-view='verify'] { display: none !important; }
+.vfp { padding-top: calc(var(--header-h) + clamp(32px, 5vw, 72px)); }
+.vf { width: min(100%, 1180px); margin: 0 auto; padding: 0 var(--gutter); }
+
+.vf-head { display: grid; justify-items: center; gap: 10px; text-align: center; padding-bottom: clamp(28px, 4vw, 44px); margin-bottom: clamp(28px, 4vw, 48px); border-bottom: 1px solid var(--alabaster-rule); } /* taste-skill-ignore: DESIGN.md hairline / gold active rule */
+.vf-head__seal svg, .salonp__seal svg, .vf-done__seal svg, .own__seal { display: block; width: 44px; height: auto; aspect-ratio: 1000 / 860; fill: currentColor; color: var(--antique-bronze); }
+.vf-head__seal, .salonp__seal, .vf-done__seal { color: var(--antique-bronze); margin-bottom: 6px; }
+.vf-head__k { margin: 0; font: 400 11px/1.4 var(--sans); letter-spacing: .24em; text-transform: uppercase; color: var(--antique-bronze); }
+.vf-head__t { margin: 4px 0 2px; font: 300 clamp(2.4rem, 5.2vw, 4.2rem)/1.04 var(--serif); letter-spacing: -.005em; color: var(--ink-noir); text-wrap: balance; }
+.vf-head__t:focus, .vf-done__t:focus, .salonp__t:focus { outline: 0; }
+.vf-head__l { max-width: 60ch; margin: 0; font: 400 1.14rem/1.6 var(--serif); color: var(--ink-noir); text-wrap: pretty; }
+
+.vf-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: clamp(32px, 5vw, 80px); align-items: start; }
+.vf-main { display: grid; gap: 22px; align-content: start; min-width: 0; max-width: 640px; }
+.vf-step { margin: 0; font: 400 1.05rem/1.6 var(--serif); color: var(--warm-umber); }
+.vf-fine { margin: 0; font: 400 .94rem/1.5 var(--serif); color: var(--warm-umber); }
+
+/* the piece in hand, once the seal or the card has spoken */
+.vf-piece { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 18px; align-items: center; padding: 14px 16px; background: var(--silk-limestone); }
+.vf-piece__plate { position: relative; aspect-ratio: 3 / 4; overflow: hidden; background: var(--warm-cashmere); }
+.vf-piece__plate > * { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.vf-piece__n { margin: 0; font: 400 1.18rem/1.3 var(--serif); color: var(--ink-noir); }
+.vf-piece__m { margin: 4px 0 0; font: 400 11px/1.4 var(--sans); letter-spacing: .08em; color: var(--warm-umber); }
+.vf-piece__ok { display: inline-flex; align-items: center; gap: 8px; margin: 8px 0 0; font: 400 11px/1.3 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--antique-bronze); }
+
+/* tabs: Optical Vault Scan | Enter Key Manually */
+.vf-tabs { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--alabaster-rule); } /* taste-skill-ignore: DESIGN.md hairline / gold active rule */
+.vf-tab { position: relative; min-height: 52px; padding: 10px 8px 14px; font: 400 12px/1.3 var(--sans); letter-spacing: .08em; color: var(--warm-umber); text-align: center; transition: color var(--t-fast); }
+.vf-tab small { display: block; margin-top: 4px; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--antique-bronze); }
+.vf-tab::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--ink-noir); transform: scaleX(0); transition: transform .45s var(--ease); }
+.vf-tab[aria-selected='true'] { color: var(--ink-noir); }
+.vf-tab[aria-selected='true']::after { transform: scaleX(1); }
+.vf-tab:hover { color: var(--ink-noir); }
+.vf-tab:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; }
+.vf-pane { display: grid; gap: 18px; }
+.vf-pane[hidden] { display: none; }
+
+/* the obsidian viewfinder */
+.vf-finder { position: relative; display: grid; place-items: center; aspect-ratio: 16 / 11; padding: 9%; overflow: hidden; background: var(--obsidian-velvet); color: var(--champagne-gold);
+  clip-path: inset(0 0 0 0); transition: clip-path .42s cubic-bezier(.7, 0, .3, 1), opacity .42s ease; }
+.vf-finder__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .5s ease; }
+.vf-finder[data-state='live'] .vf-finder__video { opacity: 1; }
+.vf-diagram { position: relative; width: 100%; max-width: 440px; height: auto; transition: opacity .5s ease, transform .5s var(--ease); }
+.vf-finder[data-state='live'] .vf-diagram { opacity: .16; }
+.vf-diagram__code { animation: vfCode 2.6s ease-in-out infinite; }
+@keyframes vfCode { 0%, 100% { stroke-opacity: .45; } 50% { stroke-opacity: 1; } }
+/* L-shaped champagne brackets */
+.vf-br { position: absolute; width: 30px; height: 30px; border: 0 solid var(--champagne-gold); transition: transform .5s var(--ease), border-color .3s; }
+.vf-br--tl { top: 16px; left: 16px; border-top-width: 1.5px; border-left-width: 1.5px; }
+.vf-br--tr { top: 16px; right: 16px; border-top-width: 1.5px; border-right-width: 1.5px; }
+.vf-br--bl { bottom: 16px; left: 16px; border-bottom-width: 1.5px; border-left-width: 1.5px; }
+.vf-br--br { bottom: 16px; right: 16px; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+.vf-finder[data-state='live'] .vf-br--tl { transform: translate(6px, 6px); } .vf-finder[data-state='live'] .vf-br--tr { transform: translate(-6px, 6px); }
+.vf-finder[data-state='live'] .vf-br--bl { transform: translate(6px, -6px); } .vf-finder[data-state='live'] .vf-br--br { transform: translate(-6px, -6px); }
+/* the gold scan beam */
+.vf-beam { position: absolute; left: 7%; right: 7%; top: 12%; height: 1px; background: var(--champagne-gold); opacity: 0; pointer-events: none; } /* taste-skill-ignore: DESIGN.md hairline / gold active rule */
+.vf-finder[data-state='live'] .vf-beam { opacity: 1; animation: vfBeam 2.2s cubic-bezier(.45, 0, .55, 1) infinite alternate; }
+@keyframes vfBeam { from { top: 12%; } to { top: 88%; } }
+/* recognised: a soft champagne pulse, then the frame folds away */
+.vf-finder__ok { position: absolute; left: 50%; bottom: 12%; display: inline-flex; align-items: center; gap: 10px; margin: 0; padding: 10px 16px; transform: translate(-50%, 8px); background: rgba(14, 13, 12, .82); border: 1px solid rgba(201, 175, 126, .55); /* taste-skill-ignore: DESIGN.md hairline / gold active rule */
+  font: 400 11px/1 var(--sans); letter-spacing: .2em; text-transform: uppercase; color: #E6D3A6; opacity: 0; transition: opacity .35s ease, transform .35s var(--ease); }
+.vf-finder[data-state='found'] .vf-finder__ok { opacity: 1; transform: translate(-50%, 0); }
+.vf-finder[data-state='found']::after { content: ''; position: absolute; inset: 0; box-shadow: inset 0 0 0 1px var(--champagne-gold); animation: vfPulse .9s ease-out both; pointer-events: none; } /* taste-skill-ignore: DESIGN.md hairline / gold active rule */
+.vf-finder[data-state='found'] .vf-br { border-color: #E6D3A6; transform: scale(1.12); }
+@keyframes vfPulse { 0% { opacity: 0; } 35% { opacity: 1; } 100% { opacity: .55; } }
+.vf-finder.is-folding { clip-path: inset(50% 0 50% 0); opacity: .2; }
+
+.vf-hint { margin: 0; font: 400 1rem/1.55 var(--serif); color: var(--warm-umber); }
+.vf-scan__acts { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 26px; }
+.vf-demo { min-height: 44px; padding: 0 2px; font: 400 12px/1.3 var(--sans); letter-spacing: .06em; color: var(--ink-noir); text-align: left; text-decoration: underline; text-underline-offset: 5px; text-decoration-color: var(--antique-bronze); }
+.vf-demo:hover { text-decoration-color: var(--ink-noir); }
+.vf-msg { margin: 0; min-height: 1.5em; font: 400 .96rem/1.5 var(--serif); color: var(--warm-umber); }
+.vf-msg:empty { min-height: 0; }
+
+/* manual entry: Archive Serial and the four-box Vault Key */
+.vf-pane--manual { gap: 20px; }
+.vf-serial { font: 400 1.15rem/1 var(--sans) !important; letter-spacing: .14em; font-variant-numeric: tabular-nums; transition: color .3s, background-color .6s; }
+.vf-serial.is-filling { color: var(--antique-bronze); }
+.vf-serial.is-set { animation: vfSet .9s ease both; }
+@keyframes vfSet { 0% { background-color: rgba(201, 175, 126, .22); } 100% { background-color: var(--atelier-ivory); } }
+.vf-key { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 10px; }
+.vf-key legend { padding: 0; margin-bottom: 10px; font: 400 12px/1.2 var(--sans); letter-spacing: .08em; color: var(--ink-noir); }
+.vf-key__row { display: flex; gap: 12px; }
+.vk-d { width: 58px; height: 64px; padding: 0; text-align: center; border: 1px solid var(--control-border-light); background: var(--atelier-ivory); color: var(--ink-noir); font: 400 1.6rem/1 var(--sans); font-variant-numeric: tabular-nums; caret-color: var(--antique-bronze); border-radius: 0; transition: border-color var(--t-fast), box-shadow var(--t-fast); } /* taste-skill-ignore: DESIGN.md hairline / gold active rule */
+.vk-d:focus { border-color: var(--ink-noir); outline: 1px solid var(--ink-noir); outline-offset: 0; }
+.vk-d.is-snap { animation: vfSnap .5s cubic-bezier(.2, .9, .3, 1.2) both; }
+@keyframes vfSnap { 0% { transform: translateY(-8px) scale(1.06); border-color: var(--champagne-gold); opacity: .3; } 100% { transform: none; opacity: 1; } }
+.vf-key__e:empty { display: none; }
+.vf-key__e { color: var(--err); font: 400 .9rem/1.4 var(--serif); margin: 0; }
+.vf-note { margin: 0; font: 400 .98rem/1.55 var(--serif); color: var(--warm-umber); }
+.vf-err { margin: 0; padding: 14px 16px; border-left: 2px solid var(--velvet-garnet); background: var(--silk-limestone); font: 400 1rem/1.55 var(--serif); color: var(--ink-noir); }
+.vf-err:focus { outline: 0; }
+.vf-submit.is-ready { animation: vfReady 1.6s ease 1 both; }
+@keyframes vfReady { 0% { transform: translateY(6px); opacity: .6; } 100% { transform: none; opacity: 1; } }
+.vf-tier { margin: 0; padding-top: 14px; border-top: 1px solid var(--alabaster-rule); font: 400 11px/1.65 var(--sans); letter-spacing: .06em; color: var(--antique-bronze); } /* taste-skill-ignore: DESIGN.md hairline / gold active rule */
+
+/* inline sign-in and profile, without losing the keys */
+.vf-auth, .vf-prof { padding: clamp(24px, 3.4vw, 36px); background: var(--silk-limestone); }
+.vf-prof .field input, .vf-prof .field select, .vf-auth .field input { background: var(--atelier-ivory); }
+.vf-auth { display: grid; justify-items: center; text-align: center; }
+.vf-auth > * { width: min(100%, 440px); }
+.vf-accept { display: grid; gap: 16px; }
+.vf-accept b { font-weight: 400; color: var(--ink-noir); }
+
+/* the 1.1 s ceremony: the Seal illuminates, the gold ring locks */
+.vf-cer { display: grid; justify-items: center; align-content: center; gap: 26px; min-height: 380px; text-align: center; background: var(--obsidian-velvet); color: var(--champagne-gold); }
+.vf-cer__mark { position: relative; width: 168px; aspect-ratio: 1; display: grid; place-items: center; }
+.vf-cer__mark > svg:last-child { width: 72px; height: auto; aspect-ratio: 1000 / 860; fill: currentColor; color: #5E574C; transition: color .6s ease, transform .6s var(--ease); transform: scale(.94); }
+.vf-cer.is-on .vf-cer__mark > svg:last-child { color: var(--champagne-gold); transform: scale(1); }
+.vf-cer__ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.vf-cer__ring circle { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .72s cubic-bezier(.65, 0, .35, 1); }
+.vf-cer.is-on .vf-cer__ring circle { stroke-dashoffset: 0; }
+.vf-cer.is-sealed .vf-cer__ring { animation: vfLock .34s ease both; }
+@keyframes vfLock { 0% { transform: rotate(-90deg) scale(1); } 50% { transform: rotate(-90deg) scale(1.05); } 100% { transform: rotate(-90deg) scale(1); } }
+.vf-cer__t { margin: 0; font: 400 11px/1.4 var(--sans); letter-spacing: .24em; text-transform: uppercase; color: #CFC8BA; }
+
+/* the confirmation card */
+.vf-done { display: grid; justify-items: center; gap: 12px; padding: clamp(28px, 4.4vw, 48px) clamp(20px, 4vw, 44px); text-align: center; background: var(--silk-limestone); animation: vfRise .7s var(--ease) both; }
+@keyframes vfRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.vf-done__k { margin: 0; font: 400 11px/1.4 var(--sans); letter-spacing: .24em; text-transform: uppercase; color: var(--antique-bronze); }
+.vf-done__t { margin: 0; font: 300 clamp(1.7rem, 3vw, 2.3rem)/1.15 var(--serif); color: var(--ink-noir); text-wrap: balance; }
+.vf-done__dl { display: grid; width: 100%; max-width: 460px; margin: 12px 0 4px; text-align: left; }
+.vf-done__dl > div { display: grid; grid-template-columns: 10.5em minmax(0, 1fr); gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--alabaster-rule); } /* taste-skill-ignore: DESIGN.md hairline / gold active rule */
+.vf-done__dl > div:first-child { border-top: 1px solid var(--alabaster-rule); } /* taste-skill-ignore: DESIGN.md hairline / gold active rule */
+.vf-done__dl dt { font: 400 11px/1.6 var(--sans); letter-spacing: .16em; text-transform: uppercase; color: var(--antique-bronze); }
+.vf-done__dl dd { margin: 0; font: 400 1.04rem/1.4 var(--serif); color: var(--ink-noir); }
+.vf-done__seal-note { display: inline-flex; align-items: flex-start; gap: 10px; max-width: 46ch; margin: 4px 0 0; font: italic 400 1.02rem/1.5 var(--serif); color: var(--warm-umber); text-align: left; }
+.vf-done__seal-note svg { flex: none; margin-top: 4px; color: var(--antique-bronze); }
+.vf-done .vf-tier { max-width: 460px; }
+.vf-done__acts { display: grid; width: 100%; max-width: 460px; gap: 10px; margin-top: 10px; }
+.vf-done__acts .btn { width: 100%; }
+.vf-done .vf-fine { margin-top: 8px; }
+
+/* the aside: the two keys */
+.vf-aside { position: sticky; top: calc(var(--header-h) + 28px); display: grid; gap: 0; padding: clamp(22px, 3vw, 32px); background: var(--silk-limestone); }
+.vf-aside__t { margin: 0 0 14px; font: 400 1.3rem/1.25 var(--serif); color: var(--ink-noir); }
+.vf-keyline { padding: 16px 0; border-top: 1px solid var(--alabaster-rule); } /* taste-skill-ignore: DESIGN.md hairline / gold active rule */
+.vf-keyline__n { margin: 0 0 6px; font: 400 11px/1.3 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-noir); }
+.vf-keyline p:not(.vf-keyline__n) { margin: 0; font: 400 .98rem/1.55 var(--serif); color: var(--warm-umber); }
+.vf-aside__help { margin: 0; padding-top: 16px; border-top: 1px solid var(--alabaster-rule); font: 400 .96rem/1.5 var(--serif); color: var(--warm-umber); } /* taste-skill-ignore: DESIGN.md hairline / gold active rule */
+.vf-aside__help a { color: var(--ink-noir); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--antique-bronze); }
+
+@media (max-width: 900px) {
+  .vf-grid { grid-template-columns: minmax(0, 1fr); }
+  .vf-main { max-width: none; }
+  .vf-aside { position: static; }
+}
+@media (max-width: 560px) {
+  .vf-finder { aspect-ratio: 4 / 3.4; padding: 10% 7%; }
+  .vf-br { width: 24px; height: 24px; }
+  .vk-d { width: 25%; max-width: 64px; }
+  .vf-done__dl > div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .vf-done__acts .btn { width: 100%; }
+  .vf-cer { min-height: 320px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vf-beam, .vf-diagram__code, .vf-finder[data-state='found']::after, .vk-d.is-snap, .vf-serial.is-set, .vf-submit.is-ready, .vf-done, .vf-cer.is-sealed .vf-cer__ring { animation: none !important; }
+  .vf-finder, .vf-cer__ring circle, .vf-cer__mark > svg:last-child { transition: none; }
+}
+
+/* ---------------- First / Last Name trio, everywhere ---------------- */
+.cx-names { display: grid; grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 560px) {
+  .cx-names { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .cx-names > :first-child { grid-column: 1 / -1; max-width: 12rem; }
+}
+
+/* ---------------- Complete Your Salon Profile ---------------- */
+.salonp { display: grid; justify-items: center; gap: 14px; text-align: center; }
+.salonp .cx-names { width: 100%; text-align: left; margin-top: 6px; }
+.salonp .btn { margin-top: 6px; }
+.salonp__t { margin: 0; font: 300 clamp(1.6rem, 2.6vw, 2rem)/1.15 var(--serif); color: var(--ink-noir); }
+.salonp__lede { max-width: 40ch; margin: 0; font: italic 400 1.05rem/1.5 var(--serif); color: var(--warm-umber); }
+.salonp__later { display: block; margin: 14px auto 0; color: var(--warm-umber); }
+.cx--panel { min-height: 0 !important; padding-bottom: 0 !important; }
+.layer--profile .layer__panel { width: min(92vw, 520px); background: var(--atelier-ivory); border-color: var(--alabaster-rule); }
+.layer--profile .panel-head { border-bottom: 0; }
+.layer--profile .icon-btn { color: var(--ink-noir); }
+.layer--profile .panel-body { padding: 0 clamp(22px, 4vw, 40px) clamp(26px, 4vw, 40px); }
+
+/* ---------------- /passport/[id]: the three ownership states ---------------- */
+.pp__pill { display: inline-flex; align-items: center; gap: 8px; margin: 8px 0 0; padding: 8px 14px; border: 1px solid var(--antique-bronze); font: 400 11px/1 var(--sans); letter-spacing: .2em; text-transform: uppercase; color: var(--antique-bronze); } /* taste-skill-ignore: DESIGN.md hairline / gold active rule */
+.pp__seal { width: 44px; }
+.own { display: grid; gap: 12px; margin-top: 28px; padding: clamp(22px, 3vw, 30px); background: var(--silk-limestone); }
+.own__seal { width: 34px; margin-bottom: 2px; }
+.own__t { margin: 0; font: 400 1.42rem/1.25 var(--serif); color: var(--ink-noir); }
+.own__p { margin: 0; font: 400 1rem/1.55 var(--serif); color: var(--warm-umber); }
+.own__p--note { color: var(--antique-bronze); font-style: italic; }
+.own--await { background: #EADFC8; }
+.own--sealed { background: var(--silk-limestone); }
+.own--mine { background: var(--warm-cashmere); }
+.own__cta { justify-self: start; margin-top: 4px; }
+.own__acts { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; margin-top: 4px; }
+.own__link { display: inline-flex; align-items: center; min-height: 44px; font: 400 12px/1.3 var(--sans); letter-spacing: .06em; color: var(--ink-noir); text-decoration: underline; text-underline-offset: 5px; text-decoration-color: var(--antique-bronze); }
+.own__link:hover { text-decoration-color: var(--ink-noir); }
+.pp .own .btn--solid { background: var(--obsidian-velvet); border-color: var(--obsidian-velvet); color: var(--atelier-ivory); }
+.pp .own .btn--solid:hover { border-color: var(--velvet-garnet); }
+
+/* ---------------- checkout: the Private Gifting Atelier ---------------- */
+.gatelier { display: grid; gap: 26px; padding: clamp(20px, 3vw, 32px); background: var(--silk-limestone); border: 1px solid #DBD3C5; } /* taste-skill-ignore: DESIGN.md hairline / gold active rule */
+.cx-giftpanel.gatelier { margin-left: 0; }
+.gatelier__t { margin: 0; font: 400 1.36rem/1.2 var(--serif); color: var(--ink-noir); }
+.gatelier__fs { gap: 12px; }
+.gatelier__opts { display: grid; gap: 10px; }
+.gatelier__opt { background: var(--atelier-ivory); }
+.gatelier__addr { display: grid; gap: 14px; margin-top: 4px; }
+.gatelier__addr[hidden], .gatelier__phone[hidden] { display: none; }
+.gatelier .field input, .gatelier .field select, .gatelier .field textarea, .gatelier .phone-wrap { background: var(--atelier-ivory); }
+.gcard-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(18px, 3vw, 28px); align-items: start; }
+.gcard-fields { display: grid; gap: 14px; }
+.gcard { margin: 0; display: grid; gap: 10px; position: sticky; top: 24px; }
+.gcard__card { display: grid; grid-template-rows: auto auto 1fr auto; gap: 12px; aspect-ratio: 4 / 5; padding: 11% 10%; background: var(--atelier-ivory); border: 1px solid var(--antique-bronze); box-shadow: inset 0 0 0 5px var(--atelier-ivory), inset 0 0 0 6px rgba(117, 90, 42, .25); text-align: center; } /* taste-skill-ignore: DESIGN.md hairline / gold active rule */
+.gcard__seal { justify-self: center; width: 26px; height: auto; aspect-ratio: 1000 / 860; fill: var(--antique-bronze); }
+.gcard__to, .gcard__note, .gcard__from { margin: 0; font-family: var(--serif); font-style: italic; color: var(--ink-noir); overflow-wrap: anywhere; }
+.gcard__to { font-size: 1.12rem; }
+.gcard__note { align-self: center; font-size: 1.08rem; line-height: 1.55; white-space: pre-line; }
+.gcard__from { font-size: 1.02rem; color: var(--warm-umber); }
+.gcard [data-empty] { color: rgba(89, 83, 75, .55); }
+.gcard__cap { font: 400 11px/1.3 var(--sans); letter-spacing: .2em; text-transform: uppercase; color: var(--warm-umber); text-align: center; }
+.gatelier__assure { margin: 0; padding-top: 18px; border-top: 1px solid #DBD3C5; font: 400 .98rem/1.6 var(--serif); color: var(--warm-umber); } /* taste-skill-ignore: DESIGN.md hairline / gold active rule */
+.gatelier__assure b { font-weight: 400; color: var(--ink-noir); }
+@media (max-width: 720px) {
+  .gcard-wrap { grid-template-columns: minmax(0, 1fr); }
+  .gcard { position: static; max-width: 320px; width: 100%; justify-self: center; }
+}
+
+/* ---------------- confirmation record: Vault Cards ---------------- */
+.rec__status { color: var(--antique-bronze) !important; }
+.rec__vcard { background-color: #141518; background-image: linear-gradient(150deg, rgba(255, 255, 255, .08), transparent 40%, rgba(0, 0, 0, .2)), repeating-linear-gradient(0deg, rgba(255, 255, 255, .03) 0 1px, transparent 1px 2px); border-color: rgba(255, 255, 255, .12); } /* taste-skill-ignore: DESIGN.md verification-card steel sheen */
+.rec__demo-card { display: grid; gap: 10px; padding: 18px 20px; background: var(--silk-limestone); }
+.rec__keys { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.rec__keys li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px 22px; align-items: baseline; padding: 10px 0; border-top: 1px solid var(--alabaster-rule); font: 400 11px/1.4 var(--sans); letter-spacing: .08em; color: var(--warm-umber); } /* taste-skill-ignore: DESIGN.md hairline / gold active rule */
+.rec__keys li span:first-child { font: 400 1rem/1.3 var(--serif); letter-spacing: 0; color: var(--ink-noir); }
+.rec__keys b { font-weight: 400; color: var(--ink-noir); letter-spacing: .14em; font-variant-numeric: tabular-nums; }
+@media (max-width: 560px) { .rec__keys li { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+
+/* ---------------- Wardrobe & Digital Vault: inscriptions and transfers ---------------- */
+.acct-vcard__acts { display: grid; justify-items: start; gap: 2px; }
+.acct-vcard.is-pending { border-color: rgba(117, 90, 42, .45); }
+.acct-xfer { grid-column: 1 / -1; display: grid; gap: 14px; padding: 20px 22px; margin: 4px -22px -20px; background: var(--silk-limestone); border-top: 1px solid var(--alabaster-rule); } /* taste-skill-ignore: DESIGN.md hairline / gold active rule */
+.acct-xfer__t { margin: 0; font: 400 11px/1.3 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--antique-bronze); }
+.acct-xfer__lede { margin: 0; max-width: 62ch; font: 400 1rem/1.55 var(--serif); color: var(--warm-umber); }
+.acct-xfer .acct-fine b { font-weight: 400; color: var(--ink-noir); }
+.acct-xfer__link { display: flex; gap: 10px; }
+.acct-xfer__link input { flex: 1 1 auto; min-width: 0; min-height: 44px; padding: 0 12px; border: 1px solid var(--control-border-light); background: var(--atelier-ivory); color: var(--ink-noir); font: 400 12px/1 var(--sans); letter-spacing: .02em; text-overflow: ellipsis; }
+.acct-await { display: grid; margin: 0 0 4px; padding: 0; list-style: none; border-top: 1px solid var(--alabaster-rule); } /* taste-skill-ignore: DESIGN.md hairline / gold active rule */
+.acct-await li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 18px; padding: 12px 0; border-bottom: 1px solid var(--alabaster-rule); } /* taste-skill-ignore: DESIGN.md hairline / gold active rule */
+.acct-await__n { font: 400 1.08rem/1.35 var(--serif); color: var(--ink-noir); }
+.acct-await__n small { display: block; margin-top: 3px; font: 400 11px/1.4 var(--sans); letter-spacing: .08em; color: var(--warm-umber); }
+.acct-await__s { font: 400 11px/1.3 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--antique-bronze); }
+@media (max-width: 560px) {
+  .acct-xfer { margin: 4px -16px -16px; padding: 18px 16px; }
+  .acct-xfer__link { flex-direction: column; }
+}
+
+/* ---------------- the Maison: the Vault Card chapter ---------------- */
+.vcard-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 28px; }
+@media (max-width: 900px) {
+  .acct-vcard__acts { grid-column: 2; }
+}
+@media (max-width: 560px) {
+  .acct-vcard__acts { grid-column: 1 / -1; justify-items: stretch; }
+  .acct-vcard__acts .acct-link { justify-content: center; }
+}
+.gatelier[hidden] { display: none; }

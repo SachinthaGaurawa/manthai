@@ -31,7 +31,7 @@
         },
         {
           "key": "Permissions-Policy",
-          "value": "camera=(), microphone=(), geolocation=()"
+          "value": "camera=(self), microphone=(), geolocation=()"
         }
       ]
     },
@@ -98,6 +98,10 @@
     },
     {
       "source": "/passport/:id",
+      "destination": "/"
+    },
+    {
+      "source": "/verify",
       "destination": "/"
     }
   ]

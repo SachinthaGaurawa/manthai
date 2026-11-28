@@ -169,14 +169,14 @@
           '</div>' +
           (closed ? '' : '<div class="clarity">' +
             '<p><b>Total: ' + P(p.price) + '</b> · Complimentary Insured Delivery <span id="pdpWhen"></span>' + C.dref(5) + '</p>' +
-            '<p><b>Gifting included.</b> Complimentary sealed lacquered gift presentation and a handwritten calligraphy note, available at checkout. Prices are omitted on gift receipts.</p>' +
+            '<p><b>Gifting included.</b> Complimentary lacquered gift presentation and a handwritten cotton card, available at checkout. Gifts are dispatched uninscribed and with no pricing enclosed, so the recipient registers the piece in their own name.</p>' +
             '<p><b>Risk-free stewardship.</b> 14-day complimentary size exchange, subject to remaining availability within the numbered edition, or a transparent refund to your original payment method.</p>' +
           '</div>') +
           (feel.fabric ? '<div class="feel"><p class="feel__k">Feel &amp; Drape' + C.dref(3) + '</p><p class="feel__v">' + esc(feel.fabric) + ' · ' + esc(feel.hand) + ' · ' + feel.gsm + ' GSM</p></div>' : '') +
           '<div class="pdp__acc">' +
             '<details><summary>Atelier Craft &amp; Textile Provenance</summary><p>' + esc(p.story) + '</p><p><b>Materials.</b> ' + esc(p.materials) + '</p><p><b>Weight.</b> ' + esc(p.weight || '') + '</p><p><b>Drape and lining.</b> ' + esc(p.drape || '') + '</p><p><b>Provenance.</b> ' + esc(p.provenance) + '.</p></details>' +
             '<details><summary>Garment Care</summary><p>' + esc(p.care) + '</p><ul class="care-list">' + M.CARE.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul></details>' +
-            '<details><summary>Packaging &amp; Verification Card</summary><p>Your piece arrives in a rigid gatefold box in high-gloss midnight navy lacquer, lined in velvet garnet and stamped in gold foil with the Unbounded Spiral Seal.' + C.dref(1) + ' Inside, it rests folded in acid-free tissue under a gold wafer, with a woven silk neck label. Beneath it, the Private Circle Presentation Case holds a brushed black metal Verification Card with NFC and QR, and under the case lie a thick cotton Story Card and, beneath it, your Certificate of Authenticity and Ownership. Tap the card or scan its code to open the authenticity record.</p><p>For couriered orders across Sri Lanka, your signature midnight-navy lacquered presentation box arrives safeguarded inside an unbranded, reinforced protective outer shipping carton.</p><button class="link-btn" type="button" data-passport="' + p.id + '">Open a sample record</button></details>' +
+            '<details><summary>Packaging &amp; Verification</summary><p>Your piece arrives in a rigid gatefold box in high-gloss midnight navy lacquer, lined in velvet garnet and stamped in gold foil with the Unbounded Spiral Seal.' + C.dref(1) + ' Inside, it rests folded in acid-free tissue under a gold wafer. Its woven silk-damask neck label carries the MANTHAI wordmark alone, with nothing set near the neck, while the encrypted Concealed Authenticity Seal is softly enclosed in a satin leaf along the lower-left inner side seam, effortless to tap through the silk.</p><p>Beneath the piece, the Private Circle Presentation Case holds your Solid Metal Vault Card in brushed black stainless steel, laser-inscribed on its reverse with an Archive Serial and a one-time Vault Key. Under the case lie a thick cotton Story Card and, beneath it, your Certificate of Authenticity and Ownership.' + C.dref(2) + '</p><p>Tap the seam with a smartphone to verify the piece instantly; then inscribe it once in your Private Vault with the card, by Optical Vault Scan or by entering its keys. Your certificate is then issued in your own name.' + C.dref(6) + '</p><p>For couriered orders across Sri Lanka, your signature midnight-navy lacquered presentation box arrives safeguarded inside an unbranded, reinforced protective outer shipping carton.</p><button class="link-btn" type="button" data-passport="' + p.id + '">Open a sample record</button> <a class="link-btn" href="/verify" data-verify-page>Verify a Piece</a></details>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -420,7 +420,7 @@
   /* Sri Lankan postal codes 00100 to 01500 are Colombo 01 to 15 */
   function areaFromPost(v) { var m = /^0(0[1-9]|1[0-5])00$/.exec(String(v || '').replace(/\s/g, '')); return m ? COLOMBO_AREAS[Number(m[1]) - 1] : null; }
   var STEP_NAMES = ['Contact & Delivery', 'Fulfillment & Gifting', 'Payment'];
-  var NOTE_MAX = 160;
+  var NOTE_MAX = 220;
   var ICON = {
     back: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20 12H5m6-6-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>',
     check: '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>',
@@ -433,6 +433,13 @@
     return '<div class="field"><label for="' + id + '">' + label + '</label><select id="' + id + '" name="' + name + '" ' + (attrs || '') + ' aria-describedby="' + (hint ? id + '-h ' : '') + id + '-e"><option value="">Choose</option>' +
       list.map(function (x) { return '<option' + (x === val ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('') + '</select>' +
       (hint ? '<span class="field__hint" id="' + id + '-h">' + hint + '</span>' : '') + '<span class="field__error" id="' + id + '-e" role="alert"></span></div>';
+  }
+  /* Title (optional), First Name * and Last Name *, side by side: the same trio on every form */
+  function namesHTML(pfx, nm, d, labels) {
+    labels = labels || ['Title', 'First Name', 'Last Name'];
+    return '<div class="cx-names">' + selectField(pfx + '-title', nm[0], opt(labels[0]), C.TITLES, d[nm[0]] || '', 'autocomplete="' + (pfx === 'co' ? 'honorific-prefix' : 'off') + '"') +
+      coField(pfx + '-first', nm[1], req(labels[1]), 'autocomplete="' + (pfx === 'co' ? 'given-name' : 'off') + '" required maxlength="60"', d[nm[1]]) +
+      coField(pfx + '-last', nm[2], req(labels[2]), 'autocomplete="' + (pfx === 'co' ? 'family-name' : 'off') + '" required maxlength="60"', d[nm[2]]) + '</div>';
   }
   function req(label) { return label + ' <span class="req" aria-hidden="true">*</span>'; }
   function opt(label) { return label + ' <span class="opt">(optional)</span>'; }
@@ -472,7 +479,7 @@
     }).join('');
     panel.innerHTML = bagHead() + '<div class="bag-lines">' + lines + '</div>' +
       '<div class="bag-foot">' +
-        '<label class="gift"><input type="checkbox" data-gift' + (g.on ? ' checked' : '') + '><span><b>Prepare as a gift</b><span>Hand-wrapped, with a complimentary calligraphy card inside the lacquered box.</span></span></label>' +
+        '<label class="gift"><input type="checkbox" data-gift' + (g.on ? ' checked' : '') + '><span><b>Acquire as a gift</b><span>Dispatched uninscribed, with no pricing enclosed and a handwritten cotton card. Recipient details follow at checkout.</span></span></label>' +
         '<div class="field gift-note"' + (g.on ? '' : ' hidden') + '><label for="giftNote">' + opt('Your note') + '</label><textarea id="giftNote" data-gift-note maxlength="' + NOTE_MAX + '" rows="2" placeholder="Written by hand on the card">' + esc(g.note) + '</textarea></div>' +
         '<div class="totals"><span>Subtotal</span><output>' + P(C.bagTotalLKR()) + '</output></div>' +
         '<p class="fine-print">Complimentary insured delivery across Sri Lanka. ' + C.deliveryWhen('colombo') + ' in Colombo.' + C.dref(5) + '</p>' +
@@ -519,7 +526,7 @@
     return '<fieldset class="cx-fs cx-saved"><legend class="cx-fs__legend">' + req('Deliver to') + '</legend><div class="cx-saved__list">' +
       list.map(function (a) {
         return '<label class="cx-addrcard"><input type="radio" name="addrPick" value="' + esc(a.id) + '"' + (d.addrPick === a.id ? ' checked' : '') + '><span class="cx-radio" aria-hidden="true"></span>' +
-          '<span class="cx-addrcard__body"><b>' + esc(d.name || (C.state.member && C.state.member.name) || '') + (a.isDefault ? ' <span class="acct-pill is-default">Default</span>' : '') + '</b><span>' + esc(savedText(a)) + '</span></span></label>';
+          '<span class="cx-addrcard__body"><b>' + esc(C.formalName(d) || (C.state.member && C.state.member.name) || '') + (a.isDefault ? ' <span class="acct-pill is-default">Default</span>' : '') + '</b><span>' + esc(savedText(a)) + '</span></span></label>';
       }).join('') +
       '<label class="cx-addrcard cx-addrcard--new"><input type="radio" name="addrPick" value="new"' + (d.addrPick === 'new' ? ' checked' : '') + '><span class="cx-radio" aria-hidden="true"></span><span class="cx-addrcard__body"><b>Deliver to a new address</b><span>Add a Sri Lankan address for this acquisition.</span></span></label>' +
       '</div></fieldset>';
@@ -528,7 +535,9 @@
     var m = C.state.member; if (!m) return;
     var pr = C.state.profile || {}, last = (C.state.orders || []).filter(function (o) { return o.email && String(o.email).toLowerCase() === String(m.email).toLowerCase(); })[0] || {};
     if (!d.email) d.email = m.email;
-    if (!d.name) d.name = m.name;
+    var pn = C.person() || {};
+    if (!d.first && !d.last) { d.first = pn.first; d.last = pn.last; }
+    if (d.title === undefined) d.title = pn.title || '';
     if (!d.phoneLocal) { var ph = String(pr.phone || last.phone || '').replace(/\D/g, '').replace(/^(94|0)/, ''); if (/^7\d{8}$/.test(ph)) d.phoneLocal = ph; }
     var list = savedList();
     if (!d.addrPick) {
@@ -541,9 +550,9 @@
   function step1() {
     var d = co.d;
     return '<form class="cx-form" id="coStep1" novalidate><p class="cx-legend">Fields marked <span class="req" aria-hidden="true">*</span> are required.</p>' +
+      namesHTML('co', ['title', 'first', 'last'], d) +
       coField('co-email', 'email', req('Email Address'), 'type="email" autocomplete="email" inputmode="email" required', d.email, 'Your Digital Acquisition Record is sent here.') +
       '<div class="field field--phone"><label for="co-phone">' + req('Mobile Number (+94)') + '</label><div class="phone-wrap"><span class="phone-cc" aria-hidden="true">+94</span><input id="co-phone" name="phone" type="tel" autocomplete="tel-national" inputmode="numeric" placeholder="77 123 4567" maxlength="13" required value="' + esc(d.phoneLocal || '') + '" aria-describedby="co-phone-h co-phone-e"></div><span class="field__hint" id="co-phone-h">Used exclusively by our Colombo courier to coordinate your delivery window and signature on receipt.</span><span class="field__error" id="co-phone-e" role="alert"></span></div>' +
-      coField('co-name', 'name', req('Full Name'), 'autocomplete="name" required', d.name) +
       savedAddrHTML(d) +
       '<div class="cx-newaddr" id="cxNewAddr"' + (savedList().length && d.addrPick !== 'new' ? ' hidden' : '') + '>' +
       coField('co-addr', 'addr', req('Street Address'), 'autocomplete="address-line1" required', d.addr) +
@@ -561,7 +570,7 @@
       '<p class="cx-zone' + (inColombo(d) ? ' is-on' : '') + '" id="cxZone" aria-live="polite">' + zoneHTML(d) + '</p>' +
       '<button class="btn btn--solid btn--block cx-next" type="submit"><span class="btn__label">Continue to Fulfillment</span></button></form>';
   }
-  function step1Sum() { var d = co.d; return '<p>' + esc(d.name) + '<br>' + esc(d.email) + ' · ' + esc(d.phone) + '</p><p>' + esc(addressOf(d)) + '</p>'; }
+  function step1Sum() { var d = co.d; return '<p>' + esc(C.formalName(d, true)) + '<br>' + esc(d.email) + ' · ' + esc(d.phone) + '</p><p>' + esc(addressOf(d)) + '</p>'; }
   function step2() {
     var d = co.d, len = (d.giftNote || '').length;
     return '<form class="cx-form" id="coStep2" novalidate><fieldset class="cx-fs"><legend class="cx-fs__legend">Delivery Method</legend><div class="choices cx-ship">' + shipOptions().map(function (k) {
@@ -570,18 +579,56 @@
       }).join('') + '</div>' +
       (inColombo(d) ? '' : '<p class="cx-note">' + esc(d.district || 'Your district') + ' is served by Complimentary Insured Courier Delivery. Colombo 01 to 15 receive Priority Colombo Delivery.</p>') + '</fieldset>' +
       '<fieldset class="cx-fs"><legend class="cx-fs__legend">Gifting</legend>' +
-      '<label class="gift"><input type="checkbox" name="gift"' + (d.gift ? ' checked' : '') + '><span><b>Prepare as a Gift</b><span>Hand-wrapped, with your message written in calligraphy on a cotton card.</span></span></label>' +
-      '<div class="cx-giftpanel" id="cxGift"' + (d.gift ? '' : ' hidden') + '>' +
-        '<div class="field"><label for="co-note">' + opt('Gift Message') + '</label><textarea id="co-note" name="giftNote" maxlength="' + NOTE_MAX + '" rows="3" aria-describedby="co-note-c" placeholder="Written by hand on the card">' + esc(d.giftNote || '') + '</textarea><span class="cx-count" id="co-note-c" aria-live="polite">' + len + ' / ' + NOTE_MAX + '</span></div>' +
-        '<label class="cx-toggle"><input type="checkbox" name="omit"' + (d.omit !== false ? ' checked' : '') + '><span class="cx-toggle__ui" aria-hidden="true"></span><span>Omit prices on the enclosed acquisition record</span></label>' +
-      '</div></fieldset>' +
+      '<label class="gift"><input type="checkbox" name="gift" aria-controls="cxGift" aria-expanded="' + (d.gift ? 'true' : 'false') + '"' + (d.gift ? ' checked' : '') + '><span><b>Acquire this piece as a Gift</b><span>Hand-wrapped, dispatched uninscribed, with a complimentary handwritten cotton card.</span></span></label>' +
+      '<div class="gatelier" id="cxGift"' + (d.gift ? '' : ' hidden') + '>' + giftAtelierHTML(d) + '</div></fieldset>' +
       '<div class="field"><label for="co-instr">' + opt('Delivery Instructions') + '</label><input id="co-instr" name="instr" autocomplete="off" maxlength="160" placeholder="A gate code, or a preferred time" value="' + esc(d.instr || '') + '"></div>' +
       '<button class="btn btn--solid btn--block cx-next" type="submit"><span class="btn__label">Continue to Payment</span></button></form>';
+  }
+  /* ---------- the Private Gifting Atelier: recipient, delivery, courier privacy and the cotton card ---------- */
+  function giftAtelierHTML(d) {
+    var to = d.gTo || '', note = d.giftNote || '', from = d.gFrom || '', rd = d.rDeliver || 'me', rc = d.rCourier || 'me';
+    function radio(name, val, cur, title, text) {
+      return '<label class="cx-addrcard gatelier__opt"><input type="radio" name="' + name + '" value="' + val + '"' + (cur === val ? ' checked' : '') + '><span class="cx-radio" aria-hidden="true"></span><span class="cx-addrcard__body"><b>' + title + '</b>' + (text ? '<span>' + text + '</span>' : '') + '</span></label>';
+    }
+    return '<h3 class="gatelier__t">Private Gifting Atelier</h3>' +
+      '<fieldset class="cx-fs gatelier__fs"><legend class="cx-fs__legend">Recipient Details</legend>' + namesHTML('gr', ['rTitle', 'rFirst', 'rLast'], d) + '</fieldset>' +
+      '<fieldset class="cx-fs gatelier__fs"><legend class="cx-fs__legend">Recipient Delivery</legend><div class="gatelier__opts">' +
+        radio('rDeliver', 'me', rd, 'Deliver to my address', 'If you will hand the piece over in person.') +
+        radio('rDeliver', 'recipient', rd, 'Deliver directly to the recipient', 'Sealed and couriered to their Sri Lankan address.') + '</div>' +
+        '<div class="gatelier__addr" id="cxRAddr"' + (rd === 'recipient' ? '' : ' hidden') + '>' +
+          '<div class="row-2">' + selectField('gr-district', 'rDistrict', req('District'), DISTRICTS, d.rDistrict, '') + coField('gr-city', 'rCity', req('City or Town'), 'autocomplete="off"', d.rCity) + '</div>' +
+          coField('gr-addr', 'rAddr', req('Street Address'), 'autocomplete="off"', d.rAddr) +
+          coField('gr-addr2', 'rAddr2', opt('Apartment, Suite or Landmark'), 'autocomplete="off"', d.rAddr2) +
+        '</div></fieldset>' +
+      '<fieldset class="cx-fs gatelier__fs"><legend class="cx-fs__legend">Courier Coordination</legend><div class="gatelier__opts">' +
+        radio('rCourier', 'me', rc, 'Coordinate courier arrival with me', 'Preserves the surprise. The courier calls you, never the recipient.') +
+        radio('rCourier', 'recipient', rc, 'Coordinate courier arrival directly with the recipient', '') + '</div>' +
+        '<div class="field field--phone gatelier__phone" id="cxRPhone"' + (rc === 'recipient' ? '' : ' hidden') + '><label for="gr-phone">' + opt('Recipient Mobile (+94)') + '</label><div class="phone-wrap"><span class="phone-cc" aria-hidden="true">+94</span><input id="gr-phone" name="rPhone" type="tel" autocomplete="off" inputmode="numeric" placeholder="77 123 4567" maxlength="13" value="' + esc(d.rPhone || '') + '" aria-describedby="gr-phone-e"></div><span class="field__error" id="gr-phone-e" role="alert"></span></div>' +
+      '</fieldset>' +
+      '<fieldset class="cx-fs gatelier__fs"><legend class="cx-fs__legend">Complimentary Handwritten Cotton Gift Card</legend><div class="gcard-wrap">' +
+        '<div class="gcard-fields">' +
+          coField('gr-to', 'gTo', opt('To'), 'autocomplete="off" maxlength="40" data-gc="to"', to) +
+          '<div class="field"><label for="co-note">' + opt('Personal Note') + '</label><textarea id="co-note" name="giftNote" maxlength="' + NOTE_MAX + '" rows="4" aria-describedby="co-note-c" data-gc="note" placeholder="Written by hand, in calligraphy">' + esc(note) + '</textarea><span class="cx-count" id="co-note-c" aria-live="polite">' + note.length + ' / ' + NOTE_MAX + '</span></div>' +
+          coField('gr-from', 'gFrom', opt('From'), 'autocomplete="off" maxlength="40" data-gc="from"', from) +
+        '</div>' +
+        '<figure class="gcard" aria-label="Live preview of your handwritten cotton gift card"><div class="gcard__card">' +
+          '<svg class="gcard__seal" viewBox="0 0 1000 860" aria-hidden="true"><use href="#spiral-seal"/></svg>' +
+          '<p class="gcard__to" data-gcv="to"' + (to ? '' : ' data-empty') + '>' + (to ? 'To ' + esc(to) : 'To') + '</p>' +
+          '<p class="gcard__note" data-gcv="note"' + (note ? '' : ' data-empty') + '>' + (note ? esc(note) : 'Your words, written by hand in calligraphy.') + '</p>' +
+          '<p class="gcard__from" data-gcv="from"' + (from ? '' : ' data-empty') + '>' + (from ? 'With love, ' + esc(from) : 'From') + '</p>' +
+        '</div><figcaption class="gcard__cap">Live Archival Card Preview</figcaption></figure>' +
+      '</div></fieldset>' +
+      '<p class="gatelier__assure"><b>Discreet Gift Standard.</b> No pricing appears on the enclosed presentation slip or garment seal. Each piece is dispatched uninscribed so the recipient may tap the concealed garment seal and use the Solid Metal Vault Card to register ownership permanently in their own name. Discreet 14-day unworn size exchanges are honoured directly for the recipient, subject to remaining availability within the numbered edition. Where the requested size in a closed edition is no longer available, House of Manthai (Private) Limited extends a Private Maison Credit toward a forthcoming edition or a full refund in accordance with our Terms &amp; Conditions of Sale.</p>';
+  }
+  function giftLine(g) {
+    if (!g) return '';
+    var who = C.formalName({ title: g.rTitle, first: g.rFirst, last: g.rLast }, true);
+    return 'A gift for ' + who + ' · ' + (g.rDeliver === 'recipient' ? 'Delivered directly to the recipient' : 'Delivered to you') + ' · ' + (g.rCourier === 'recipient' ? 'Courier coordinated with the recipient' : 'Courier coordinated with you, preserving the surprise');
   }
   function step2Sum() {
     var d = co.d;
     return '<p>' + esc(C.DELIVERY[d.ship].label) + '<br><span class="when">' + esc(C.deliveryWhen(d.ship)) + '</span></p>' +
-      (d.gift ? '<p>Prepared as a gift' + (d.giftNote ? ': “' + esc(d.giftNote) + '”' : '') + (d.omit !== false ? '<br><span class="when">Prices omitted from the enclosed record</span>' : '') + '</p>' : '');
+      (d.gift ? '<p>' + esc(giftLine(d)) + (d.giftNote ? '<br>“' + esc(d.giftNote) + '”' : '') + '<br><span class="when">Dispatched uninscribed, with no pricing enclosed</span></p>' : '');
   }
   function step3() {
     var d = co.d;
@@ -613,9 +660,9 @@
         return '<li class="cx-line"><div class="cx-line__thumb">' + C.plateHTML(p, 'form', 'thumb') + '</div><div class="cx-line__info"><p class="cx-line__name">' + esc(p.short) + '</p><p class="cx-line__meta">Size ' + esc(l.size) + ' <span aria-hidden="true">·</span> Qty ' + l.qty + '</p></div><p class="cx-line__price">' + P(p.price * l.qty) + '</p></li>';
       }).join('') + '</ul>' +
       '<dl class="cx-rows"><div><dt>Subtotal</dt><dd>' + total + '</dd></div><div><dt>Delivery</dt><dd>Complimentary</dd></div>' +
-        '<div><dt>Gift Presentation</dt><dd>' + (d.gift ? 'Prepared as a gift' : 'Not selected') + '</dd></div>' +
+        '<div><dt>Gift Presentation</dt><dd>' + (d.gift ? 'Complimentary' : 'Not selected') + '</dd></div>' +
         '<div class="cx-rows__total"><dt>Total</dt><dd>' + total + '</dd></div></dl>' +
-      '<p class="cx-sum__note"><span class="cx-sum__seal">' + SEAL + '</span><span>Every piece arrives sealed in our lacquered gatefold box, with its own numbered Verification Card. For couriered orders across Sri Lanka, your signature midnight-navy lacquered presentation box arrives safeguarded inside an unbranded, reinforced protective outer shipping carton.</span></p></div></section>';
+      '<p class="cx-sum__note"><span class="cx-sum__seal">' + SEAL + '</span><span>Every piece arrives sealed in our lacquered gatefold box, with its own Solid Metal Vault Card for registering ownership. For couriered orders across Sri Lanka, your signature midnight-navy lacquered presentation box arrives safeguarded inside an unbranded, reinforced protective outer shipping carton.</span></p></div></section>';
   }
   function renderCheckoutPage() {
     var root = $('#cxPanel'); if (!root) return;
@@ -646,7 +693,7 @@
   /* ---------- the Digital Acquisition Record ---------- */
   function renderConfirmed(o) {
     var root = $('#cxDone'); if (!root || !o) return;
-    var first = (o.name || '').split(' ')[0] || 'you', m = C.state.member, del = C.DELIVERY[o.ship] || C.DELIVERY.island;
+    var first = o.first || (o.name || '').split(' ')[0] || 'you', m = C.state.member, gi = o.gift ? (o.giftInfo || {}) : null, del = C.DELIVERY[o.ship] || C.DELIVERY.island;
     var payNote = o.method === 'bank' ? '<p class="rec__notice"><b>Private bank transfer.</b> Transfer from Commercial Bank, Sampath Bank, HNB or NTB using the reference <b>' + esc(o.ref) + '</b>. The Maison account details are sent to ' + esc(o.email) + ', and your piece is prepared as soon as the transfer arrives.</p>'
       : o.method === 'lankaqr' ? '<p class="rec__notice"><b>LankaQR.</b> In the live store, a LankaQR code appears here to scan with your banking app.</p>'
       : '<p class="rec__notice"><b>PayHere secure card.</b> In the live store, you complete payment on PayHere’s secure page and return to this record.</p>';
@@ -658,8 +705,11 @@
       [o.ship === 'atelier' ? 'Private collection, 2:00 PM IST' : 'Delivered to your door', C.fmtDay(arrive)]
     ];
     var meta = [['Order Reference', '<span class="order-ref">' + esc(o.ref) + '</span>'], ['Acquired', esc(C.fmtDay(placed))],
-      ['Delivery', esc(del.label) + '<br><span class="rec__when">' + esc(o.when) + '</span>'], ['Client', esc(o.name)],
-      [o.ship === 'atelier' ? 'Collection' : 'Deliver to', esc(o.ship === 'atelier' ? 'The Colombo atelier, by private appointment' : o.address)], ['Payment', esc((PAY[o.method] || PAY.payhere).label)]];
+      ['Delivery', esc(del.label) + '<br><span class="rec__when">' + esc(o.when) + '</span>'], ['Client', esc(o.first ? C.formalName(o, true) : o.name)]];
+    if (gi && gi.rFirst) meta.push(['Gift for', esc(C.formalName({ title: gi.rTitle, first: gi.rFirst, last: gi.rLast }, true))]);
+    meta.push([o.ship === 'atelier' ? 'Collection' : 'Deliver to', esc(o.ship === 'atelier' ? 'The Colombo atelier, by private appointment' : gi && gi.address ? gi.address + ' (the recipient)' : o.address)]);
+    if (gi && gi.rFirst) meta.push(['Courier', gi.rCourier === 'recipient' ? 'Arrival coordinated with the recipient' + (gi.rPhone ? ', ' + esc(gi.rPhone) : '') : 'Arrival coordinated with you, preserving the surprise']);
+    meta.push(['Payment', esc((PAY[o.method] || PAY.payhere).label)]);
     if (o.billing) meta.push(['Bill to', esc(o.billing.name) + '<br>' + esc(o.billing.address)]);
     root.innerHTML = cxHead('<span class="cx-long">Continue to the </span>Maison', 'Acquisition Confirmed') +
       '<div class="rec-wrap"><article class="rec" aria-labelledby="recTitle">' + C.issuerHTML() +
@@ -667,21 +717,25 @@
           '<h1 class="rec__title" id="recTitle" tabindex="-1">Thank you, ' + esc(first) + '.</h1>' +
           '<p class="rec__lede">Your acquisition is confirmed. Our Colombo atelier now inspects, presses and seals your ' + (o.items.length > 1 ? 'pieces' : 'piece') + ' by hand.</p></header>' +
         '<dl class="rec__meta">' + meta.map(function (x) { return '<div><dt>' + x[0] + '</dt><dd>' + x[1] + '</dd></div>'; }).join('') + '</dl>' +
-        '<h2 class="rec__h">Pieces &amp; Verification Cards</h2>' +
+        '<h2 class="rec__h">Pieces &amp; Solid Metal Vault Cards</h2>' +
         '<ul class="rec__pieces">' + o.items.map(function (it) {
           var p = C.product(it.id);
-          return '<li><div class="rec__thumb">' + (p ? C.plateHTML(p, 'form', 'thumb') : C.archivePlate()) + '</div><div class="rec__piece"><p>' + esc(it.name) + '</p><small>Size ' + esc(it.size) + ' <span aria-hidden="true">·</span> ' + P(it.price) + '</small></div>' +
-            '<button class="rec__vcard" type="button" data-passport-open="' + esc(it.passport) + '" aria-label="View Verification Card ' + esc(it.passport) + '"><span class="rec__vcard-seal">' + SEAL + '</span><span class="rec__vcard-k">Verification Card</span><span class="rec__vcard-id">' + esc(it.passport) + '</span><span class="rec__vcard-cta">View record</span></button></li>';
+          var en = C.reg.get(it.passport), st = en && en.status === 'CLAIMED' ? 'Inscribed in the House Archive' : 'Dispatched uninscribed \u00b7 Awaiting Owner Inscription';
+          return '<li><div class="rec__thumb">' + (p ? C.plateHTML(p, 'form', 'thumb') : C.archivePlate()) + '</div><div class="rec__piece"><p>' + esc(it.name) + '</p><small>Size ' + esc(it.size) + ' <span aria-hidden="true">·</span> ' + P(it.price) + '</small><small class="rec__status">' + st + '</small></div>' +
+            '<button class="rec__vcard" type="button" data-passport-open="' + esc(it.passport) + '" aria-label="View the Digital Product Passport ' + esc(it.passport) + '"><span class="rec__vcard-seal">' + SEAL + '</span><span class="rec__vcard-k">Vault Card</span><span class="rec__vcard-id">' + esc(it.passport) + '</span><span class="rec__vcard-cta">View record</span></button></li>';
         }).join('') + '</ul>' +
         '<dl class="cx-rows rec__totals"><div><dt>Subtotal</dt><dd>' + P(o.totalLKR) + '</dd></div><div><dt>Delivery</dt><dd>Complimentary</dd></div>' + (o.gift ? '<div><dt>Gift Presentation</dt><dd>Complimentary</dd></div>' : '') + '<div class="cx-rows__total"><dt>Total</dt><dd>' + P(o.totalLKR) + '</dd></div></dl>' +
         '<h2 class="rec__h">Dispatch</h2>' +
         '<ol class="record__timeline" aria-label="Dispatch timeline">' + timeline.map(function (t, i) { return '<li' + (i === 0 ? ' class="is-done"' : '') + '><span>' + esc(t[0]) + '</span><time>' + esc(t[1]) + '</time></li>'; }).join('') + '</ol>' +
         payNote +
-        (o.gift ? '<p class="rec__fine">Prepared as a gift' + (o.omit !== false ? ', with prices omitted from the record enclosed in the box' : '') + '.' + (o.giftNote ? '<br>Your message, in calligraphy: “' + esc(o.giftNote) + '”' : '') + '</p>' : '') +
+        (o.gift ? '<p class="rec__fine">Prepared as a gift under the Discreet Gift Standard: no pricing is enclosed, and each piece is dispatched uninscribed so the recipient registers it in their own name.' + (o.giftNote ? '<br>Your note, in calligraphy on cotton: “' + esc(o.giftNote) + '”' + (gi && gi.from ? ', from ' + esc(gi.from) : '') : '') + '</p>' : '') +
         '<div class="rec__actions"><button class="btn btn--ghost" type="button" data-print>Print Receipt</button><a class="btn btn--solid" href="/" data-cx-home><span class="btn__label">Continue to the Maison</span></a></div>' +
         (m ? '<p class="rec__fine">Saved to your Private Circle as ' + esc(m.email) + '.</p>'
-           : '<div class="rec__circle"><p class="rec__kicker">Private Circle</p><h2>Keep this record with you.</h2><p>Your Verification Cards, delivery address and this record, kept together under ' + esc(o.email) + '. One click, no password.</p>' +
+           : '<div class="rec__circle"><p class="rec__kicker">Private Circle</p><h2>Keep this record with you.</h2><p>Your Digital Vault, delivery address and this record, kept together under ' + esc(o.email) + '. One click, no password.</p>' +
              '<div class="rec__circle-cta"><button class="btn btn--solid" type="button" data-circle-link><span class="btn__label">Send My Activation Link</span></button><button class="google-btn" type="button" data-google>Continue with Google</button></div></div>') +
+        '<div class="rec__demo-card"><p class="rec__fine"><b>Demonstration.</b> In the House, the Vault Key exists only on the Solid Metal Vault Card inside the box' + (o.gift ? ', for the recipient' : '') + '. To preview the inscription, the card' + (o.items.length > 1 ? 's' : '') + ' for this order read:</p><ul class="rec__keys">' +
+          o.items.map(function (it) { return it.serial ? '<li><span>' + esc(it.short || it.name) + '</span><span>Archive Serial <b>' + esc(C.reg.fmt(it.serial)) + '</b></span><span>Vault Key <b>' + esc(it.key) + '</b></span></li>' : ''; }).join('') + '</ul>' +
+          '<a class="acct-link" href="/verify" data-verify-page>Preview the Inscription Ritual</a></div>' +
         '<p class="rec__fine rec__demo">Demonstration storefront: no payment was taken and no email was sent.</p>' +
       '</article></div>';
   }
@@ -763,7 +817,9 @@
       }
     }
     if (f.id === 'coStep3' && t.name === 'billSame') { var b = $('#cxBill'); b.hidden = t.checked; co.d.billSame = t.checked; if (!t.checked) { var i = $('input', b); if (i) i.focus(); } }
-    if (f.id === 'coStep2' && t.name === 'gift') { $('#cxGift').hidden = !t.checked; co.d.gift = t.checked; var row = $('.cx-rows div:nth-child(3) dd', cxPage); if (row) row.textContent = t.checked ? 'Prepared as a gift' : 'Not selected'; }
+    if (f.id === 'coStep2' && t.name === 'rDeliver') { $('#cxRAddr').hidden = t.value !== 'recipient'; if (t.value === 'recipient') f.elements.rDistrict.focus(); }
+    if (f.id === 'coStep2' && t.name === 'rCourier') { $('#cxRPhone').hidden = t.value !== 'recipient'; }
+    if (f.id === 'coStep2' && t.name === 'gift') { $('#cxGift').hidden = !t.checked; co.d.gift = t.checked; t.setAttribute('aria-expanded', t.checked ? 'true' : 'false'); if (t.checked) { var rf = f.elements.rFirst; if (rf) setTimeout(function () { rf.focus(); }, 30); } var row = $('.cx-rows div:nth-child(3) dd', cxPage); if (row) row.textContent = t.checked ? 'Complimentary' : 'Not selected'; }
   });
   cxPage.addEventListener('input', function (e) {
     var t = e.target, f = t.form; if (!f) return;
@@ -772,6 +828,12 @@
       if (a) { f.elements.district.value = 'Colombo'; f.elements.area.value = a; C.setError(f.elements.district, ''); C.setError(f.elements.area, ''); if (!f.elements.city.value.trim()) { f.elements.city.value = 'Colombo'; } C.setError(f.elements.city, ''); syncZone(f); }
     }
     if (t.name === 'giftNote') { var c = $('#co-note-c'); if (c) c.textContent = t.value.length + ' / ' + NOTE_MAX; }
+    /* the cotton card writes itself as the client types */
+    var gk = t.getAttribute && t.getAttribute('data-gc');
+    if (gk) {
+      var out = $('[data-gcv="' + gk + '"]', cxPage), v = t.value.trim();
+      if (out) { out.textContent = v ? (gk === 'to' ? 'To ' + v : gk === 'from' ? 'With love, ' + v : t.value) : (gk === 'to' ? 'To' : gk === 'from' ? 'From' : 'Your words, written by hand in calligraphy.'); out.toggleAttribute('data-empty', !v); }
+    }
   });
   cxPage.addEventListener('submit', function (e) {
     var f = e.target; if (!/^coStep[123]$/.test(f.id)) return;
@@ -781,14 +843,16 @@
     if (f.id === 'coStep1') {
       need('email', C.validEmail, 'Enter a valid email address, such as name@example.com.');
       need('phone', function (v) { return /^7\d{8}$/.test(v.replace(/\D/g, '').replace(/^(94|0)/, '')); }, 'Enter a Sri Lankan mobile number, such as 77 123 4567.');
-      need('name', function (v) { return v.trim().length > 1; }, 'Enter your full name.');
+      need('first', C.validName, 'Enter your first name, using letters only.');
+      need('last', C.validName, 'Enter your last name. Multi-word and hyphenated names are welcome, such as De Silva.');
       need('addr', function (v) { return v.trim().length > 4; }, 'Enter your street address.');
       need('city', function (v) { return v.trim().length > 1; }, 'Enter your city or town.');
       need('post', function (v) { return !v.trim() || /^\d{5}$/.test(v.trim()); }, 'A Sri Lankan postal code has five digits, such as 00700.');
       need('district', function (v) { return !!v; }, 'Choose your district.');
       if (f.elements.district.value === 'Colombo') need('area', function (v) { return !!v; }, 'Choose your Colombo area.');
       if (bad) { bad.focus(); return; }
-      ['email', 'name', 'addr', 'addr2', 'city', 'post', 'country', 'district'].forEach(function (k) { d[k] = f.elements[k].value.trim(); });
+      ['email', 'addr', 'addr2', 'city', 'post', 'country', 'district'].forEach(function (k) { d[k] = f.elements[k].value.trim(); });
+      d.title = f.elements.title.value; d.first = C.cleanName(f.elements.first.value); d.last = C.cleanName(f.elements.last.value); d.name = C.formalName(d);
       d.area = d.district === 'Colombo' ? f.elements.area.value : '';
       d.phoneLocal = f.elements.phone.value.replace(/\D/g, '').replace(/^(94|0)/, '');
       d.phone = '+94 ' + d.phoneLocal.replace(/^(\d{2})(\d{3})(\d{4})$/, '$1 $2 $3');
@@ -799,8 +863,28 @@
       co.step = 2;
     } else if (f.id === 'coStep2') {
       d.ship = (f.querySelector('input[name=ship]:checked') || {}).value || shipOptions()[0];
-      d.gift = f.elements.gift.checked; d.giftNote = f.elements.giftNote.value.trim().slice(0, NOTE_MAX); d.omit = f.elements.omit.checked; d.instr = f.elements.instr.value.trim();
-      var g = giftState(); g.on = d.gift; g.note = d.giftNote; C.save();
+      d.gift = f.elements.gift.checked; d.instr = f.elements.instr.value.trim();
+      if (d.gift) {
+        var rDel = (f.querySelector('input[name=rDeliver]:checked') || {}).value || 'me', rCou = (f.querySelector('input[name=rCourier]:checked') || {}).value || 'me';
+        need('rFirst', C.validName, 'Enter the recipient’s first name.');
+        need('rLast', C.validName, 'Enter the recipient’s last name.');
+        if (rDel === 'recipient') {
+          need('rDistrict', function (v) { return !!v; }, 'Choose the recipient’s district.');
+          need('rCity', function (v) { return v.trim().length > 1; }, 'Enter the recipient’s city or town.');
+          need('rAddr', function (v) { return v.trim().length > 4; }, 'Enter the recipient’s street address.');
+        }
+        if (rCou === 'recipient') need('rPhone', function (v) { return !v.trim() || /^7\d{8}$/.test(v.replace(/\D/g, '').replace(/^(94|0)/, '')); }, 'Enter a Sri Lankan mobile number, such as 77 123 4567, or leave it blank.');
+        if (bad) { bad.focus(); return; }
+        d.rTitle = f.elements.rTitle.value; d.rFirst = C.cleanName(f.elements.rFirst.value); d.rLast = C.cleanName(f.elements.rLast.value);
+        d.rDeliver = rDel; d.rCourier = rCou;
+        d.rDistrict = f.elements.rDistrict.value; d.rCity = f.elements.rCity.value.trim(); d.rAddr = f.elements.rAddr.value.trim(); d.rAddr2 = f.elements.rAddr2.value.trim();
+        var rp = f.elements.rPhone.value.replace(/\D/g, '').replace(/^(94|0)/, ''); d.rPhone = rCou === 'recipient' && rp ? '+94 ' + rp.replace(/^(\d{2})(\d{3})(\d{4})$/, '$1 $2 $3') : '';
+        d.gTo = f.elements.gTo.value.trim(); d.gFrom = f.elements.gFrom.value.trim(); d.giftNote = f.elements.giftNote.value.trim().slice(0, NOTE_MAX);
+        d.omit = true;
+        /* a piece couriered to the recipient: Priority Colombo needs a Colombo address, and collection is in person */
+        if (rDel === 'recipient' && (d.ship === 'atelier' || (d.ship === 'colombo' && d.rDistrict !== 'Colombo'))) d.ship = 'island';
+      } else d.giftNote = '';
+      var g = giftState(); g.on = d.gift; g.note = d.giftNote || ''; C.save();
       co.step = 3;
     } else {
       d.billSame = f.elements.billSame.checked;
@@ -832,6 +916,7 @@
     var m = C.state.member; if (!m) return;
     var pr = C.state.profile || (C.state.profile = {});
     if (!pr.phone) pr.phone = d.phoneLocal;
+    if (!pr.firstName || !pr.lastName) C.setPerson({ title: pr.title || d.title, first: pr.firstName || d.first, last: pr.lastName || d.last });
     if (d.addrPick === 'new' && d.saveAddr) {
       var bk = C.state.addressBook || (C.state.addressBook = []);
       var same = bk.filter(function (a) { return a.addr === d.addr && a.city === d.city && a.district === d.district && (a.post || '') === d.post; })[0];
@@ -846,12 +931,18 @@
   function addressOf(d) { return [d.addr, d.addr2, d.area && d.area !== ELSEWHERE ? d.area.split(' · ')[0] : '', d.city, d.post, d.district && !(d.area && d.area !== ELSEWHERE) ? d.district + ' District' : '', d.country].filter(Boolean).join(', '); }
   function placeOrder() {
     var d = co.d, items = [];
-    C.state.bag.forEach(function (l) { var p = C.product(l.id); for (var i = 0; i < l.qty; i++) items.push({ id: p.id, short: p.short, name: p.name, size: l.size, price: p.price, passport: C.uid('MNT') }); });
+    var seen = {};
+    C.state.bag.forEach(function (l) { var p = C.product(l.id); for (var i = 0; i < l.qty; i++) { seen[p.id] = (seen[p.id] || 0); items.push({ id: p.id, short: p.short, name: p.name, size: l.size, price: p.price, passport: C.uid('MNT'), edition: C.editionLabel(p, seen[p.id]) }); seen[p.id] += 1; } });
     var order = { ref: C.uid('ORD'), date: new Date().toISOString(), items: items, totalLKR: C.bagTotalLKR(), currency: C.state.currency, display: C.price(C.bagTotalLKR()),
-      method: d.pay, country: d.country, email: d.email, name: d.name, phone: d.phone, ship: d.ship, when: C.deliveryWhen(d.ship), gift: d.gift, giftNote: d.giftNote, omit: d.omit, instr: d.instr,
+      method: d.pay, country: d.country, email: d.email, name: d.name, title: d.title, first: d.first, last: d.last, phone: d.phone, ship: d.ship, when: C.deliveryWhen(d.ship), gift: d.gift, giftNote: d.giftNote, omit: d.omit, instr: d.instr,
       arrive: C.addBusinessDays((C.DELIVERY[d.ship] || C.DELIVERY.island).days).toISOString(),
       address: addressOf(d), district: d.district, area: d.area, step: 0,
+      giftInfo: d.gift ? { rTitle: d.rTitle, rFirst: d.rFirst, rLast: d.rLast, rDeliver: d.rDeliver, rCourier: d.rCourier, rPhone: d.rPhone, to: d.gTo, from: d.gFrom,
+        address: d.rDeliver === 'recipient' ? [d.rAddr, d.rAddr2, d.rCity, d.rDistrict + ' District', 'Sri Lanka'].filter(Boolean).join(', ') : '' } : null,
       billing: d.bill ? { name: d.bill.name, address: [d.bill.addr, d.bill.city, d.bill.post, d.bill.district + ' District', 'Sri Lanka'].filter(Boolean).join(', ') } : null };
+    if (order.giftInfo && order.giftInfo.address) { order.when = C.deliveryWhen(d.ship); }
+    /* item-first: every piece enters the House Archive bound to itself, awaiting its owner's inscription */
+    order.items.forEach(function (it) { C.reg.issue(it, order); });
     C.state.orders.unshift(order);
     var addrs = C.state.addresses || (C.state.addresses = []);
     if (addrs.indexOf(order.address) < 0) addrs.unshift(order.address);

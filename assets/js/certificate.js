@@ -229,7 +229,7 @@
       { k: 'Fibre & Construction', v: [r.materials] },
       { k: 'Craft Origin', v: [r.origin] },
       { k: 'Garment Stewardship & Care', v: [r.care] },
-      { k: 'Registered Owner', v: [r.owner], italic: r.sample },
+      { k: 'Ownership Inscription', v: [r.owner], italic: r.sample },
       { k: 'Provenance & Transfer', v: [String(r.provenance).split(' · ').join('  |  ')], note: 'Single-run numbered edition  ·  Permanently retired upon completion, never restocked or reproduced.' },
       { k: 'Issued & Certified By', v: ['House of Manthai (Private) Limited'], sub: ['An Avantio Ventures Company', 'Colombo, Sri Lanka'] },
       { k: 'Date of Issue', v: [r.issued] }
