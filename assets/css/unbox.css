@@ -144,6 +144,9 @@
 .ub-cert__att { position: relative; display: flex; align-items: center; justify-content: space-between; margin-top: calc(var(--W) * .0105); }
 .ub-cert__sign { display: flex; flex-direction: column; width: 54%; }
 .ub-cert__sig { width: 74%; margin-left: 2%; fill: none; stroke: #141210; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
+/* lining figures throughout: Cormorant's default oldstyle 01 reads as "or". Set after every font shorthand, which resets it */
+.ub-cert .ub-cert__face, .ub-cert .ub-cert__face * { font-variant-numeric: lining-nums tabular-nums; }
+.ub-cert__sig--img { display: block; aspect-ratio: 164 / 52; height: auto; object-fit: contain; object-position: left bottom; }
 .ub-cert__sign span { margin-top: calc(var(--W) * .0016); padding-top: calc(var(--W) * .0034); border-top: calc(var(--W) * .0005) solid #C9AF7E; font: 400 calc(var(--W) * .0037)/1.4 'Tenor Sans', var(--sans); letter-spacing: .2em; text-transform: uppercase; color: #755A2A; white-space: nowrap; }
 .ub-cert__stamp { width: calc(var(--W) * .061); margin-right: 3%; color: #9F824C; filter: drop-shadow(0 calc(var(--W) * .0005) 0 rgba(255, 255, 255, .85)) drop-shadow(0 calc(var(--W) * -.0004) 0 rgba(89, 70, 32, .28)); }
 .ub-cert__ring { fill: none; stroke: currentColor; stroke-width: 2.2; }

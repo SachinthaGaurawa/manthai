@@ -403,5 +403,12 @@
     m.name = C.formalName({ first: pr.firstName, last: pr.lastName });
     var ac = C.state.accounts && C.state.accounts[String(m.email).toLowerCase()]; if (ac) { ac.name = m.name; ac.firstName = pr.firstName; ac.lastName = pr.lastName; }
   };
-  C.uid = function (prefix) { return prefix + '-' + Math.random().toString(36).slice(2, 7).toUpperCase(); };
+  /* Crockford-style ids without lookalikes (no 0, O, 1, I or L), so a serial read aloud or typed from a card is never mistaken */
+  C.SAFE = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+  C.safeCode = function (n, len) { var s = ''; n = n >>> 0; for (var i = 0; i < len; i++) { s = C.SAFE.charAt(n % 31) + s; n = Math.floor(n / 31); if (!n) n = (i + 7) * 2654435761 >>> 0; } return s; };
+  C.uid = function (prefix) {
+    var s = '';
+    for (var i = 0; i < 5; i++) s += C.SAFE.charAt(Math.floor(Math.random() * C.SAFE.length));
+    return prefix + '-' + s;
+  };
 })();

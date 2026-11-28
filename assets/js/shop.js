@@ -598,7 +598,7 @@
           '<p class="gcard__from" data-gcv="from"' + (from ? '' : ' data-empty') + '>' + (from ? 'With love, ' + esc(from) : 'From') + '</p>' +
         '</div><figcaption class="gcard__cap">Live Archival Card Preview</figcaption></figure>' +
       '</div></fieldset>' +
-      '<p class="gatelier__assure"><b>Discreet Gift Standard.</b> No pricing appears on the enclosed presentation slip or garment seal. Each piece is dispatched uninscribed so the recipient may tap the concealed garment seal and use the Solid Metal Vault Card to register ownership permanently in their own name. Complimentary, discreet 14-day size exchanges are honoured directly for the recipient.</p>';
+      '<p class="gatelier__assure"><b>Discreet Gift Standard.</b> No pricing appears on the enclosed presentation slip or garment seal. Each piece is dispatched uninscribed so the recipient may tap the concealed garment seal and use the Solid Metal Vault Card to register ownership permanently in their own name. Discreet 14-day unworn size exchanges are honoured directly for the recipient, subject to remaining availability within the numbered edition. Where the requested size in a closed edition is no longer available, House of Manthai (Private) Limited extends a Private Maison Credit toward a forthcoming edition or a full refund in accordance with our Terms &amp; Conditions of Sale.</p>';
   }
   function giftLine(g) {
     if (!g) return '';
