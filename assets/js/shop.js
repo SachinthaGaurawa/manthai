@@ -18,7 +18,25 @@
       return (tab === 'All' || p.tabs.indexOf(tab) > -1) && (!occ || (p.occasions || []).indexOf(occ) > -1);
     });
   }
-  shop.editionTag = function (p) { return p.edition ? 'Numbered Edition of ' + p.edition : 'Small-Batch Release · ' + p.crafted + ' Pieces'; };
+  shop.editionTag = function (p) { return shop.closed(p) ? 'Edition Closed · Permanently Archived' : p.edition ? 'Numbered Edition of ' + p.edition : 'Small-Batch Release · ' + p.crafted + ' Pieces'; };
+  /* Single-run rule: every release is one numbered run. A size at 0 is fully acquired for good, and an edition at 0
+     across every size is closed and archived. Never promise a size or a piece will come back. */
+  shop.closed = function (p) { return !!p && !(p.remaining > 0); };
+  shop.editionNo = function (p) { return 'Edition ' + ((p && p.release) || '01'); };
+  shop.sizeGone = function (p) { return 'This size in ' + shop.editionNo(p) + ' has been fully acquired and will not be restocked.'; };
+  shop.closedNote = function (p) { return 'All ' + (p.edition || p.crafted) + ' numbered pieces of this edition have been acquired. This silhouette is permanently retired in the House Archive and will never be reproduced.'; };
+  /* the quiet secondary link on a closed edition: recorded with the Private Circle early access preference */
+  shop.requestEarly = function (btn) {
+    var n = C.state.notify || (C.state.notify = {}); n.early = true; C.save();
+    if (btn) { btn.setAttribute('aria-pressed', 'true'); btn.textContent = 'Early Access Requested'; }
+    C.toast('Noted. You will be invited privately before the next edition is released.');
+  };
+  shop.archivedHTML = function (p) {
+    var asked = !!(C.state.notify || {}).early;
+    return '<div class="archived" role="status"><p class="archived__k">Edition Closed · Permanently Archived</p>' +
+      '<p class="archived__d">' + esc(shop.closedNote(p)) + '</p>' +
+      '<button class="archived__link" type="button" data-early aria-pressed="' + asked + '">' + (asked ? 'Early Access Requested' : 'Request Early Access to Next Edition') + '</button></div>';
+  };
   /* WhatsApp hand-off to the Colombo stylist, pre-filled with the garment and the chosen size */
   shop.stylistHref = function (p, size) {
     var msg = 'Hello House of MANTHAI, I would like to consult a Colombo stylist about the ' + p.name + (size ? ' in Size ' + size : '') + '.';
@@ -36,11 +54,11 @@
   function sizesHTML(p) {
     return '<p class="card__sizes"><span class="sr-only">Sizes: </span>' + M.SIZECHART.sizes.map(function (z) {
       var out = p.soldOut.indexOf(z) > -1;
-      return '<span' + (out ? ' class="is-out" title="Sold out"' : '') + '>' + z + (out ? '<span class="sr-only"> (sold out)</span>' : '') + '</span>';
+      return '<span' + (out ? ' class="is-out" title="Fully acquired"' : '') + '>' + z + (out ? '<span class="sr-only"> (fully acquired)</span>' : '') + '</span>';
     }).join('') + '</p>';
   }
   function cardHTML(p, i, size, row) {
-    var cls = 'card' + (size === 2 ? ' is-wide' : '') + (size === 1 ? ' is-solo' : '');
+    var cls = 'card' + (size === 2 ? ' is-wide' : '') + (size === 1 ? ' is-solo' : '') + (shop.closed(p) ? ' is-archived' : '');
     if ((size === 2 && row === 1) || (size === 3 && row === 1)) cls += ' is-drop';
     return '<article class="' + cls + '" data-id="' + p.id + '">' +
       '<button class="card__frame" type="button" data-open="' + p.id + '" tabindex="-1" aria-hidden="true" data-cursor="View" data-media-slot="' + p.id + '" data-prompt="' + esc(p.prompt) + '">' +
@@ -110,13 +128,13 @@
     var SH = shotsFor(p), cr = crumbFor(p), feel = p.feel || {};
     var sizes = M.SIZECHART.sizes.map(function (s) {
       var out = p.soldOut.indexOf(s) > -1;
-      return '<button type="button" class="size" role="radio" data-size="' + s + '" aria-checked="false"' + (out ? ' aria-disabled="true" aria-label="' + s + ', sold out"' : '') + '>' + s + '</button>';
+      return '<button type="button" class="size" role="radio" data-size="' + s + '" aria-checked="false"' + (out ? ' aria-disabled="true" aria-label="' + s + ', fully acquired" title="' + esc(shop.sizeGone(p)) + '"' : '') + '>' + s + '</button>';
     }).join('');
     var fit = typeof p.fit === 'number' ? p.fit : 1, fitIdx = Math.round(fit);
     var fitWord = fit < 0.85 ? 'Runs slightly small' : fit > 1.15 ? 'Runs slightly large' : 'True to size';
     var wished = (C.state.wishlist || []).indexOf(p.id) > -1;
     var pairs = (p.pairs || []).map(C.product).filter(Boolean).slice(0, 3);
-    var md = M.MODEL;
+    var md = M.MODEL, closed = shop.closed(p);
     return '' +
       '<div class="pdp">' +
         '<div class="pdp__gallery" role="group" aria-label="' + esc(p.name) + ' photographs">' +
@@ -133,7 +151,7 @@
           '<p class="pdp__edition">' + editionLine(p) + '</p>' +
           '<p class="pdp__price">' + P(p.price) + '</p>' +
           '<p class="pdp__summary">' + esc(p.summary) + '</p>' +
-          '<div class="pdp__size"><div class="opt-label"><span id="sizeLabel">Size</span><span class="opt-label__guide"><button class="link-btn" type="button" data-sizeguide>Size &amp; Fit Guide</button>' + C.dref(4) + '</span></div>' +
+          '<div class="pdp__size' + (closed ? ' is-archived' : '') + '"><div class="opt-label"><span id="sizeLabel">Size</span><span class="opt-label__guide"><button class="link-btn" type="button" data-sizeguide>Size &amp; Fit Guide</button>' + C.dref(4) + '</span></div>' +
             '<div class="sizes" role="radiogroup" aria-labelledby="sizeLabel" id="sizes">' + sizes + '</div>' +
             '<p class="field__error" id="sizeError" role="alert"></p>' +
             '<p class="stock-cue" id="stockCue" aria-live="polite"></p>' +
@@ -142,18 +160,18 @@
               '<div class="fitbar__track" role="img" aria-label="Fit consensus: ' + esc(fitWord.toLowerCase()) + '"><span class="fitbar__mark" style="left:' + (fit / 2 * 100).toFixed(0) + '%"></span></div>' +
               '<div class="fitbar__labels" aria-hidden="true">' + M.FIT_LABELS.map(function (l, i) { return '<span' + (i === fitIdx ? ' class="is-on"' : '') + '>' + l + '</span>'; }).join('') + '</div></div>' +
           '</div>' +
-          '<div class="pdp__cta" id="pdpCta">' +
-            '<button class="btn btn--solid btn--sheen" type="button" data-add><span class="btn__label">Reserve in Your Bag</span></button>' +
+          '<div class="pdp__cta' + (closed ? ' is-archived' : '') + '" id="pdpCta">' +
+            (closed ? shop.archivedHTML(p) : '<button class="btn btn--solid btn--sheen" type="button" data-add><span class="btn__label">Reserve in Your Bag</span></button>') +
             '<div class="pdp__duo">' +
               '<button class="btn btn--ghost" type="button" data-wish aria-pressed="' + wished + '">' + wishLabel(wished) + '</button>' +
               '<a class="btn btn--ghost" id="stylistLink" href="' + esc(shop.stylistHref(p, null)) + '" target="_blank" rel="noopener" data-wa><span class="btn__label">Consult <span class="pdp__dlong">Colombo </span>Stylist</span></a>' +
             '</div>' +
           '</div>' +
-          '<div class="clarity">' +
+          (closed ? '' : '<div class="clarity">' +
             '<p><b>Total: ' + P(p.price) + '</b> · Complimentary Insured Delivery <span id="pdpWhen"></span>' + C.dref(5) + '</p>' +
             '<p><b>Gifting included.</b> Complimentary lacquered gift presentation and a handwritten cotton card, available at checkout. Gifts are dispatched uninscribed and with no pricing enclosed, so the recipient registers the piece in their own name.</p>' +
-            '<p><b>Risk-free stewardship.</b> 14-day complimentary size exchange, or a transparent refund to your original payment method.</p>' +
-          '</div>' +
+            '<p><b>Risk-free stewardship.</b> 14-day complimentary size exchange, subject to remaining availability within the numbered edition, or a transparent refund to your original payment method.</p>' +
+          '</div>') +
           (feel.fabric ? '<div class="feel"><p class="feel__k">Feel &amp; Drape' + C.dref(3) + '</p><p class="feel__v">' + esc(feel.fabric) + ' · ' + esc(feel.hand) + ' · ' + feel.gsm + ' GSM</p></div>' : '') +
           '<div class="pdp__acc">' +
             '<details><summary>Atelier Craft &amp; Textile Provenance</summary><p>' + esc(p.story) + '</p><p><b>Materials.</b> ' + esc(p.materials) + '</p><p><b>Weight.</b> ' + esc(p.weight || '') + '</p><p><b>Drape and lining.</b> ' + esc(p.drape || '') + '</p><p><b>Provenance.</b> ' + esc(p.provenance) + '.</p></details>' +
@@ -165,7 +183,7 @@
       (pairs.length ? '<section class="pairing" aria-labelledby="pairTitle"><div class="pairing__head"><p class="eyebrow">Curated by the House</p><h2 class="pairing__title" id="pairTitle">Complete the Silhouette</h2></div><div class="pairing__list" data-n="' + pairs.length + '">' + pairs.map(function (q) {
         return '<a class="pair" href="/pieces/' + q.id + '" data-pair="' + q.id + '"><span class="pair__plate">' + C.plateHTML(q, 'form', 'pair') + '</span><span class="pair__name">' + esc(q.name) + '</span><span class="pair__price">' + P(q.price) + '</span></a>';
       }).join('') + '</div></section>' : '') +
-      '<div class="pdp__sticky" id="pdpSticky" aria-hidden="true"><span class="pdp__sticky-meta"><span class="pdp__sticky-name">' + esc(p.short) + '</span><span class="pdp__price">' + P(p.price) + '</span></span><button class="btn btn--solid btn--sheen" type="button" data-add tabindex="-1"><span class="btn__label">Reserve in Your Bag</span></button></div>';
+      (closed ? '' : '<div class="pdp__sticky" id="pdpSticky" aria-hidden="true"><span class="pdp__sticky-meta"><span class="pdp__sticky-name">' + esc(p.short) + '</span><span class="pdp__price">' + P(p.price) + '</span></span><button class="btn btn--solid btn--sheen" type="button" data-add tabindex="-1"><span class="btn__label">Reserve in Your Bag</span></button></div>');
   }
   function syncShip() {
     var w = $('#pdpWhen'); if (!w) return;
@@ -201,7 +219,7 @@
   function syncSize() {
     if (!pdp) return;
     var n = shop.lowStock(pdp.p, pdp.size), cue = $('#stockCue'), wa = $('#stylistLink');
-    if (cue) cue.textContent = n ? 'Only ' + n + ' remaining in Size ' + pdp.size : '';
+    if (cue) { cue.classList.remove('is-gone'); cue.textContent = n ? 'Only ' + n + ' remaining in Size ' + pdp.size : ''; }
     if (wa) wa.href = shop.stylistHref(pdp.p, pdp.size);
   }
   function syncAddButtons() {
@@ -221,6 +239,7 @@
       if (first) { if (first.getBoundingClientRect().top < 80) first.scrollIntoView({ block: 'center', behavior: C.reduced() ? 'auto' : 'smooth' }); first.focus({ preventScroll: true }); }
       return;
     }
+    if (shop.closed(p)) { C.toast('Edition closed. Every numbered piece has been acquired.'); return; }
     if (C.available(p) <= 0) { C.toast('Every piece of this edition is already reserved.'); return; }
     var size = pdp.size, key = C.lineKey(p.id, size, false);
     var line = C.state.bag.filter(function (l) { return l.key === key; })[0];
@@ -240,10 +259,11 @@
     if ((t = e.target.closest('[data-crumb]'))) { e.preventDefault(); var tab = t.getAttribute('data-crumb'); M.ui.route('home', 'collection'); setTimeout(function () { shop.setFilter(tab); }, 420); return; }
     if (e.target.closest('[data-sizeguide]')) { shop.openSize(pdp.p.id); return; }
     if ((t = e.target.closest('.size'))) {
-      if (t.getAttribute('aria-disabled') === 'true') { C.toast('That size is sold out in this edition.'); return; }
+      if (t.getAttribute('aria-disabled') === 'true') { var cg = $('#stockCue'); if (cg) { cg.classList.add('is-gone'); cg.textContent = 'Size ' + t.getAttribute('data-size') + '. ' + shop.sizeGone(pdp.p); } return; }
       pdp.size = t.getAttribute('data-size'); $$('#sizes .size').forEach(function (s) { s.setAttribute('aria-checked', s === t); }); $('#sizeError').textContent = ''; syncSize(); return;
     }
     if (e.target.closest('[data-add]')) { addToBag(); return; }
+    if ((t = e.target.closest('[data-early]'))) { shop.requestEarly(t); return; }
     if ((t = e.target.closest('[data-wish]'))) { var on = shop.toggleWish(pdp.p.id, true); t.setAttribute('aria-pressed', on); t.textContent = wishLabel(on); C.toast(on ? 'Saved to your silhouettes. They stay on this device and join your Private Circle when you sign in.' : 'Removed from your silhouettes.'); return; }
     if ((t = e.target.closest('[data-pair]'))) { if (e.metaKey || e.ctrlKey || e.shiftKey) return; e.preventDefault(); shop.openProduct(t.getAttribute('data-pair')); return; }
     if ((t = e.target.closest('[data-passport]'))) { M.ui.openPassport(t.getAttribute('data-passport')); return; }

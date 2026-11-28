@@ -230,7 +230,7 @@
       { k: 'Craft Origin', v: [r.origin] },
       { k: 'Garment Stewardship & Care', v: [r.care] },
       { k: 'Ownership Inscription', v: [r.owner], italic: r.sample },
-      { k: 'Provenance & Transfer', v: [String(r.provenance).split(' · ').join('  |  ')] },
+      { k: 'Provenance & Transfer', v: [String(r.provenance).split(' · ').join('  |  ')], note: 'Single-run numbered edition  ·  Permanently retired upon completion, never restocked or reproduced.' },
       { k: 'Issued & Certified By', v: ['House of Manthai (Private) Limited'], sub: ['An Avantio Ventures Company', 'Colombo, Sri Lanka'] },
       { k: 'Date of Issue', v: [r.issued] }
     ];
@@ -238,12 +238,17 @@
     rows.forEach(function (row) {
       setFace(doc, 'Cormorant', row.italic ? 'italic' : 'normal', VS, INK);
       var lines = row.dots ? [''] : [].concat.apply([], row.v.map(function (t) { return doc.splitTextToSize(String(t || ''), VW); }));
-      var top = y + 4.7, h = lines.length * lh + (row.sub ? 3.9 : 0) + 4.4;
+      /* a quiet italic note under the value: the single-run archival guarantee */
+      setFace(doc, 'Cormorant', 'italic', VS - 0.8, UMBER);
+      var note = row.note ? doc.splitTextToSize(row.note, VW) : [], nlh = (VS - 0.8) * PT * 1.3;
+      setFace(doc, 'Cormorant', row.italic ? 'italic' : 'normal', VS, INK);
+      var top = y + 4.7, h = lines.length * lh + (row.sub ? 3.9 : 0) + (note.length ? note.length * nlh + 1.2 : 0) + 4.4;
       setFace(doc, 'Tenor', 'normal', 6.4, BRONZE);
       tracked(doc, row.k.toUpperCase(), L, top - 0.15, 0.55);
       setFace(doc, 'Cormorant', row.italic ? 'italic' : 'normal', VS, INK);
       if (row.dots) joined(doc, row.dots, V, top, { dot: BRONZE });
       else doc.text(lines, V, top, { lineHeightFactor: 1.3 });
+      if (note.length) { setFace(doc, 'Cormorant', 'italic', VS - 0.8, UMBER); doc.text(note, V, top + lines.length * lh + 1.2, { lineHeightFactor: 1.3 }); }
       if (row.sub) { setFace(doc, 'Tenor', 'normal', 6.6, UMBER); joined(doc, row.sub, V, top + lines.length * lh + 0.6, { bar: true, track: 0.2 }); }
       y += h;
       doc.setDrawColor(RULE); doc.setLineWidth(0.25 * PT); doc.line(L, y, R, y);

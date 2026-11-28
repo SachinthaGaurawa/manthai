@@ -66,7 +66,7 @@ Rules:
 - **Navigation:** four items: New Arrivals, Collections, Lookbook, The Maison.
   - A gold underline grows with scaleX on hover.
   - The header is transparent over the hero. After scrolling it becomes rgba(11,11,12,0.92) with a 12px blur and a gold hairline.
-- **Product cards:** a 3:4 image well on pearl. A second view crossfades in over 0.6s, and a "Quick view" bar slides up. Below the image sit the edition tag, the name in serif, the LKR price and a size preview (sold-out sizes struck through). There is no card chrome: no shadow and no radius.
+- **Product cards:** a 3:4 image well on pearl. A second view crossfades in over 0.6s, and a "Quick view" bar slides up. Below the image sit the edition tag, the name in serif, the LKR price and a size preview (fully acquired sizes struck through; a closed edition reads "Edition Closed · Permanently Archived"). There is no card chrome: no shadow and no radius.
 - **Forms:** labels above in Tenor Sans, square 1px gold-hairline inputs, a gold focus border, and errors inline below the field. Required fields are marked "*"; optional ones say "(optional)".
 - **Choices (shipping, payment, gift):** full-width hairline rows with a square gold check. A selected row has a gold border and a 6% gold wash.
 - **Checkout:** a three-step accordion. Each completed step collapses to an editable summary, with a numbered gold circle marking its state.
@@ -112,6 +112,7 @@ Rules:
 - No discount banners, countdown timers, star ratings, markdowns, buy-now-pay-later or "Coming Soon" shop pages.
 - Scarcity is stated only when true: a quiet "Only 2 remaining in Size S" appears when a size has 3 or fewer pieces, never otherwise.
 - No cash on delivery.
+- Every release is a strictly numbered, single-run limited edition. Never write restock, back-in-stock, "notify me when it returns" or size-return alerts. A size at 0 is "fully acquired and will not be restocked"; an edition at 0 across all sizes shows "Edition Closed · Permanently Archived" with "Request Early Access to Next Edition". Exchanges are honoured subject to remaining availability, otherwise a Private Maison Credit or a full refund.
 - No AI copy clichés ("Elevate", "Seamless", "Unleash").
 - No invented statistics.
 - No menswear, leather or parfumerie products in Phase 1. They appear only as one Future Chapters line in the footer.

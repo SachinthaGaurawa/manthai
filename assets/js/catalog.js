@@ -191,7 +191,7 @@
       prompt: 'Sheer silk organza cape top with tonal hand-beading catching the light, numbered atelier edition, dark warm chiaroscuro'
     }
   ];
-  /* per-size stock drives sold-out sizes, the low-stock cue and the remaining count */
+  /* per-size stock drives fully acquired sizes, the low-stock cue and the remaining count */
   M.PRODUCTS.forEach(function (p) {
     var st = p.stock || {}, sizes = M.SIZECHART.sizes;
     p.soldOut = sizes.filter(function (z) { return !(st[z] > 0); });

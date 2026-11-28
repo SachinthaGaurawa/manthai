@@ -1202,3 +1202,16 @@ html:not([data-route='passport']) [data-view='passport'] { display: none !import
 .cx-bill { margin-top: 8px; }
 .cx-billform { display: grid; gap: 18px; margin-top: 16px; }
 .cx-billform[hidden] { display: none; }
+
+/* ---------- Single-run editions: a fully acquired size, a closed and archived edition ---------- */
+.stock-cue.is-gone { color: var(--warm-umber); }
+.archived { display: grid; gap: 12px; padding: clamp(22px, 2.4vw, 30px); background: var(--silk-limestone); border: 1px solid var(--alabaster-rule); }
+.archived__k { font: 400 11px/1.4 var(--sans); letter-spacing: .2em; text-transform: uppercase; color: var(--antique-bronze); }
+.archived__d { font: italic 400 1.06rem/1.6 var(--serif); color: var(--warm-umber); max-width: 46ch; }
+.archived__link { justify-self: start; margin-top: 4px; padding: 0; text-align: left; font: 400 11px/2 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); background: none; border: 0; text-decoration: underline 1px var(--antique-bronze); text-underline-offset: 6px; cursor: pointer; transition: color .3s ease, text-decoration-color .3s ease; }
+.archived__link:hover, .archived__link:focus-visible { color: var(--antique-bronze); }
+.archived__link[aria-pressed='true'] { color: var(--warm-umber); text-decoration-color: var(--alabaster-rule); }
+.pdp__size.is-archived .model-note, .pdp__size.is-archived .fitbar, .pdp__size.is-archived .opt-label__guide { display: none; }
+.creed__seal { margin-top: 4px; padding-top: 16px; border-top: 1px solid var(--alabaster-rule); font: italic 400 .98rem/1.6 var(--serif); color: var(--antique-bronze); }
+.card.is-archived .card__price { color: var(--warm-umber); }
+.acct-sv__closed { margin-top: 6px; font: 400 11px/1.4 var(--sans); letter-spacing: .18em; text-transform: uppercase; color: var(--antique-bronze); }

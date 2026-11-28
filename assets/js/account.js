@@ -176,7 +176,7 @@
   function returnForm(o) {
     var sizes = M.SIZECHART.sizes;
     return '<form class="acct-form acct-return" id="returnForm" data-ref="' + esc(o.ref) + '" novalidate><h3 class="acct-h3">Size Exchange or Return</h3>' +
-      '<p class="acct-fine">Within 14 days of delivery. Refunds always go back to your original payment method, never to store credit.</p>' +
+      '<p class="acct-fine">Within 14 days of delivery. Refunds always go back to your original payment method. Where your size in a closed edition is no longer available, you may instead choose a Private Maison Credit toward a forthcoming edition.</p>' +
       '<fieldset class="cx-fs"><legend class="cx-fs__legend">What would you like?</legend><div class="choices">' +
         '<label class="choice"><input type="radio" name="kind" value="exchange" checked><span><b>Complimentary 14-Day Size Exchange</b><span>We send your new size as soon as the original returns to the atelier.</span></span></label>' +
         '<label class="choice"><input type="radio" name="kind" value="return"><span><b>Return for a Full Refund</b><span>Refunded in full to your original payment method.</span></span></label></div></fieldset>' +
@@ -261,10 +261,11 @@
           '<div class="acct-sv__info"><a class="acct-sv__name" href="/pieces/' + esc(p.id) + '" data-piece="' + esc(p.id) + '">' + esc(p.short) + '</a><p class="acct-sv__price">' + P(p.price) + '</p>' +
           '<div class="acct-sizes" role="radiogroup" aria-label="Size for ' + esc(p.short) + '">' + M.SIZECHART.sizes.map(function (z) {
             var out = p.soldOut.indexOf(z) > -1;
-            return '<button type="button" role="radio" class="size acct-size" data-svsize="' + z + '" aria-checked="' + (z === sel) + '"' + (out ? ' aria-disabled="true"' : '') + ' aria-label="Size ' + z + (out ? ', currently reserved' : '') + '">' + z + '</button>';
+            return '<button type="button" role="radio" class="size acct-size" data-svsize="' + z + '" aria-checked="' + (z === sel) + '"' + (out ? ' aria-disabled="true"' : '') + ' aria-label="Size ' + z + (out ? ', fully acquired' : '') + '"' + (out ? ' title="' + esc(M.shop.sizeGone(p)) + '"' : '') + '>' + z + '</button>';
           }).join('') + '</div><p class="acct-sv__err" role="alert"></p>' +
+          (M.shop.closed(p) ? '<p class="acct-sv__closed">Edition Closed · Permanently Archived</p><p class="acct-fine">' + esc(M.shop.closedNote(p)) + '</p>' :
           '<button class="btn btn--solid btn--block btn--sheen" type="button" data-sv-add' + (C.available(p) <= 0 ? ' disabled' : '') + '><span class="btn__label">' + (C.available(p) <= 0 ? 'Held in Private Bags' : 'Reserve in Your Bag') + '</span></button>' +
-          toggle('alert-' + p.id, 'Notify me if stock is low or a size returns', !!alerts[p.id]) + '</div></li>';
+          toggle('alert-' + p.id, 'Tell me privately before this edition closes', !!alerts[p.id])) + '</div></li>';
       }).join('') + '</ul>'
         : empty('Nothing saved yet', 'Choose Save Silhouette on any piece and it waits for you here, with one-click reservation.', '<a class="btn btn--solid" href="/" data-acct-shop><span class="btn__label">Explore Edition 01</span></a>'));
   }
@@ -307,8 +308,8 @@
       }).join('') + '</ul>' : '<p class="acct-fine">No saved addresses yet. Your delivery address is saved from your first acquisition, or add one now.</p>') +
       (ui$.editAddr === 'new' ? addrForm() : '<button class="acct-add" type="button" data-addr-new>+ Add New Address</button>') + '</section>';
     var security = M.auth.securityHTML(m) + '<section class="acct-sec" aria-labelledby="acctPrefH"><h2 class="acct-h2" id="acctPrefH">Communication Preferences</h2><div class="acct-prefs">' +
-      toggle('archive', 'Private archive and new edition previews', !!n.archive) +
-      toggle('restock', 'Saved silhouette stock alerts', !!n.restock) +
+      toggle('early', 'Private Early Access to Forthcoming Editions', n.early == null ? !!n.archive : !!n.early) +
+      toggle('salon', 'House Archive &amp; Salon Invitations', n.salon == null ? !!n.archive : !!n.salon) +
       '<div class="acct-inline" role="radiogroup" aria-label="Preferred channel"><span class="acct-inline__k">Preferred channel</span>' + ['Email', 'WhatsApp'].map(function (k) { return '<label class="acct-radio"><input type="radio" name="channel" value="' + k + '"' + ((n.channel || 'Email') === k ? ' checked' : '') + '><span>' + k + '</span></label>'; }).join('') + '</div>' +
       '</div></section>';
     return head('Profile, Addresses &amp; Security', 'Your details, kept privately by the House.') + banner() + personal + addrs + security;
@@ -453,10 +454,10 @@
   page.addEventListener('change', function (e) {
     var t = e.target, m = C.state.member; if (!m) return;
     var n = C.state.notify || (C.state.notify = {}), sec = C.state.security || (C.state.security = {});
-    if (/^alert-/.test(t.name)) { var al = C.state.stockAlerts || (C.state.stockAlerts = {}); al[t.name.slice(6)] = t.checked; C.save(); C.toast(t.checked ? 'We will tell you if stock runs low or a size returns.' : 'Stock alert switched off.'); return; }
+    if (/^alert-/.test(t.name)) { var al = C.state.stockAlerts || (C.state.stockAlerts = {}); al[t.name.slice(6)] = t.checked; C.save(); C.toast(t.checked ? 'We will tell you privately before this edition closes.' : 'Edition alert switched off.'); return; }
     if (t.name === 'twofa') { sec.twofa = t.checked; C.save(); C.toast(t.checked ? 'Two-factor verification is on.' : 'Two-factor verification is off.'); rerender('[name=twofa]'); return; }
     if (t.name === 'twofaBy') { sec.by = t.value; C.save(); return; }
-    if (t.name === 'archive' || t.name === 'restock') { n[t.name] = t.checked; C.save(); C.toast('Preference saved.'); return; }
+    if (t.name === 'early' || t.name === 'salon') { n[t.name] = t.checked; C.save(); C.toast('Preference saved.'); return; }
     if (t.name === 'channel') { n.channel = t.value; C.save(); C.toast('We will reach you by ' + t.value + '.'); return; }
     if (t.form && t.form.id === 'returnForm' && t.name === 'kind') { var sz = $('#rf-size'); if (sz) sz.closest('.field').hidden = t.value !== 'exchange'; }
   });
