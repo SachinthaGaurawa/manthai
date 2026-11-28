@@ -86,7 +86,22 @@
   function trackRef(o) { var d = new Date(o.date); return 'MNT-TRK-' + d.getFullYear() + '-' + String(o.ref).replace(/^ORD-/, ''); }
   function orders() { return C.state.orders || []; }
   function activeOrder() { return orders().filter(function (o) { return !o.cancelled && stageOf(o) < 3; })[0]; }
-  function vaultItems() { var m = C.state.member; return m ? C.reg.ownedBy(m.email) : []; }
+  function vaultItems() { return C.state.member ? C.reg.ownedBy() : []; }
+  /* the House Archive answers for the vault: what is inscribed to this member, what awaits their tap, and gifts */
+  var arch = { at: 0, busy: false, err: '', awaiting: [], gifts: [] };
+  function loadArchive(force) {
+    if (!C.state.member || arch.busy || (!force && arch.at && Date.now() - arch.at < 60000)) return;
+    arch.busy = true; arch.err = '';
+    Promise.all([C.reg.mine(), C.reg.acquisitions()]).then(function (r) {
+      arch.awaiting = r[1].awaiting || []; arch.gifts = r[1].gifts || []; arch.at = Date.now();
+    }, function (e) { arch.err = e && e.code === 'not_configured' ? 'cfg' : 'off'; arch.at = Date.now(); })
+      .then(function () { arch.busy = false; if (ui.curRoute() === 'account' && (tab === 'vault' || tab === 'overview')) rerender(); });
+  }
+  C.on('member', function () { arch.at = 0; arch.awaiting = []; arch.gifts = []; if (!C.state.member) C.reg.forget(); });
+  C.on('vault', function () { arch.at = 0; });
+  var XL = 'manthai.xferLinks';
+  function xferLinks() { try { return JSON.parse(window.localStorage.getItem(XL) || '{}') || {}; } catch (e) { return {}; } }
+  function keepLink(id, link) { var o = xferLinks(); if (link) o[id] = link; else delete o[id]; try { window.localStorage.setItem(XL, JSON.stringify(o)); } catch (e) { /* ignore */ } }
   function wish() { return (C.state.wishlist || []).map(C.product).filter(Boolean); }
 
   /* ---------- addresses: structured, with a default ---------- */
@@ -123,6 +138,7 @@
 
   /* ---------- Tab 1: Overview ---------- */
   function vOverview(m) {
+    loadArchive();
     var o = activeOrder(), v = vaultItems().length, w = wish().length;
     var cards = [
       ['orders', 'Active Acquisition', o ? esc(statusOf(o)[0]) : 'No active acquisition', o ? esc(expected(o)) : 'Your next piece will be tracked here.'],
@@ -190,9 +206,9 @@
     return '<section class="acct-receipt" id="receipt-' + esc(o.ref) + '" aria-label="Digital receipt ' + esc(o.ref) + '">' +
       '<header class="acct-receipt__head"><svg class="wordmark" viewBox="120 30 796 120" aria-hidden="true"><use href="#wm-paths"/></svg></header>' + C.issuerHTML() +
       '<dl class="acct-receipt__meta"><div><dt>Receipt</dt><dd>' + esc(o.ref) + '</dd></div><div><dt>Date</dt><dd>' + esc(longDate(o.date)) + '</dd></div><div><dt>Client</dt><dd>' + esc(o.name) + '</dd></div><div><dt>Payment</dt><dd>' + esc({ payhere: 'PayHere Secure Card', lankaqr: 'LankaQR Instant Pay', bank: 'Private Bank Transfer' }[o.method] || 'PayHere Secure Card') + '</dd></div></dl>' +
-      '<table class="acct-receipt__table"><thead><tr><th scope="col">Piece</th><th scope="col">Size</th><th scope="col">Passport ID</th><th scope="col">Amount</th></tr></thead><tbody>' +
-        o.items.map(function (it) { return '<tr><td>' + esc(it.name) + '</td><td>' + esc(it.size) + '</td><td>' + esc(it.passport) + '</td><td>' + P(it.price) + '</td></tr>'; }).join('') +
-        '</tbody><tfoot><tr><td colspan="3">Insured delivery</td><td>Complimentary</td></tr><tr class="is-total"><td colspan="3">Total (LKR)</td><td>' + P(o.totalLKR) + '</td></tr></tfoot></table>' +
+      '<table class="acct-receipt__table"><thead><tr><th scope="col">Piece</th><th scope="col">Size</th><th scope="col">Amount</th></tr></thead><tbody>' +
+        o.items.map(function (it) { return '<tr><td>' + esc(it.name) + '</td><td>' + esc(it.size) + '</td><td>' + P(it.price) + '</td></tr>'; }).join('') +
+        '</tbody><tfoot><tr><td colspan="2">Insured delivery</td><td>Complimentary</td></tr><tr class="is-total"><td colspan="2">Total (LKR)</td><td>' + P(o.totalLKR) + '</td></tr></tfoot></table>' +
       '<p class="acct-fine">Delivered to: ' + esc(o.address || '') + '</p>' +
       '<div class="acct-form__row"><button class="btn btn--ghost" type="button" data-print-receipt="' + esc(o.ref) + '">Print Receipt</button><button class="acct-link" type="button" data-receipt-close>Close Receipt</button></div></section>';
   }
@@ -208,10 +224,10 @@
   function pieceOf(e) { return C.product(e.pid); }
   function transferPanel(e) {
     if (e.transfer) {
-      var link = M.vault ? M.vault.transferLink(e) : '';
+      var link = xferLinks()[e.id] || '';
       return '<div class="acct-xfer acct-xfer--on" id="xfer-' + esc(e.id) + '"><p class="acct-xfer__t">Transfer Pending</p>' +
         '<p class="acct-fine">A Private Transfer Invitation for <b>' + esc(e.transfer.email) + '</b>, valid until ' + esc(longDate(e.transfer.expires)) + '. Share it privately; the new custodian accepts it in their own name.</p>' +
-        '<div class="acct-xfer__link"><input type="text" readonly value="' + esc(link) + '" aria-label="Private Transfer Invitation Link" data-xfer-field><button class="btn btn--ghost btn--sm" type="button" data-xfer-copy="' + esc(e.id) + '"><span class="btn__label">Copy Link</span></button></div>' +
+        (link ? '<div class="acct-xfer__link"><input type="text" readonly value="' + esc(link) + '" aria-label="Private Transfer Invitation Link" data-xfer-field><button class="btn btn--ghost btn--sm" type="button" data-xfer-copy="' + esc(e.id) + '"><span class="btn__label">Copy Link</span></button></div>' : '<p class="acct-fine">The invitation link was shown on the device that created it. To share it again, cancel this transfer and create a new invitation.</p>') +
         '<button class="acct-link acct-link--quiet" type="button" data-xfer-cancel="' + esc(e.id) + '">Cancel Transfer</button></div>';
     }
     if (ui$.transfer !== e.id) return '';
@@ -222,30 +238,34 @@
       '<div class="acct-form__row"><button class="btn btn--solid" type="submit"><span class="btn__label">Create Private Transfer Invitation</span></button><button class="acct-link" type="button" data-form-cancel>Keep Ownership</button></div></form>';
   }
   function vVault() {
-    var m = C.state.member, me = String(m.email).toLowerCase(), items = vaultItems(), all = C.reg.all();
-    var mine = Object.keys(all).map(function (k) { return all[k]; }).filter(function (e) { return e.buyer === me && !e.specimen; });
-    var awaiting = mine.filter(function (e) { return e.status === 'UNCLAIMED' && !e.gift; }), gifts = mine.filter(function (e) { return e.gift; });
+    loadArchive();
+    var items = vaultItems();
     var cta = '<a class="btn btn--solid btn--sm" href="/verify" data-verify-page><span class="btn__label">Register a New Piece</span></a>';
+    var wait0 = !arch.at && !items.length;
     var owned = items.length ? '<ul class="acct-vault">' + items.map(function (e) {
         var p = pieceOf(e), r = ui.passportRecord ? ui.passportRecord(e.id) : null;
         return '<li class="acct-vcard' + (e.transfer ? ' is-pending' : '') + '"><div class="acct-vcard__thumb">' + (p ? C.plateHTML(p, 'form', 'thumb') : C.archivePlate()) + '</div>' +
-          '<div class="acct-vcard__info"><p class="acct-vcard__name">' + esc(p ? p.name : e.id) + '</p>' +
+          '<div class="acct-vcard__info"><p class="acct-vcard__name">' + esc(p ? p.name : e.name || e.id) + '</p>' +
           '<dl class="acct-vcard__meta"><div><dt>Size</dt><dd>' + esc(e.size || '') + '</dd></div><div><dt>Edition</dt><dd>' + esc((r && r.edition) || e.edition || C.editionLabel(p)) + '</dd></div>' +
           '<div><dt>Passport ID</dt><dd class="acct-serial">' + esc(e.id) + '</dd></div><div><dt>Inscribed</dt><dd>' + esc(shortDate(e.inscribedAt)) + '</dd></div></dl>' +
-          '<p class="acct-verified">' + CHK + (e.transfer ? 'Transfer Pending' : 'Inscribed to ' + esc(C.formalName(e.owner, true))) + '</p></div>' +
+          '<p class="acct-verified">' + CHK + (e.transfer ? 'Transfer Pending' : 'Inscribed to ' + esc(C.formalName(e.owner || {}, true))) + '</p></div>' +
           '<div class="acct-vcard__acts"><button class="btn btn--solid acct-vcard__cta" type="button" data-cert="' + esc(e.id) + '"><span class="btn__label">View Ownership Certificate</span></button>' +
             '<button class="acct-link" type="button" data-cert-pdf="' + esc(e.id) + '"><span class="cert__lbl">Download Certificate (PDF)</span></button>' +
             (e.transfer ? '' : '<button class="acct-link acct-link--quiet" type="button" data-transfer="' + esc(e.id) + '" aria-expanded="' + (ui$.transfer === e.id) + '">Transfer Ownership</button>') + '</div>' +
           transferPanel(e) + '</li>';
       }).join('') + '</ul>'
-      : empty('Your vault is waiting', 'When your piece arrives, inscribe it here with the Archive Serial and Vault Key of its Solid Metal Vault Card. Its ownership certificate is then issued in your name.', '<button class="acct-link" type="button" data-cert-sample>See a sample certificate</button>');
-    var wait = awaiting.length ? '<h2 class="acct-h2">Awaiting Your Inscription</h2><ul class="acct-await">' + awaiting.map(function (e) {
-        var p = pieceOf(e);
-        return '<li><span class="acct-await__n">' + esc(p ? p.short : e.id) + ' <small>Size ' + esc(e.size) + ' · ' + esc(e.id) + '</small></span><a class="acct-link" href="/verify?piece=' + esc(e.id) + '" data-verify-page="piece=' + esc(e.id) + '">Inscribe with Vault Card</a></li>';
-      }).join('') + '</ul><p class="acct-fine">Each piece is dispatched uninscribed. Its Solid Metal Vault Card, inside the Private Circle Presentation Case, registers it to you permanently.</p>' : '';
-    var gave = gifts.length ? '<h2 class="acct-h2">Pieces You Have Gifted</h2><ul class="acct-await">' + gifts.map(function (e) {
-        var p = pieceOf(e);
-        return '<li><span class="acct-await__n">' + esc(p ? p.short : e.id) + ' <small>Size ' + esc(e.size) + ' · ' + esc(e.id) + '</small></span><span class="acct-await__s">' + (e.status === 'CLAIMED' ? 'Inscribed by its new owner' : 'Awaiting the recipient’s inscription') + '</span></li>';
+      : wait0 ? '<p class="acct-fine acct-archive" role="status">Consulting the House Archive…</p>'
+      : arch.err ? empty('The House Archive is resting', arch.err === 'cfg' ? 'Inscription opens with the first sealed pieces of Edition 01. Your acquisitions remain safe in Acquisitions &amp; Orders.' : 'We could not reach the House Archive just now. Please try again shortly.', '<button class="acct-link" type="button" data-archive-retry>Try again</button>')
+      : empty('Your vault is waiting', 'When your piece is in your hands, tap the concealed seal in its lower-left inner seam with your phone, then present its Solid Metal Vault Card. Its Official Certificate is then issued in your name.', '<button class="acct-link" type="button" data-cert-sample>See a sample certificate</button>');
+    /* never activated remotely: no certificate until the seal is tapped in person */
+    var wait = arch.awaiting.length ? '<h2 class="acct-h2">Awaiting Physical Activation</h2><ul class="acct-await">' + arch.awaiting.map(function (e) {
+        var p = C.product(e.pid);
+        return '<li><span class="acct-await__n">' + esc(p ? p.short : e.name) + ' <small>Size ' + esc(e.size) + (e.orderRef ? ' · ' + esc(e.orderRef) : '') + '</small></span><span class="acct-await__s">Tap the concealed seam seal upon arrival</span></li>';
+      }).join('') + '</ul><p class="acct-fine">No certificate is issued until the piece is in your hands: its seal and its Solid Metal Vault Card together inscribe it to you.</p>' : '';
+    /* gifts: the piece, the order and a neutral state; never the recipient's passport, card or certificate */
+    var gave = arch.gifts.length ? '<h2 class="acct-h2">Pieces You Have Gifted</h2><ul class="acct-await">' + arch.gifts.map(function (e) {
+        var p = C.product(e.pid);
+        return '<li><span class="acct-await__n">' + esc(p ? p.short : e.name) + ' <small>Size ' + esc(e.size) + (e.orderRef ? ' · ' + esc(e.orderRef) : '') + '</small></span><span class="acct-await__s">' + esc(e.status) + '</span></li>';
       }).join('') + '</ul>' : '';
     return head('Wardrobe &amp; Digital Vault', 'Every piece inscribed in your name, with its Digital Product Passport.' + C.dref(6), cta) + banner() + owned + wait + gave;
   }
@@ -407,7 +427,13 @@
     if (e.target.closest('[data-verify-open]')) { ui$.verify = !ui$.verify; rerender(ui$.verify ? '#vf-code' : null); return; }
     if ((t = e.target.closest('[data-cert]'))) { ui.openPassport(null, t.getAttribute('data-cert')); return; }
     if ((t = e.target.closest('[data-transfer]'))) { var tid = t.getAttribute('data-transfer'); ui$.transfer = ui$.transfer === tid ? null : tid; rerender(ui$.transfer ? '#xf-email' : '[data-transfer="' + tid + '"]'); return; }
-    if ((t = e.target.closest('[data-xfer-cancel]'))) { var cxid = t.getAttribute('data-xfer-cancel'); C.reg.cancelTransfer(cxid); ui$.banner = 'The transfer is cancelled. The piece remains inscribed to you.'; rerender('.acct-banner'); return; }
+    if ((t = e.target.closest('[data-xfer-cancel]'))) {
+      var cxid = t.getAttribute('data-xfer-cancel'); t.disabled = true;
+      C.reg.cancelTransfer(cxid).then(function () { keepLink(cxid, ''); ui$.banner = 'The transfer is cancelled. The piece remains inscribed to you.'; rerender('.acct-banner'); },
+        function () { t.disabled = false; C.toast('The transfer could not be cancelled just now. Please try again.'); });
+      return;
+    }
+    if (e.target.closest('[data-archive-retry]')) { loadArchive(true); rerender(); return; }
     if ((t = e.target.closest('[data-xfer-copy]'))) {
       var fld = t.parentNode.querySelector('[data-xfer-field]'), lbl = t.querySelector('.btn__label');
       var done = function () { lbl.textContent = 'Link Copied'; setTimeout(function () { lbl.textContent = 'Copy Link'; }, 2000); };
@@ -484,14 +510,18 @@
       need('word', function (v) { return v.trim().toUpperCase() === 'TRANSFER'; }, 'Type the word TRANSFER to confirm.');
       if (!bad && f.elements.email.value.trim().toLowerCase() === String(m.email).toLowerCase()) { C.setError(f.elements.email, 'This piece is already inscribed to you. Enter the new custodian’s email.'); bad = f.elements.email; }
       if (bad) { bad.focus(); return; }
-      var xid = f.getAttribute('data-id'); C.reg.startTransfer(xid, f.elements.email.value);
-      ui$.transfer = null; ui$.banner = 'Private Transfer Invitation created. Copy the link and share it with the new custodian; it is valid for 7 days.';
-      rerender('[data-xfer-copy="' + xid + '"]'); return;
+      var xid = f.getAttribute('data-id'), sb = f.querySelector('[type=submit]'); sb.disabled = true;
+      C.reg.startTransfer(xid, f.elements.email.value).then(function (pc) {
+        keepLink(xid, pc.link);
+        ui$.transfer = null; ui$.banner = 'Private Transfer Invitation created. Copy the link and share it with the new custodian; it is valid for 7 days.';
+        rerender('[data-xfer-copy="' + xid + '"]');
+      }, function () { sb.disabled = false; C.setError(f.elements.email, 'The invitation could not be created just now. Please try again.'); });
+      return;
     }
     if (f.id === 'verifyForm') {
       need('code', function (v) { return /^MNT-[A-Z0-9]{4,}$/i.test(v.trim()); }, 'Enter the Passport ID shown on your Digital Product Passport, such as MNT-8L76T55.');
       if (bad) { bad.focus(); return; }
-      var code = f.elements.code.value.trim().toUpperCase(), hit = vaultItems().filter(function (x) { return x.it.passport === code; })[0];
+      var code = f.elements.code.value.trim().toUpperCase(), hit = vaultItems().filter(function (x) { return x.id === code; })[0];
       if (!hit) { C.setError(f.elements.code, 'We could not find that Passport ID. Check the serial, or message your stylist for help.'); f.elements.code.focus(); return; }
       ui.openPassport(null, code); return;
     }

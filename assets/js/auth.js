@@ -35,6 +35,21 @@
   function secsLeft() { return Math.max(0, Math.ceil((st.resendAt - Date.now()) / 1000)); }
 
   /* ---------- markup ---------- */
+  /* the ownership anchor inside the /verify ritual: Google first, then a passwordless email key; no passkey, no guest line */
+  function anchorView(c) {
+    return '<span class="pc-auth__seal">' + SEAL + '</span>' +
+      '<h' + c.level + ' class="pc-auth__title" id="' + c.titleId + '" tabindex="-1">Anchor Ownership to Your Private Circle</h' + c.level + '>' +
+      '<p class="pc-auth__sub pc-auth__sub--wide">Your verified email protects your Digital Product Passport, enables lifetime PDF certificate access, and secures future ownership transfers. No password required.</p>' +
+      (st.msg ? '<p class="pc-auth__msg" role="alert">' + esc(st.msg) + '</p>' : '') +
+      '<div class="pc-auth__stack"><button class="pc-btn pc-btn--google" type="button" data-auth-google>' + G + '<span>Continue with Google</span></button></div>' +
+      '<p class="pc-auth__or"><span>Or with your email</span></p>' +
+      '<form class="pc-auth__form" data-auth-email novalidate>' +
+        '<div class="field"><label for="' + c.p + '-email">Email address <span class="req" aria-hidden="true">*</span></label>' +
+        '<input id="' + c.p + '-email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="name@example.com" required value="' + esc(st.email) + '" aria-describedby="' + c.p + '-email-e">' +
+        '<span class="field__error" id="' + c.p + '-email-e" role="alert"></span></div>' +
+        '<button class="pc-btn pc-btn--key" type="submit"' + (st.busy ? ' disabled' : '') + '>' + (st.busy ? 'Sending your key…' : 'Continue with Email') + '</button>' +
+      '</form>';
+  }
   function emailView(c) {
     return '<span class="pc-auth__seal">' + SEAL + '</span>' +
       '<h' + c.level + ' class="pc-auth__title" id="' + c.titleId + '" tabindex="-1">Enter the Private Circle</h' + c.level + '>' +
@@ -74,8 +89,8 @@
       '<span aria-hidden="true">&middot;</span><button class="pc-link" type="button" data-auth-reset>Use a different email</button></p>' +
       (withCode ? '' : '<p class="pc-auth__guest">Nothing yet? Look in your spam or promotions folder. The link works once and expires soon.</p>');
   }
-  function inner(c) { return st.view === 'verify' ? verifyView(c) : emailView(c); }
-  function ctxOf(el) { return { p: el.getAttribute('data-p'), titleId: el.getAttribute('data-title'), level: el.getAttribute('data-level') }; }
+  function inner(c) { return st.view === 'verify' ? verifyView(c) : c.anchor ? anchorView(c) : emailView(c); }
+  function ctxOf(el) { return { p: el.getAttribute('data-p'), titleId: el.getAttribute('data-title'), level: el.getAttribute('data-level'), anchor: el.hasAttribute('data-anchor') }; }
   function paint(focusSel) {
     C.$$('.pc-auth').forEach(function (el) { el.innerHTML = inner(ctxOf(el)); });
     if (focusSel) { var f = C.$$(focusSel).filter(function (x) { return x.offsetParent; })[0]; if (f) f.focus(); }
@@ -446,7 +461,7 @@
 
   M.auth = {
     /* ctx: { p: id prefix, titleId, level: heading level } */
-    cardHTML: function (c) { return '<div class="pc-auth" data-p="' + c.p + '" data-title="' + c.titleId + '" data-level="' + (c.level || 2) + '">' + inner({ p: c.p, titleId: c.titleId, level: c.level || 2 }) + '</div>'; },
+    cardHTML: function (c) { return '<div class="pc-auth" data-p="' + c.p + '" data-title="' + c.titleId + '" data-level="' + (c.level || 2) + '"' + (c.anchor ? ' data-anchor=""' : '') + '>' + inner({ p: c.p, titleId: c.titleId, level: c.level || 2, anchor: !!c.anchor }) + '</div>'; },
     securityHTML: securityHTML,
     armSecurity: armSecurity
   };

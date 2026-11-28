@@ -177,131 +177,67 @@
     if (!o.arrive || isNaN(new Date(o.arrive).getTime())) o.arrive = C.addBusinessDays(C.DELIVERY[o.ship].days, o.date || Date.now()).toISOString();
   });
   /* ---------- the House Archive: one item-bound record per physical piece ----------
-     A piece is registered to the piece itself the moment it is dispatched (ownershipStatus UNCLAIMED,
-     "Awaiting Owner Inscription"). It becomes CLAIMED only when someone completes the Vault Card claim
-     with its Archive Serial and Vault Key; the key is then sealed and can never be used again.
-     Front-end demonstration: the archive lives in this browser until the House database exists. */
-  var REG_KEY = 'manthai.registry', REG = {};
-  try { REG = JSON.parse(window.localStorage.getItem(REG_KEY) || '{}') || {}; } catch (e) { REG = {}; }
-  function regSave() { try { window.localStorage.setItem(REG_KEY, JSON.stringify(REG)); } catch (e) { /* ignore */ } }
-  function fnv(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
-  function digits(n, seed) { var out = '', x = seed >>> 0; while (out.length < n) { x = fnv(String(x) + out.length + seed); out += String(x % 10); } return out; }
-  var reg = C.reg = {
-    SPECIMEN: { id: 'MNT-A7Q2K9', pid: 'aurelia-gown', size: 'S', edition: 'Edition 01 · Piece 05 of 15', serial: '48291074', key: '7392' },
-    all: function () { return REG; },
-    get: function (id) { return REG[String(id || '').toUpperCase()] || null; },
-    put: function (e) { REG[e.id] = e; regSave(); return e; },
-    /* "48291074" -> "MNT · 4829 · 1074" */
-    fmt: function (serial) { var d = String(serial || '').replace(/\D/g, ''); return 'MNT · ' + d.slice(0, 4) + ' · ' + d.slice(4, 8); },
-    bySerial: function (serial) {
-      var d = String(serial || '').replace(/\D/g, '');
-      reg.specimen();
-      return Object.keys(REG).map(function (k) { return REG[k]; }).filter(function (e) { return e.serial === d; })[0] || null;
-    },
-    /* a fresh Archive Serial (8 digits after MNT) and Vault Key (4 digits) that no other piece holds */
-    credentials: function () {
-      var serial, key, taken = {};
-      Object.keys(REG).forEach(function (k) { taken[REG[k].serial] = 1; });
-      do { serial = String(1 + Math.floor(Math.random() * 9)) + digits(7, Math.random() * 4294967295); } while (taken[serial] || serial === reg.SPECIMEN.serial);
-      do { key = digits(4, Math.random() * 4294967295); } while (/^(\d)\1{3}$/.test(key));
-      return { serial: serial, key: key };
-    },
-    /* the sample Solid Metal Vault Card shown on the Maison page: a real, claimable record so the ritual can be tried */
-    specimen: function () {
-      var s = reg.SPECIMEN;
-      if (!REG[s.id]) REG[s.id] = { id: s.id, pid: s.pid, size: s.size, edition: s.edition, serial: s.serial, key: s.key, status: 'UNCLAIMED', specimen: true, issued: new Date().toISOString(), prior: [] };
-      return REG[s.id];
-    },
-    resetSpecimen: function () { delete REG[reg.SPECIMEN.id]; regSave(); return reg.specimen(); },
-    /* register a newly acquired piece to the piece itself */
-    issue: function (it, order) {
-      var c = reg.credentials();
-      it.serial = c.serial; it.key = c.key;
-      return reg.put({ id: it.passport, pid: it.id, size: it.size, edition: it.edition || '', serial: c.serial, key: c.key, status: 'UNCLAIMED',
-        order: order.ref, buyer: String(order.email || '').toLowerCase(), gift: !!order.gift, issued: order.date, prior: [] });
-    },
-    /* the two keys of the card: Archive Serial + Vault Key */
-    /* a one-way digest of a piece's two keys, carried in its public link (never the keys themselves) */
-    hash: function (e) { return e.keyHash || fnv(e.id + '|' + e.serial + '|' + e.key).toString(36); },
-    check: function (serial, key, ctxId) {
-      var d = String(serial || '').replace(/\D/g, ''), e = reg.bySerial(d), ctx = ctxId && reg.get(ctxId);
-      if (!e && ctx && ctx.keyHash && fnv(ctx.id + '|' + d + '|' + key).toString(36) === ctx.keyHash) { ctx.serial = d; ctx.key = String(key); reg.put(ctx); e = ctx; }
-      if (!e || e.key !== String(key || '')) return { err: 'mismatch' };
-      if (ctx && ctx.id !== e.id) return { err: 'mismatch' };
-      if (e.status !== 'UNCLAIMED') return { err: 'claimed', entry: e };
-      return { entry: e };
-    },
-    claim: function (id, person, via) {
-      var e = reg.get(id); if (!e || e.status !== 'UNCLAIMED') return null;
-      e.status = 'CLAIMED'; e.keySealed = true; e.via = via || 'card';
-      e.owner = { title: person.title || '', first: C.cleanName(person.first), last: C.cleanName(person.last), email: String(person.email || '').toLowerCase() };
-      e.inscribedAt = new Date().toISOString();
-      reg.put(e); reg.mirror(e);
-      return e;
-    },
-    /* the owner's own pieces ride in their Private Circle record, so the vault follows them to any device */
-    mirror: function (e) {
-      var list = (C.state.inscriptions || []).filter(function (x) { return x.id !== e.id; });
-      var me = C.state.member && String(C.state.member.email).toLowerCase();
-      if (e.owner && e.owner.email === me) list.push(JSON.parse(JSON.stringify(e)));
-      C.state.inscriptions = list; C.save();
-    },
-    merge: function (list) {
-      (list || []).forEach(function (x) { var cur = REG[x.id]; if (!cur || (x.inscribedAt || '') >= (cur.inscribedAt || '')) REG[x.id] = x; });
-      regSave();
-    },
-    ownedBy: function (email) {
-      email = String(email || '').toLowerCase();
-      return Object.keys(REG).map(function (k) { return REG[k]; }).filter(function (e) { return e.status === 'CLAIMED' && e.owner && e.owner.email === email; })
-        .sort(function (a, b) { return String(b.inscribedAt).localeCompare(String(a.inscribedAt)); });
-    },
-    /* Heirloom transfer: a private invitation, valid seven days, which the new custodian accepts in their own name */
-    startTransfer: function (id, email) {
-      var e = reg.get(id); if (!e || e.status !== 'CLAIMED') return null;
-      e.transfer = { email: String(email).trim().toLowerCase(), token: digits(6, Math.random() * 4294967295) + fnv(id + Date.now()).toString(36).toUpperCase(), created: new Date().toISOString(), expires: new Date(Date.now() + 7 * 864e5).toISOString() };
-      reg.put(e); reg.mirror(e); return e;
-    },
-    cancelTransfer: function (id) { var e = reg.get(id); if (!e) return null; e.transfer = null; reg.put(e); reg.mirror(e); return e; },
-    acceptTransfer: function (id, token, person) {
-      var e = reg.get(id);
-      if (!e || !e.transfer || e.transfer.token !== token) return { err: 'invalid' };
-      if (new Date(e.transfer.expires).getTime() < Date.now()) return { err: 'expired' };
-      if (String(person.email).toLowerCase() !== e.transfer.email) return { err: 'email' };
-      var prev = e.owner;
-      (e.prior = e.prior || []).push({ from: e.inscribedAt, to: new Date().toISOString(), initials: prev ? C.initialsOf(prev) : '' });
-      e.owner = { title: person.title || '', first: C.cleanName(person.first), last: C.cleanName(person.last), email: String(person.email).toLowerCase() };
-      e.inscribedAt = new Date().toISOString(); e.via = 'transfer'; e.transfer = null;
-      reg.put(e); reg.mirror(e);
-      return { entry: e };
-    }
-  };
-  /* every order this browser knows enters the archive: pieces acquired before the House Archive existed were
-     bound to their buyer at acquisition and enter it as claimed; later pieces return awaiting inscription */
-  reg.fromOrders = function () {
-    var changed = false;
-    (C.state.orders || []).forEach(function (o) {
-      if (o.cancelled) return;
-      (o.items || []).forEach(function (it) {
-        if (!it.passport || REG[it.passport]) return;
-        changed = true;
-        if (it.serial && it.key) {
-          REG[it.passport] = { id: it.passport, pid: it.id, size: it.size, edition: it.edition || '', serial: it.serial, key: it.key, status: 'UNCLAIMED',
-            order: o.ref, buyer: String(o.email || '').toLowerCase(), gift: !!o.gift, issued: o.date, prior: [] };
-          return;
-        }
-        var seed = fnv(it.passport);
-        it.serial = String(1 + (seed % 9)) + digits(7, seed); it.key = digits(4, seed ^ 0x5bd1e995);
-        /* runs while core.js is still loading, before C.splitName exists: split the older full name here */
-        var w = String(o.name || '').trim().split(/\s+/).filter(Boolean), nm = { first: w[0] || '', last: w.slice(1).join(' ') };
-        REG[it.passport] = { id: it.passport, pid: it.id, size: it.size, edition: '', serial: it.serial, key: it.key, status: 'CLAIMED', keySealed: true, via: 'acquisition',
-          owner: { title: '', first: nm.first, last: nm.last, email: String(o.email || '').toLowerCase() }, inscribedAt: o.date, order: o.ref, buyer: String(o.email || '').toLowerCase(), issued: o.date, prior: [] };
-      });
+     The archive lives on the House server (api/vault), never in this browser. A piece is paired at the
+     atelier to its Concealed Authenticity Seal (NTAG 424 DNA) and its Solid Metal Vault Card. Ownership is
+     inscribed only after a genuine seal tap (Gate 1) and the matching Archive Serial and Vault Key from a
+     signed-in member (Gate 2). This file only asks the server and keeps, in memory, what it answered.
+     On localhost alone, assets/js/vault-dev.js stands in for the server so the House can rehearse the ritual
+     before the seals arrive; it is never loaded anywhere else. */
+  try { window.localStorage.removeItem('manthai.registry'); window.localStorage.removeItem('manthai.passports'); } catch (e) { /* ignore */ }
+  if (C.state.inscriptions) { delete C.state.inscriptions; }
+  var DEV = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+  var CACHE = {}, devLoading = null;
+  function devServer() {
+    if (M.vaultDev) return Promise.resolve(M.vaultDev);
+    if (!devLoading) devLoading = new Promise(function (ok, no) {
+      var sc = document.createElement('script'); sc.src = '/assets/js/vault-dev.js?v=' + Date.now();
+      sc.onload = function () { ok(M.vaultDev); }; sc.onerror = no; document.head.appendChild(sc);
     });
-    if (changed) regSave();
+    return devLoading;
+  }
+  function idToken() {
+    if (!C.state.member || !M.ui || !M.ui.auth || !M.ui.auth.idToken) return Promise.resolve('');
+    return M.ui.auth.idToken().then(null, function () { return ''; });
+  }
+  function fail(code, extra) { var e = new Error(code); e.code = code; e.extra = extra || {}; return e; }
+  var reg = C.reg = {
+    DEV: DEV,
+    /* "48291074" -> "MNT · 4829 · 1074" */
+    fmt: function (serial) { var d = String(serial || '').replace(/\D/g, ''); return 'MNT · ' + d.slice(0, 4) + ' · ' + d.slice(4); },
+    get: function (id) { return CACHE[String(id || '').toUpperCase()] || null; },
+    remember: function (r) { if (r && r.id) CACHE[r.id] = r; return r; },
+    forget: function () { CACHE = {}; reg.loaded = false; },
+    ownedBy: function () { return Object.keys(CACHE).map(function (k) { return CACHE[k]; }).filter(function (e) { return e.mine && e.status === 'CLAIMED'; })
+      .sort(function (a, b) { return String(b.inscribedAt).localeCompare(String(a.inscribedAt)); }); },
+    loaded: false,
+    /* one call to the House Archive: { op, body } -> the server's JSON, or an Error with .code */
+    call: function (op, body, method) {
+      method = method || (body ? 'POST' : 'GET');
+      return idToken().then(function (tok) {
+        if (DEV) return devServer().then(function (d) { return d.call(op, body || {}, C.state.member); });
+        var url = '/api/vault/' + op + (method === 'GET' && body ? '?' + Object.keys(body).map(function (k) { return k + '=' + encodeURIComponent(body[k]); }).join('&') : '');
+        var h = { 'Content-Type': 'application/json' }; if (tok) h.Authorization = 'Bearer ' + tok;
+        return fetch(url, { method: method, headers: h, body: method === 'POST' ? JSON.stringify(body || {}) : undefined, credentials: 'same-origin', cache: 'no-store' })
+          .then(function (r) { return r.json().then(null, function () { return {}; }).then(function (j) { if (!r.ok) throw fail(j.error || 'server', j); return j; }); }, function () { throw fail('offline'); });
+      });
+    },
+    tap: function (q) { return reg.call('tap', { uid: q.uid, ctr: q.ctr, cmac: q.cmac }).then(function (j) { if (j.piece && j.piece.mine) reg.remember(j.piece); return j; }); },
+    session: function (s) { return reg.call('session', { session: s }); },
+    claim: function (b) { return reg.call('claim', b).then(function (j) { reg.remember(j.piece); C.emit('vault'); return j; }); },
+    piece: function (id) { return reg.call('piece', { id: id }, 'GET').then(function (j) { if (j.piece.mine) reg.remember(j.piece); return j.piece; }); },
+    mine: function () {
+      if (!C.state.member) { reg.forget(); return Promise.resolve([]); }
+      return reg.call('mine', null, 'GET').then(function (j) {
+        Object.keys(CACHE).forEach(function (k) { if (CACHE[k].mine) delete CACHE[k]; });
+        (j.pieces || []).forEach(reg.remember); reg.loaded = true; return j.pieces || [];
+      });
+    },
+    acquisitions: function () { return C.state.member ? reg.call('acquisitions', null, 'GET') : Promise.resolve({ awaiting: [], gifts: [] }); },
+    startTransfer: function (id, email) { return reg.call('transfer-start', { id: id, email: email }).then(function (j) { j.piece.link = location.origin + '/verify?transfer=' + encodeURIComponent(j.token); reg.remember(j.piece); return j.piece; }); },
+    cancelTransfer: function (id) { return reg.call('transfer-cancel', { id: id }).then(function (j) { reg.remember(j.piece); return j.piece; }); },
+    viewTransfer: function (t) { return reg.call('transfer-view', { token: t }); },
+    acceptTransfer: function (t, person) { return reg.call('transfer-accept', { token: t, person: person }).then(function (j) { reg.remember(j.piece); C.emit('vault'); return j.piece; }); }
   };
-  /* a registry problem must never stop the rest of the House from loading */
-  try { reg.fromOrders(); } catch (e) { if (window.console) console.warn('MANTHAI registry', e); }
-  reg.merge(C.state.inscriptions);
 
   /* a piece from an earlier collection, no longer in the catalogue: the House Seal stands in for its photograph */
   C.archivePlate = function () { return '<span class="plate-archive" aria-hidden="true"><svg viewBox="0 0 1000 860"><use href="#spiral-seal"/></svg></span>'; };

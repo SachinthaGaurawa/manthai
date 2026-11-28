@@ -720,9 +720,8 @@
         '<h2 class="rec__h">Pieces &amp; Solid Metal Vault Cards</h2>' +
         '<ul class="rec__pieces">' + o.items.map(function (it) {
           var p = C.product(it.id);
-          var en = C.reg.get(it.passport), st = en && en.status === 'CLAIMED' ? 'Inscribed in the House Archive' : 'Dispatched uninscribed \u00b7 Awaiting Owner Inscription';
-          return '<li><div class="rec__thumb">' + (p ? C.plateHTML(p, 'form', 'thumb') : C.archivePlate()) + '</div><div class="rec__piece"><p>' + esc(it.name) + '</p><small>Size ' + esc(it.size) + ' <span aria-hidden="true">·</span> ' + P(it.price) + '</small><small class="rec__status">' + st + '</small></div>' +
-            '<button class="rec__vcard" type="button" data-passport-open="' + esc(it.passport) + '" aria-label="View the Digital Product Passport ' + esc(it.passport) + '"><span class="rec__vcard-seal">' + SEAL + '</span><span class="rec__vcard-k">Vault Card</span><span class="rec__vcard-id">' + esc(it.passport) + '</span><span class="rec__vcard-cta">View record</span></button></li>';
+          var st = o.gift ? 'Sealed for the recipient \u00b7 Inscribed by them upon arrival' : 'Sealed at the atelier \u00b7 Activated by a tap of its seam seal upon arrival';
+          return '<li><div class="rec__thumb">' + (p ? C.plateHTML(p, 'form', 'thumb') : C.archivePlate()) + '</div><div class="rec__piece"><p>' + esc(it.name) + '</p><small>Size ' + esc(it.size) + ' <span aria-hidden="true">·</span> ' + P(it.price) + '</small><small class="rec__status">' + st + '</small></div></li>';
         }).join('') + '</ul>' +
         '<dl class="cx-rows rec__totals"><div><dt>Subtotal</dt><dd>' + P(o.totalLKR) + '</dd></div><div><dt>Delivery</dt><dd>Complimentary</dd></div>' + (o.gift ? '<div><dt>Gift Presentation</dt><dd>Complimentary</dd></div>' : '') + '<div class="cx-rows__total"><dt>Total</dt><dd>' + P(o.totalLKR) + '</dd></div></dl>' +
         '<h2 class="rec__h">Dispatch</h2>' +
@@ -733,9 +732,7 @@
         (m ? '<p class="rec__fine">Saved to your Private Circle as ' + esc(m.email) + '.</p>'
            : '<div class="rec__circle"><p class="rec__kicker">Private Circle</p><h2>Keep this record with you.</h2><p>Your Digital Vault, delivery address and this record, kept together under ' + esc(o.email) + '. One click, no password.</p>' +
              '<div class="rec__circle-cta"><button class="btn btn--solid" type="button" data-circle-link><span class="btn__label">Send My Activation Link</span></button><button class="google-btn" type="button" data-google>Continue with Google</button></div></div>') +
-        '<div class="rec__demo-card"><p class="rec__fine"><b>Demonstration.</b> In the House, the Vault Key exists only on the Solid Metal Vault Card inside the box' + (o.gift ? ', for the recipient' : '') + '. To preview the inscription, the card' + (o.items.length > 1 ? 's' : '') + ' for this order read:</p><ul class="rec__keys">' +
-          o.items.map(function (it) { return it.serial ? '<li><span>' + esc(it.short || it.name) + '</span><span>Archive Serial <b>' + esc(C.reg.fmt(it.serial)) + '</b></span><span>Vault Key <b>' + esc(it.key) + '</b></span></li>' : ''; }).join('') + '</ul>' +
-          '<a class="acct-link" href="/verify" data-verify-page>Preview the Inscription Ritual</a></div>' +
+        '<p class="rec__fine">Ownership is never activated from this record. When the piece is in your hands, hold your phone to the concealed seal in its lower-left inner seam, then present the Solid Metal Vault Card from its presentation box. Its Digital Product Passport and Official Certificate are then issued in ' + (o.gift ? 'the recipient&rsquo;s' : 'your') + ' name.</p>' +
         '<p class="rec__fine rec__demo">Demonstration storefront: no payment was taken and no email was sent.</p>' +
       '</article></div>';
   }
@@ -932,7 +929,7 @@
   function placeOrder() {
     var d = co.d, items = [];
     var seen = {};
-    C.state.bag.forEach(function (l) { var p = C.product(l.id); for (var i = 0; i < l.qty; i++) { seen[p.id] = (seen[p.id] || 0); items.push({ id: p.id, short: p.short, name: p.name, size: l.size, price: p.price, passport: C.uid('MNT'), edition: C.editionLabel(p, seen[p.id]) }); seen[p.id] += 1; } });
+    C.state.bag.forEach(function (l) { var p = C.product(l.id); for (var i = 0; i < l.qty; i++) { seen[p.id] = (seen[p.id] || 0); items.push({ id: p.id, short: p.short, name: p.name, size: l.size, price: p.price, edition: C.editionLabel(p, seen[p.id]) }); seen[p.id] += 1; } });
     var order = { ref: C.uid('ORD'), date: new Date().toISOString(), items: items, totalLKR: C.bagTotalLKR(), currency: C.state.currency, display: C.price(C.bagTotalLKR()),
       method: d.pay, country: d.country, email: d.email, name: d.name, title: d.title, first: d.first, last: d.last, phone: d.phone, ship: d.ship, when: C.deliveryWhen(d.ship), gift: d.gift, giftNote: d.giftNote, omit: d.omit, instr: d.instr,
       arrive: C.addBusinessDays((C.DELIVERY[d.ship] || C.DELIVERY.island).days).toISOString(),
@@ -941,8 +938,7 @@
         address: d.rDeliver === 'recipient' ? [d.rAddr, d.rAddr2, d.rCity, d.rDistrict + ' District', 'Sri Lanka'].filter(Boolean).join(', ') : '' } : null,
       billing: d.bill ? { name: d.bill.name, address: [d.bill.addr, d.bill.city, d.bill.post, d.bill.district + ' District', 'Sri Lanka'].filter(Boolean).join(', ') } : null };
     if (order.giftInfo && order.giftInfo.address) { order.when = C.deliveryWhen(d.ship); }
-    /* item-first: every piece enters the House Archive bound to itself, awaiting its owner's inscription */
-    order.items.forEach(function (it) { C.reg.issue(it, order); });
+    /* nothing enters the House Archive here: each piece is paired to its seal and Vault Card at the atelier (scripts/provision-piece.mjs) */
     C.state.orders.unshift(order);
     var addrs = C.state.addresses || (C.state.addresses = []);
     if (addrs.indexOf(order.address) < 0) addrs.unshift(order.address);

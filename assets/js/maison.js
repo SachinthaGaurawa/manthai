@@ -565,13 +565,6 @@
 
   /* ======================= Digital Product Passport ======================= */
   function pieceNo(p) { return p.edition ? p.edition - p.remaining + 1 : 0; }
-  function findItem(code) {
-    var seen = {}, found = null;
-    C.state.orders.slice().reverse().forEach(function (o) {
-      o.items.forEach(function (it) { seen[it.id] = (seen[it.id] || 0); if (it.passport === code && !found) found = { o: o, it: it, ordinal: seen[it.id] }; seen[it.id] += 1; });
-    });
-    return found;
-  }
   /* One record drives the modal, the /passport/[id] page and the PDF. The owner, signed in, sees their own
      name; anyone else who scans the piece sees it registered, never to whom. */
   var recs = {};
@@ -579,10 +572,8 @@
   function sampleId(p) { var h = 2166136261, s = 'specimen:' + p.id; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return 'MNT-' + C.safeCode(h, 7); }
   ui.sampleId = sampleId;
   function sampleFor(code) { return M.PRODUCTS.filter(function (p) { return sampleId(p) === code || 'MNT-' + hash(p.id) === code; })[0]; }
-  function b64e(o) { try { return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); } catch (e) { return ''; } }
-  function b64d(s) { try { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return JSON.parse(decodeURIComponent(escape(atob(s)))); } catch (e) { return null; } }
-  /* the public facts ride in the query string (?r=), which survives a refresh, a share and a QR scan; #r= links from earlier certificates still open */
-  function verifyURL(r) { return location.origin + '/passport/' + encodeURIComponent(r.id) + (r.carry ? '?r=' + r.carry : ''); }
+  /* the live record is read from the House Archive by its Passport ID alone: nothing in the link can vouch for a piece */
+  function verifyURL(r) { return location.origin + '/passport/' + encodeURIComponent(r.id); }
   /* a deterministic archival digest: the same passport, edition and date of issue always print the same seal */
   function digestOf(id, edition, iso) {
     var s = id + '|' + edition + '|' + String(iso || '').slice(0, 10), h = 2166136261;
@@ -600,62 +591,37 @@
     r.entry = opt.entry || null;
     r.owner = r.sample ? 'Inscribed upon private acquisition' : r.status === 'UNCLAIMED' ? 'Awaiting Owner Inscription' : opt.mine ? 'Registered to ' + opt.name : 'Registered to Private Owner (Verified)';
     r.provenance = r.sample ? 'Archive specimen \u00b7 Registers to its first owner upon private acquisition'
-      : r.status === 'UNCLAIMED' ? 'Dispatched uninscribed \u00b7 Ownership is registered once with the Solid Metal Vault Card \u00b7 Eligible for official transfer of ownership thereafter'
+      : r.status === 'UNCLAIMED' ? 'Sealed at the atelier \u00b7 Ownership is inscribed once, by a tap of the concealed seam seal and the paired Solid Metal Vault Card \u00b7 Eligible for official transfer of ownership thereafter'
       : (opt.entry && opt.entry.via === 'transfer' ? 'Official Ownership Transfer' : 'Original Acquisition') + ' \u00b7 Inscribed in the House Archive \u00b7 Vault Key permanently sealed \u00b7 Eligible for official transfer of ownership and complimentary care guidance';
     if (opt.inscribed) r.inscribed = fmtDate(opt.inscribed);
     r.digest = digestOf(id, r.edition, r.issuedISO);
     /* the link carries the public facts (never the owner), so the record also opens on a device that has never seen the order */
-    r.carry = r.sample ? '' : b64e({ p: p.id, n: p.archived ? p.name : undefined, e: r.edition, d: r.issuedISO.slice(0, 10), s: opt.size || undefined, c: r.status === 'CLAIMED' ? 1 : undefined, h: r.status === 'UNCLAIMED' && opt.entry ? C.reg.hash(opt.entry) : undefined });
     r.size = opt.size || '';
     r.url = verifyURL(r);
     recs[id] = r;
     return r;
   }
+  /* a record from the House Archive (api/vault): the owner's own, or the public facts anyone may see */
+  function fromServer(e) {
+    var p = C.product(e.pid) || C.archivedProduct({ id: e.pid, name: e.name, short: e.name });
+    var mine = !!e.mine;
+    return buildRecord(e.id, p, { edition: e.edition || C.editionLabel(p), status: e.status, entry: e, size: e.size, mine: mine,
+      name: mine && e.owner ? C.formalName(e.owner, true) : '', date: e.inscribedAt || e.issued, inscribed: e.status === 'CLAIMED' && mine ? e.inscribedAt : '' });
+  }
   function recordFor(code, pid) {
     var e = code && C.reg.get(code);
-    if (!e && code === C.reg.SPECIMEN.id) e = C.reg.specimen();
-    if (e && C.product(e.pid)) {
-      var ep = C.product(e.pid), me0 = C.state.member, n0 = C.person();
-      var mine0 = !!(me0 && e.owner && e.owner.email === String(me0.email || '').toLowerCase());
-      var hit0 = findItem(code);
-      return buildRecord(code, ep, { edition: e.edition || (hit0 ? C.editionLabel(ep, hit0.ordinal) : C.editionLabel(ep)), status: e.status, entry: e, size: e.size,
-        mine: mine0, name: mine0 ? C.formalName(e.owner, true) || (n0 && C.formalName(n0, true)) : '', date: e.inscribedAt || e.issued, inscribed: e.status === 'CLAIMED' ? e.inscribedAt : '' });
-    }
-    var hit = code && findItem(code);
-    if (hit) {
-      var p = C.product(hit.it.id) || C.archivedProduct(hit.it);
-      var me = C.state.member, mine = !!(me && String(me.email || '').toLowerCase() === String(hit.o.email || '').toLowerCase());
-      return buildRecord(code, p, { edition: C.editionLabel(p, hit.ordinal), mine: mine, name: (me && me.name) || hit.o.name, date: hit.o.date });
-    }
+    if (e) return fromServer(e);
     var s = code ? sampleFor(code) : (pid && C.product(pid)) || M.PRODUCTS[0];
     if (s) return buildRecord(code && code === 'MNT-' + hash(s.id) ? sampleId(s) : code || sampleId(s), s, { sample: true });
     return null;
   }
   ui.passportRecord = function (code) { return recordFor(code); };
-  /* a record carried in the link, for a device without the order */
-  function recordFromLink(code) {
-    if (!/^MNT-[A-Z0-9]{4,10}$/.test(code)) return null;
-    var m = /(?:^|[?&#])r=([A-Za-z0-9_-]+)/.exec(location.search + location.hash), seen = {};
-    try { seen = JSON.parse(window.localStorage.getItem('manthai.passports') || '{}') || {}; } catch (e) { /* ignore */ }
-    var carry = m ? m[1] : seen[code], o = carry && b64d(carry);
-    if (!o) return null;
-    /* remember a record this browser has opened, so the bare link keeps working here too */
-    if (m && seen[code] !== m[1]) { seen[code] = m[1]; try { window.localStorage.setItem('manthai.passports', JSON.stringify(seen)); } catch (e) { /* ignore */ } }
-    var p = C.product(o.p) || (o.n ? C.archivedProduct({ id: o.p, name: o.n, short: o.n }) : null);
-    if (!p) return null;
-    /* a piece opened on a new device, still awaiting inscription: the archive learns of it from the seal's link,
-       holding only a one-way digest of its two keys, so the card can be claimed here */
-    if (o.h && !o.c && !C.reg.get(code) && C.product(o.p)) {
-      C.reg.put({ id: code, pid: o.p, size: String(o.s || '').slice(0, 4), edition: String(o.e || '').slice(0, 40), keyHash: String(o.h), status: 'UNCLAIMED', issued: /^\d{4}-\d{2}-\d{2}$/.test(o.d) ? o.d + 'T12:00:00' : new Date().toISOString(), prior: [], remote: true });
-      return recordFor(code);
-    }
-    return buildRecord(code, p, { edition: String(o.e || '').slice(0, 40) || undefined, size: String(o.s || '').slice(0, 4), status: o.h && !o.c ? 'UNCLAIMED' : 'CLAIMED', date: /^\d{4}-\d{2}-\d{2}$/.test(o.d) ? o.d + 'T12:00:00' : undefined });
-  }
   var CHECK = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
   var OUT = '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M9 6h9v9M18 6L7 17" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>';
   function actionsHTML(r, page) {
     return '<div class="cert__acts">' +
-        (page && r.mine ? '' : '<button class="cert__dl" type="button" data-cert-pdf="' + esc(r.id) + '"><span class="cert__lbl">Download Certificate (PDF)</span></button>') +
+        /* a certificate PDF only for an archive specimen, or for the inscribed owner of a verified piece */
+        (r.sample || (!page && r.mine && r.status === 'CLAIMED') ? '<button class="cert__dl" type="button" data-cert-pdf="' + esc(r.id) + '"><span class="cert__lbl">Download Certificate (PDF)</span></button>' : '') +
         '<button class="cert__copy" type="button" data-cert-copy="' + esc(r.id) + '"><span class="cert__lbl">Copy Verification Link</span></button>' +
         (page ? '' : '<a class="cert__open" href="' + esc(r.url) + '" target="_blank" rel="noopener" aria-label="View the live record, opens in a new tab"><span>View Live Record</span>' + OUT + '</a>') +
       '</div>';
@@ -704,8 +670,8 @@
     var e = r.entry;
     if (r.status === 'UNCLAIMED') return '<section class="own own--await" aria-labelledby="ownT"><svg class="own__seal" viewBox="0 0 1000 860" aria-hidden="true"><use href="#spiral-seal"/></svg>' +
       '<h2 class="own__t" id="ownT">Awaiting Owner Inscription</h2>' +
-      '<p class="own__p">This creation is verified authentic and has not yet been inscribed to an owner. Use the Solid Metal Vault Card enclosed in your presentation box to claim permanent ownership.</p>' +
-      '<button class="btn btn--solid own__cta" type="button" data-claim="' + esc(r.id) + '"><span class="btn__label">Claim &amp; Inscribe in My Name</span></button></section>';
+      '<p class="own__p">This creation is verified authentic and has not yet been inscribed to an owner. To claim it, hold your smartphone to the concealed seal in its lower-left inner seam, then present the Solid Metal Vault Card from its presentation box.</p>' +
+      '<a class="btn btn--solid own__cta" href="/verify" data-verify-page><span class="btn__label">How to Inscribe This Piece</span></a></section>';
     if (!r.mine) return '<section class="own own--sealed" aria-labelledby="ownT"><h2 class="own__t" id="ownT">Registered to Private Owner (Verified)</h2>' +
       '<p class="own__p">Owner identity is withheld for client discretion. This piece&rsquo;s Vault Key is permanently sealed.</p></section>';
     return '<section class="own own--mine" aria-labelledby="ownT"><h2 class="own__t" id="ownT">Inscribed to ' + esc(r.owner.replace(/^Registered to /, '')) + '</h2>' +
@@ -717,16 +683,39 @@
   ui.ownHTML = ownHTML;
 
   /* /passport/[id]: the live verification page anyone reaches by tapping the Concealed Authenticity Seal or from a shared link */
+  var passAsk = '';
   ui.renderPassportPage = function (code) {
     code = String(code || '').toUpperCase();
-    var r = (C.reg.get(code) || code === C.reg.SPECIMEN.id || findItem(code) || sampleFor(code)) ? recordFor(code) : recordFromLink(code), host = $('#ppPanel');
-    var seal = '<svg class="pp__seal" viewBox="0 0 1000 860" aria-hidden="true"><use href="#spiral-seal"/></svg>';
+    var host = $('#ppPanel'), seal = '<svg class="pp__seal" viewBox="0 0 1000 860" aria-hidden="true"><use href="#spiral-seal"/></svg>';
+    passAsk = code;
+    if (sampleFor(code)) return paintPassport(code, recordFor(code), host, seal);
+    if (!/^MNT-[A-Z0-9]{4,12}$/.test(code)) return paintPassport(code, null, host, seal);
+    /* consult the House Archive; until it answers, a quiet line, never a guessed record */
+    var known = C.reg.get(code);
+    if (known) paintPassport(code, recordFor(code), host, seal);
+    else if (host.getAttribute('data-pp-wait') !== code) {
+      host.removeAttribute('data-pp'); host.setAttribute('data-pp-wait', code);
+      host.innerHTML = '<div class="wrap pp__wrap pp__wrap--none">' + seal + '<p class="pp__k">House of MANTHAI &middot; Digital Product Passport</p>' +
+        '<h1 class="pp__title" id="ppTitle" tabindex="-1">Consulting the House Archive</h1><p class="pp__lede" role="status">Passport ID <b class="order-ref">' + esc(code) + '</b></p></div>';
+    }
+    C.reg.piece(code).then(function (e) {
+      if (passAsk !== code || document.documentElement.getAttribute('data-route') !== 'passport') return;
+      host.removeAttribute('data-pp-wait'); paintPassport(code, fromServer(e), host, seal);
+    }, function (err) {
+      if (passAsk !== code || document.documentElement.getAttribute('data-route') !== 'passport') return;
+      host.removeAttribute('data-pp-wait');
+      if (err && err.code === 'not_found') paintPassport(code, null, host, seal);
+      else if (!known) paintPassport(code, null, host, seal, true);
+    });
+    return { title: 'Passport ' + code + ' | House of MANTHAI' };
+  };
+  function paintPassport(code, r, host, seal, offline) {
     if (!r) {
       host.removeAttribute('data-pp');
       host.innerHTML = '<div class="wrap pp__wrap pp__wrap--none">' + seal +
         '<p class="pp__k">House of MANTHAI &middot; Digital Product Passport</p>' +
-        '<h1 class="pp__title" id="ppTitle">Passport record not found</h1>' +
-        '<p class="pp__lede">We could not find Passport ID <b class="order-ref">' + esc(code) + '</b> in the House registry. Please write to House Client Care on WhatsApp, and a member of the House will verify your piece personally.</p>' +
+        '<h1 class="pp__title" id="ppTitle">' + (offline ? 'The House Archive is resting' : 'Passport record not found') + '</h1>' +
+        '<p class="pp__lede">' + (offline ? 'We could not reach the House Archive just now to verify Passport ID <b class="order-ref">' + esc(code) + '</b>. Please try again shortly, or write to House Client Care on WhatsApp.' : 'We could not find Passport ID <b class="order-ref">' + esc(code) + '</b> in the House registry. Please write to House Client Care on WhatsApp, and a member of the House will verify your piece personally.') + '</p>' +
         '<div class="pp__cta"><a class="btn btn--solid" href="https://wa.me/94778787998?text=' + encodeURIComponent('Passport verification: ' + code) + '" target="_blank" rel="noopener"><span class="btn__label">Consult House Client Care</span></a>' +
         '<a class="pp__explore" href="/" data-route="home">Explore House of MANTHAI</a></div></div>';
       return { title: 'Passport Not Found | House of MANTHAI' };
@@ -755,7 +744,7 @@
         '<div class="pp__record" data-html="' + esc(record) + '">' + record + '</div>' +
       '</div></div>';
     return { title: 'Passport ' + r.id + ' | House of MANTHAI' };
-  };
+  }
 
   /* signing in or out changes whose name the page may show */
   C.on('member', function () { if (document.documentElement.getAttribute('data-route') === 'passport' && ui.curSlug) ui.renderPassportPage(ui.curSlug()); });
@@ -783,6 +772,7 @@
       copyText(r.url).then(function () { flash(t, CHECK + 'Verification Link Copied', 2200); }, function () { C.toast(r.url); });
       return;
     }
+    if (!r.sample && !(r.mine && r.status === 'CLAIMED')) { C.toast('The Official Certificate is issued only to the inscribed owner, inside their Private Circle.'); return; }
     if (t.getAttribute('aria-busy') === 'true' || !M.certificate) return;
     var lbl = t.querySelector('.cert__lbl'), was = lbl.innerHTML;
     t.setAttribute('aria-busy', 'true'); t.disabled = true; lbl.textContent = 'Preparing PDF…';
@@ -955,7 +945,7 @@
   /* ---------- Private Circle cloud record (Cloud Firestore: members/{uid}) ----------
      The client's details follow them to any browser or device they sign in on. If Firestore is not
      switched on for the project yet, everything still saves in this browser and nothing breaks. */
-  var CLOUD_KEYS = ['profile', 'fitSize', 'addressBook', 'notify', 'wishlist', 'savedSize', 'stockAlerts', 'orders', 'consults', 'security', 'inscriptions'];
+  var CLOUD_KEYS = ['profile', 'fitSize', 'addressBook', 'notify', 'wishlist', 'savedSize', 'stockAlerts', 'orders', 'consults', 'security'];
   var cloud = { F: null, db: null, uid: null, seen: '', timer: 0, off: false };
   function cloudPick() { var o = {}; CLOUD_KEYS.forEach(function (k) { if (C.state[k] !== undefined) o[k] = C.state[k]; }); if (C.state.member) o.name = C.state.member.name; return o; }
   function isEmpty(v) { return v == null || v === '' || (Array.isArray(v) ? !v.length : (typeof v === 'object' && !Object.keys(v).length)); }
@@ -976,12 +966,10 @@
           if (r[k] === undefined) return;
           if (k === 'orders') C.state.orders = unionBy(C.state.orders, r.orders, 'ref');
           else if (k === 'consults') C.state.consults = unionBy(C.state.consults, r.consults, 'id');
-          else if (k === 'inscriptions') { C.state.inscriptions = unionBy(r.inscriptions, C.state.inscriptions, 'id'); C.reg.merge(C.state.inscriptions); }
           else if (isEmpty(C.state[k]) || cloudAt >= localAt) C.state[k] = r[k];
         });
         if (r.name && (cloudAt >= localAt)) m.name = r.name;
       }
-      C.reg.fromOrders();
       cloud.uid = u.uid; cloud.seen = JSON.stringify(cloudPick());
       C.save(); C.emit('member');
       if (!r || localAt > cloudAt) cloudPush(true);
@@ -1163,7 +1151,7 @@
   var robots = document.querySelector('meta[name="robots"]'), robotsBase = robots && robots.content;
   var canon = document.querySelector('link[rel="canonical"]'), curSlug = null;
   function slugFromPath(p) { var m = /\/pieces\/([a-z0-9-]+)\/?$/.exec(p || location.pathname); return m && C.product(m[1]) ? m[1] : null; }
-  function routeFromPath(p) { p = p || location.pathname; return /\/the-maison\/?$/.test(p) ? 'maison' : /\/checkout\/confirmed\/?$/.test(p) ? 'confirmed' : /\/checkout\/?$/.test(p) ? 'checkout' : docFromPath(p) ? 'legal' : passFromPath(p) ? 'passport' : /^\/verify\/?$/.test(p) ? 'verify' : tabFromPath(p) ? 'account' : slugFromPath(p) ? 'piece' : 'home'; }
+  function routeFromPath(p) { p = p || location.pathname; return /\/the-maison\/?$/.test(p) ? 'maison' : /\/checkout\/confirmed\/?$/.test(p) ? 'confirmed' : /\/checkout\/?$/.test(p) ? 'checkout' : docFromPath(p) ? 'legal' : passFromPath(p) ? 'passport' : /^\/(verify|v)\/?$/.test(p) ? 'verify' : tabFromPath(p) ? 'account' : slugFromPath(p) ? 'piece' : 'home'; }
   function curRoute() { return document.documentElement.getAttribute('data-route') || 'home'; }
   function pathFor(name, slug) { return name === 'piece' ? '/pieces/' + slug : name === 'legal' ? '/legal/' + slug : name === 'passport' ? '/passport/' + slug : name === 'verify' ? '/verify' + (slug ? '?' + slug : '') : name === 'account' ? '/account' + (slug && slug !== 'overview' ? '/' + slug : '') : (ROUTES[name] || ROUTES.home).path; }
   function slugFor(name, p) { return name === 'account' ? tabFromPath(p) : name === 'legal' ? docFromPath(p) : name === 'passport' ? passFromPath(p) : name === 'verify' ? verifyQuery() : slugFromPath(p); }
@@ -1255,7 +1243,7 @@
   document.addEventListener('click', function (e) {
     var t;
     if ((t = e.target.closest('[data-go]'))) { e.preventDefault(); go(t.getAttribute('data-go')); return; }
-    if ((t = e.target.closest('[data-claim]'))) { e.preventDefault(); var cd = t.closest('dialog'); if (cd && cd.open) C.close(cd); ui.route('verify', null, true, 'piece=' + encodeURIComponent(t.getAttribute('data-claim'))); return; }
+    if ((t = e.target.closest('[data-claim]'))) { e.preventDefault(); var cd = t.closest('dialog'); if (cd && cd.open) C.close(cd); ui.route('verify', null, true); return; }
     if ((t = e.target.closest('[data-open-vault]'))) { e.preventDefault(); var vd = t.closest('dialog'); if (vd && vd.open) C.close(vd); ui.route('account', null, true, 'vault'); return; }
     if ((t = e.target.closest('[data-verify-page]'))) { e.preventDefault(); var pd = t.closest('dialog'); var vq = t.getAttribute('data-verify-page') || ''; if (pd && pd.open) { C.close(pd); later(function () { ui.route('verify', null, true, vq); }); } else ui.route('verify', null, true, vq); return; }
     if ((t = e.target.closest('[data-info]'))) { ui.openInfo(t.getAttribute('data-info')); return; }

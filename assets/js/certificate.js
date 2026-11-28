@@ -8,7 +8,7 @@
 (function () {
   'use strict';
   var M = window.MANTHAI, C = M.core;
-  var STAMP = '20261128z';
+  var STAMP = '20261129a';
   var INK = '#141210', UMBER = '#59534B', BRONZE = '#755A2A', GOLD = '#C9AF7E', SEAL = '#9F824C', RULE = '#DBD3C5', IVORY = '#F7F4EE', LIMESTONE = '#EFEAE0', FINE = '#8E867A';
   var PT = 0.3528;
   /* who signs, and the signature itself: assets/js/signatory.js, shared with the 3D certificate */
@@ -343,6 +343,8 @@
   M.certificate = {
     load: load,
     download: function (r) {
+      /* VERIFIED AUTHENTIC is printed only for a piece the House Archive confirmed is inscribed to this member */
+      if (!r || (!r.sample && !(r.mine && r.status === 'CLAIMED'))) return Promise.reject(new Error('not_owner'));
       return load().then(function (faces) {
         var doc = build(r, faces);
         doc.save('MANTHAI-Certificate-' + r.id + '.pdf');
