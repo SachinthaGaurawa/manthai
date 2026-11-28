@@ -67,6 +67,12 @@ async function saveChallenge(a, data) {
   await a.db.collection('webauthn_challenges').doc(id).set({ ...data, exp: Date.now() + CHALLENGE_TTL });
   return id;
 }
+async function sweepExpired(a) {
+  try {
+    const q = await a.db.collection('webauthn_challenges').where('exp', '<', Date.now()).limit(20).get();
+    if (!q.empty) { const batch = a.db.batch(); q.docs.forEach((d) => batch.delete(d.ref)); await batch.commit(); }
+  } catch (e) { /* housekeeping only */ }
+}
 /* read once and delete, so a challenge can never be replayed */
 async function takeChallenge(a, id, type) {
   if (!id || typeof id !== 'string' || id.length > 64) throw new HttpError(400, 'challenge_missing');
@@ -135,7 +141,12 @@ const ops = {
 
   async 'login-options'(req, a) {
     const options = await generateAuthenticationOptions({ rpID: RP_ID, userVerification: 'required', allowCredentials: [], timeout: 120000 });
-    const challengeId = await saveChallenge(a, { type: 'auth', challenge: options.challenge });
+    /* the site asks for a challenge as soon as a sign-in panel is shown, so some go unused:
+       sweep a few expired ones on each request (this never fails the sign-in) */
+    const [challengeId] = await Promise.all([
+      saveChallenge(a, { type: 'auth', challenge: options.challenge }),
+      sweepExpired(a),
+    ]);
     return { options, challengeId };
   },
 

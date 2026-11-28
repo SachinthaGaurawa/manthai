@@ -230,33 +230,72 @@
     return during === 'in' ? 'Your passkey could not be used just now. Continue with Google or your Private Access Key.' : 'Your passkey could not be created on this device just now.';
   }
 
+  /* ---------- a sign-in challenge waiting before the tap ----------
+     The service answers in two round trips (status, then a fresh challenge), and the first call of the day also
+     wakes the server. Doing that on the tap kept the Face ID / Touch ID sheet waiting about two and a half
+     seconds. So the challenge is fetched as soon as a sign-in panel is on screen (or the pointer nears it), and
+     the tap opens the system sheet at once, still inside the tap, as Safari prefers. A challenge lives five
+     minutes on the server; one older than four is fetched again. */
+  var pre = null, PRE_TTL = 4 * 60 * 1000;
+  function warm() {
+    if (!supported() || C.state.member || st.busy) return;
+    if (pre && (pre.j ? Date.now() - pre.at < PRE_TTL : true)) return;
+    var mine = pre = { at: Date.now(), j: null };
+    server().then(function (ok) {
+      if (!ok || pre !== mine) { if (pre === mine) pre = null; return; }
+      return api('login-options').then(function (j) { if (pre === mine) { mine.j = j; mine.at = Date.now(); } });
+    }).catch(function () { if (pre === mine) pre = null; });
+  }
+  function takeReady() {
+    var x = pre; pre = null;
+    return x && x.j && Date.now() - x.at < PRE_TTL ? x.j : null;
+  }
+  function panelOnScreen() {
+    return C.$$('[data-auth-passkey]').some(function (b) { return b.offsetParent && b.getClientRects().length; });
+  }
+  var warmT = 0;
+  function warmSoon() { clearTimeout(warmT); warmT = setTimeout(function () { if (panelOnScreen()) warm(); }, 120); }
+  try { new MutationObserver(warmSoon).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'hidden', 'open', 'aria-hidden'] }); } catch (e) { /* older browsers */ }
+  ['pointerover', 'focusin', 'touchstart'].forEach(function (ev) {
+    document.addEventListener(ev, function (e) { if (e.target.closest && e.target.closest('.pc-auth')) warm(); }, { passive: true });
+  });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) warmSoon(); });
+  setTimeout(warmSoon, 400);
+
   function pkSignIn() {
     var say = function (t) { st.pkMsg = t; C.$$('.pc-auth__pk').forEach(function (p) { p.textContent = t; }); };
     if (!supported()) { say('This browser does not support passkeys. Continue with Google or your Private Access Key.'); return; }
     if (st.busy) return;
-    say(''); st.busy = true;
+    say('');
+    var ready = takeReady();
+    st.busy = true;
+    /* the challenge is already here: open the system sheet in this same tap */
+    if (ready) { pkUse(ready, say); return; }
     server().then(function (ok) {
       if (!ok) { st.busy = false; return pkSignInLocal(say); }
-      var cid = '', legacy = false;
-      /* discoverable request: the browser offers passkeys synced through iCloud Keychain or Google Password Manager,
-         and "use a phone or tablet" (scan a code) for a passkey that lives on the member's phone */
-      return api('login-options').then(function (j) {
-        return navigator.credentials.get({ publicKey: requestOptions(j.options) }).then(function (c) {
-          cid = c.id; say('Verifying your passkey…');
-          try { legacy = !!c.response.userHandle && /@/.test(new TextDecoder().decode(c.response.userHandle)); } catch (e) { legacy = false; }
-          return api('login-verify', { challengeId: j.challengeId, response: authJSON(c) });
-        });
-      }).then(function (j) { return ui.auth.tokenSignIn(j.token); })
-        .then(function () {
-          st.busy = false; reset(); say('');
-          if (M.account && ui.curRoute && ui.curRoute() === 'account') M.account.render(ui.curSlug() || 'overview');
-        })
-        .catch(function (e) {
-          st.busy = false;
-          if (e && e.code === 'unknown_passkey' && cid) { forget(cid); if (legacy) e = { code: 'legacy_passkey' }; }
-          say(pkError(e, 'in'));
-        });
+      return api('login-options').then(function (j) { pkUse(j, say); }, function (e) { st.busy = false; say(pkError(e, 'in')); warmSoon(); });
     });
+  }
+  /* discoverable request: the browser offers passkeys synced through iCloud Keychain or Google Password Manager,
+     and "use a phone or tablet" (scan a code) for a passkey that lives on the member's phone */
+  function pkUse(j, say) {
+    var cid = '', legacy = false;
+    navigator.credentials.get({ publicKey: requestOptions(j.options) }).then(function (c) {
+      cid = c.id; say('Verifying your passkey…');
+      try { legacy = !!c.response.userHandle && /@/.test(new TextDecoder().decode(c.response.userHandle)); } catch (e) { legacy = false; }
+      return api('login-verify', { challengeId: j.challengeId, response: authJSON(c) });
+    }).then(function (j2) { return ui.auth.tokenSignIn(j2.token); })
+      .then(function () {
+        st.busy = false; reset(); say('');
+        if (M.account && ui.curRoute && ui.curRoute() === 'account') M.account.render(ui.curSlug() || 'overview');
+      })
+      .catch(function (e) {
+        st.busy = false;
+        if (e && e.code === 'unknown_passkey' && cid) { forget(cid); if (legacy) e = { code: 'legacy_passkey' }; }
+        say(pkError(e, 'in'));
+        /* a fresh challenge waits again, so "try once more" is just as quick */
+        warmSoon();
+      });
   }
   /* the earlier on-device flow, used only while the passkey service is not configured */
   function pkSignInLocal(say) {
