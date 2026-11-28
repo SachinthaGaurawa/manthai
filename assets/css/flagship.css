@@ -201,9 +201,8 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select { cursor
 .vcard[aria-pressed='true'] { --turn: 180deg; }
 .vcard:hover:not(.is-turning) { transition: transform .25s ease-out; }
 .vcard:focus-visible { box-shadow: 0 0 0 2px var(--obsidian-void, #0E0D0C), 0 0 0 4px var(--champagne-gold, #C9AF7E); }
-.vcard .ub-vcard__face { --W: 166.667cqw; width: 100%; height: 100%; transform: none; transform-origin: 50% 50%; border-radius: .8cqw; box-shadow: inset 0 0 0 max(1px, .27cqw) rgba(201, 175, 126, .45), 0 28px 50px -26px rgba(0, 0, 0, .85); }
+.vcard .ub-vcard__face { --W: 166.667cqw; width: 100%; height: 100%; transform: none; transform-origin: 50% 50%; border-radius: .8cqw; box-shadow: inset 0 0 0 max(1px, .27cqw) rgba(255, 255, 255, .09), inset 0 max(1px, .27cqw) 0 rgba(255, 255, 255, .06), 0 28px 50px -26px rgba(0, 0, 0, .85); }
 .vcard .ub-vcard__face--back { transform: rotateY(180deg); }
-.vcard .ub-vcard__qr { box-shadow: 0 0 0 max(1px, .4cqw) var(--foil); border-radius: .8cqw; }
 .vcard .ub-vcard__sheen { pointer-events: none; background-position: var(--shx) 0; transition: background-position .5s ease-out; }
 .vcard.is-seen .ub-vcard__face--front .ub-vcard__sheen { animation: ubSheen 2.4s ease .5s 1 backwards; }
 .vcard-hint { font: 400 10px/1 var(--sans); letter-spacing: .26em; text-transform: uppercase; color: var(--muted-stone, #ACA498); }

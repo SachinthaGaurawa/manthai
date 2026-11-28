@@ -2,16 +2,16 @@
    House of MANTHAI | edge metadata for shared links
    WhatsApp, iMessage, Facebook and LinkedIn read the raw HTML and never run
    JavaScript, so the single-page shell would preview every route as the
-   homepage. For the Maison, each piece and each Digital Product Passport this
+   homepage. For the Maison, each piece, /verify and each Digital Product Passport this
    rewrites only the <head> tags (title, description, canonical, Open Graph,
    Twitter) of the shell before it leaves the edge. Anything unexpected falls
    through to the normal static rewrite, untouched.
    Passport previews carry the passport ID only, never an owner's name.
    ========================================================================== */
-export const config = { matcher: ['/the-maison', '/pieces/:slug', '/passport/:id'] };
+export const config = { matcher: ['/the-maison', '/pieces/:slug', '/passport/:id', '/verify'] };
 
 const ORIGIN = 'https://manthai.vercel.app';
-const V = '20261128u';
+const V = '20261128v';
 const card = (file) => ORIGIN + '/assets/og/' + file + '?v=' + V;
 
 function esc(s) {
@@ -57,6 +57,10 @@ async function metaFor(request, path) {
     return { title: 'The Maison | MANTHAI', url: ORIGIN + '/the-maison', image: card('og-manthai-flagship.png'), alt: 'MANTHAI · The Maison',
       desc: 'Discover House of MANTHAI: our savoir-faire, the Unbounded Spiral Seal, and our signature presentation ritual.' };
   }
+  if (/^\/verify\/?$/.test(path)) {
+    return { title: 'Register Your Piece | MANTHAI', url: ORIGIN + '/verify', image: card('og-passport.png'), alt: 'MANTHAI · Private Vault',
+      desc: 'Verify a MANTHAI piece and inscribe it in your name with the Archive Serial and Vault Key of its Solid Metal Vault Card.' };
+  }
   let m = /^\/pieces\/([a-z0-9-]+)\/?$/.exec(path);
   if (m) {
     const res = await get(request, '/assets/og/meta.json');
@@ -92,7 +96,7 @@ export default async function middleware(request) {
         'x-content-type-options': 'nosniff',
         'referrer-policy': 'strict-origin-when-cross-origin',
         'x-frame-options': 'SAMEORIGIN',
-        'permissions-policy': 'camera=(), microphone=(), geolocation=()',
+        'permissions-policy': 'camera=(self), microphone=(), geolocation=()',
       },
     });
   } catch (e) {

@@ -8,7 +8,7 @@
 (function () {
   'use strict';
   var M = window.MANTHAI, C = M.core;
-  var STAMP = '20261128u';
+  var STAMP = '20261128v';
   var INK = '#141210', UMBER = '#59534B', BRONZE = '#755A2A', GOLD = '#C9AF7E', SEAL = '#9F824C', RULE = '#DBD3C5', IVORY = '#F7F4EE', LIMESTONE = '#EFEAE0', FINE = '#8E867A';
   var PT = 0.3528;
   /* the Atelier Director's signature, the same stroke as the 3D certificate in the ritual (index.html, .ub-cert__sig) */
@@ -211,7 +211,7 @@
       { k: 'Fibre & Construction', v: [r.materials] },
       { k: 'Craft Origin', v: [r.origin] },
       { k: 'Garment Stewardship & Care', v: [r.care] },
-      { k: 'Registered Owner', v: [r.owner], italic: r.sample },
+      { k: 'Ownership Inscription', v: [r.owner], italic: r.sample },
       { k: 'Provenance & Transfer', v: String(r.provenance).split(' · ') },
       { k: 'Issued & Certified By', v: ['House of Manthai (Private) Limited'], sub: ['An Avantio Ventures Company', 'Colombo, Sri Lanka'] },
       { k: 'Date of Issue', v: [r.issued] }
@@ -252,7 +252,7 @@
     var TX = L + pad + QS + 7, TW = R - TX - 6, ty = y + pad + 3.2;
     setFace(doc, 'Tenor', 'normal', 7.5, BRONZE); tracked(doc, 'LIVE REGISTRY VERIFICATION', TX, ty, 0.9);
     setFace(doc, 'Cormorant', 'italic', 9.6, UMBER);
-    var copy = doc.splitTextToSize('Confirm real-time authenticity and ownership status by scanning this QR code, tapping the piece’s NFC Verification Card, or visiting the live House registry:', TW);
+    var copy = doc.splitTextToSize('Confirm real-time authenticity and ownership status by scanning this QR code, tapping the garment’s concealed Authenticity Seal, or visiting the live House registry:', TW);
     ty += 4.6; doc.text(copy, TX, ty, { lineHeightFactor: 1.25 });
     ty += copy.length * 9.6 * PT * 1.25 + 0.9;
     var shown = location.origin.replace(/^https?:\/\//, '') + '/passport/' + r.id;

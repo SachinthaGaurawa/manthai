@@ -28,8 +28,9 @@
   var tab = 'overview', ui$ = { openOrder: null, form: null, editAddr: null, receipt: null, verify: false, saved: '', banner: '' };
 
   /* ---------- small helpers ---------- */
-  function firstName(n) { return String(n || '').trim().split(/\s+/)[0] || ''; }
-  function initials(n) { var w = String(n || '').trim().split(/\s+/); return ((w[0] || '').charAt(0) + (w.length > 1 ? w[w.length - 1].charAt(0) : '')).toUpperCase() || 'M'; }
+  function firstName(n) { var pn = C.person(); return (pn && pn.first) || String(n || '').trim().split(/\s+/)[0] || ''; }
+  function initials(n) { var pn = C.person(); if (pn && pn.first && pn.last) return C.initialsOf(pn); return initials0(n); }
+  function initials0(n) { var w = String(n || '').trim().split(/\s+/); return ((w[0] || '').charAt(0) + (w.length > 1 ? w[w.length - 1].charAt(0) : '')).toUpperCase() || 'M'; }
   function longDate(d) { return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }); }
   function shortDate(d) { return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); }
   function stamp(d) { d = new Date(d); return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); }
@@ -85,7 +86,7 @@
   function trackRef(o) { var d = new Date(o.date); return 'MNT-TRK-' + d.getFullYear() + '-' + String(o.ref).replace(/^ORD-/, ''); }
   function orders() { return C.state.orders || []; }
   function activeOrder() { return orders().filter(function (o) { return !o.cancelled && stageOf(o) < 3; })[0]; }
-  function vaultItems() { var a = []; orders().forEach(function (o) { if (o.cancelled) return; o.items.forEach(function (it) { a.push({ it: it, o: o }); }); }); return a; }
+  function vaultItems() { var m = C.state.member; return m ? C.reg.ownedBy(m.email) : []; }
   function wish() { return (C.state.wishlist || []).map(C.product).filter(Boolean); }
 
   /* ---------- addresses: structured, with a default ---------- */
@@ -107,7 +108,7 @@
   /* ======================= signed in: the portal ======================= */
   function sidebar(m) {
     var b = '<div class="acct-side"><div class="acct-side__in">' +
-      '<div class="acct-id"><span class="acct-mono" aria-hidden="true">' + esc(initials(m.name)) + '</span><div><p class="acct-id__name">' + esc(m.name) + '</p><p class="acct-id__meta">Private Circle · ' + esc(m.id || '') + '</p><p class="acct-id__meta">Member since ' + esc(longDate(m.since || Date.now())) + '</p></div></div>' +
+      '<div class="acct-id"><span class="acct-mono" aria-hidden="true">' + esc(initials(m.name)) + '</span><div><p class="acct-id__name">' + esc(C.formalName(C.person() || {}) || m.name) + '</p><p class="acct-id__meta">Private Circle · ' + esc(m.id || '') + '</p><p class="acct-id__meta">Member since ' + esc(longDate(m.since || Date.now())) + '</p></div></div>' +
       '<nav class="acct-nav" aria-label="Private Circle sections"><ul>' + TABS.map(function (t) {
         return '<li><a href="/account' + (t[0] === 'overview' ? '' : '/' + t[0]) + '" data-atab="' + t[0] + '"' + (t[0] === tab ? ' aria-current="page"' : '') + '>' + t[1] + '</a></li>';
       }).join('') + '</ul></nav>' +
@@ -125,7 +126,7 @@
     var o = activeOrder(), v = vaultItems().length, w = wish().length;
     var cards = [
       ['orders', 'Active Acquisition', o ? esc(statusOf(o)[0]) : 'No active acquisition', o ? esc(expected(o)) : 'Your next piece will be tracked here.'],
-      ['vault', 'Digital Vault', v + (v === 1 ? ' verified piece' : ' verified pieces'), v ? 'Ownership certificates open instantly.' : 'Pieces appear here once acquired.'],
+      ['vault', 'Digital Vault', v + (v === 1 ? ' inscribed piece' : ' inscribed pieces'), v ? 'Ownership certificates open instantly.' : 'Pieces appear here once inscribed with their Vault Card.'],
       ['saved', 'Saved Silhouettes', w + (w === 1 ? ' silhouette' : ' silhouettes'), w ? 'Reserve any of them in one click.' : 'Save a piece and it waits for you here.']
     ];
     return head('Welcome back, ' + esc(firstName(m.name) || 'friend'), 'Everything you hold with the House, in one place.') + banner() +
@@ -134,7 +135,7 @@
       }).join('') + '</div>' +
       '<h2 class="acct-h2">Quick Access</h2><ul class="acct-quick">' +
         '<li><a href="/account/orders" data-atab="orders"' + (o ? ' data-open-order="' + esc(o.ref) + '"' : '') + '>Track Active Order</a></li>' +
-        '<li><a href="/account/vault" data-atab="vault" data-verify-open>Verify a New Piece</a></li>' +
+        '<li><a href="/verify" data-verify-page>Register a New Piece</a></li>' +
         '<li><a href="/account/profile" data-atab="profile" data-jump="acctAddresses">Manage Sri Lankan Addresses</a></li>' +
         '<li><a href="' + waHref('Good day, I am a Private Circle client and would like to speak with my Colombo stylist.') + '" target="_blank" rel="noopener">Message Colombo Stylist<span class="sr-only"> (opens WhatsApp)</span></a></li></ul>';
   }
@@ -166,7 +167,7 @@
           return '<li><time>' + esc(stamp(e[0])) + '</time><span>' + esc(e[1]) + '</span></li>';
         }).join('') + '</ol></div>' +
         '<div><h3 class="acct-h3">In the Box</h3><ul class="acct-contents">' + o.items.map(function (it) { return '<li>' + esc(it.name) + ' <small>Size ' + esc(it.size) + '</small></li>'; }).join('') +
-          '<li>Lacquered gatefold box, lined in velvet garnet</li><li>Numbered Verification Card' + (o.items.length > 1 ? 's' : '') + '</li>' + (o.gift ? '<li>Calligraphy gift card</li>' : '') + '</ul></div></div></div>';
+          '<li>Lacquered gatefold box, lined in velvet garnet</li><li>Solid Metal Vault Card' + (o.items.length > 1 ? 's' : '') + ' in the Private Circle Presentation Case</li>' + (o.gift ? '<li>Calligraphy gift card</li>' : '') + '</ul></div></div></div>';
     }
     if (ui$.form && ui$.form.ref === o.ref && ui$.form.kind === 'return') h += returnForm(o);
     if (ui$.receipt === o.ref) h += receipt(o);
@@ -203,22 +204,50 @@
   }
 
   /* ---------- Tab 3: Wardrobe & Digital Vault ---------- */
+  var CHK = '<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
+  function pieceOf(e) { return C.product(e.pid); }
+  function transferPanel(e) {
+    if (e.transfer) {
+      var link = M.vault ? M.vault.transferLink(e) : '';
+      return '<div class="acct-xfer acct-xfer--on" id="xfer-' + esc(e.id) + '"><p class="acct-xfer__t">Transfer Pending</p>' +
+        '<p class="acct-fine">A Private Transfer Invitation for <b>' + esc(e.transfer.email) + '</b>, valid until ' + esc(longDate(e.transfer.expires)) + '. Share it privately; the new custodian accepts it in their own name.</p>' +
+        '<div class="acct-xfer__link"><input type="text" readonly value="' + esc(link) + '" aria-label="Private Transfer Invitation Link" data-xfer-field><button class="btn btn--ghost btn--sm" type="button" data-xfer-copy="' + esc(e.id) + '"><span class="btn__label">Copy Link</span></button></div>' +
+        '<button class="acct-link acct-link--quiet" type="button" data-xfer-cancel="' + esc(e.id) + '">Cancel Transfer</button></div>';
+    }
+    if (ui$.transfer !== e.id) return '';
+    return '<form class="acct-form acct-xfer" id="xferForm" data-id="' + esc(e.id) + '" novalidate><p class="acct-xfer__t">Transfer Ownership</p>' +
+      '<p class="acct-xfer__lede">Pass this creation to a new custodian. Once accepted, your Digital Product Passport will archive as a prior custodian and the new owner will inscribe the piece in their name.</p>' +
+      field('xf-email', req('New Custodian’s Email Address'), input('xf-email', 'email', 'type="email" autocomplete="off" inputmode="email" required')) +
+      field('xf-word', req('Type TRANSFER to confirm'), input('xf-word', 'word', 'autocomplete="off" autocapitalize="characters" spellcheck="false" required')) +
+      '<div class="acct-form__row"><button class="btn btn--solid" type="submit"><span class="btn__label">Create Private Transfer Invitation</span></button><button class="acct-link" type="button" data-form-cancel>Keep Ownership</button></div></form>';
+  }
   function vVault() {
-    var items = vaultItems();
-    var verify = '<button class="btn btn--ghost btn--sm" type="button" data-verify-open>Verify Another Piece (NFC / Serial)</button>';
-    var form = ui$.verify ? '<form class="acct-form acct-verify" id="verifyForm" novalidate><h2 class="acct-h3">Verify a Piece</h2><p class="acct-fine">Hold your phone to the woven label or the Verification Card, or enter the serial printed on the card.</p>' +
-      '<div class="acct-form__row acct-form__row--field">' + field('vf-code', req('Passport ID'), input('vf-code', 'code', 'autocomplete="off" placeholder="MNT-XXXXXXX" required')) + '<button class="btn btn--solid" type="submit"><span class="btn__label">Verify</span></button></div></form>' : '';
-    return head('Wardrobe &amp; Digital Vault', 'Every piece you own, with its NFC-verified Digital Product Passport.' + C.dref(6), verify) + banner() + form +
-      (items.length ? '<ul class="acct-vault">' + items.map(function (x) {
-        var p = C.product(x.it.id), nm = p ? p.name : x.it.name;
-        return '<li class="acct-vcard"><div class="acct-vcard__thumb">' + (p ? C.plateHTML(p, 'form', 'thumb') : C.archivePlate()) + '</div>' +
-          '<div class="acct-vcard__info"><p class="acct-vcard__name">' + esc(nm) + '</p>' +
-          '<dl class="acct-vcard__meta"><div><dt>Size</dt><dd>' + esc(x.it.size) + '</dd></div><div><dt>Edition</dt><dd>' + esc((ui.passportRecord && (ui.passportRecord(x.it.passport) || {}).edition) || C.editionLabel(p)) + '</dd></div>' +
-          '<div><dt>Passport ID</dt><dd class="acct-serial">' + esc(x.it.passport) + '</dd></div><div><dt>Registered</dt><dd>' + esc(shortDate(x.o.date)) + '</dd></div></dl>' +
-          '<p class="acct-verified"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>Verified Authentic</p></div>' +
-          '<button class="btn btn--solid acct-vcard__cta" type="button" data-cert="' + esc(x.it.passport) + '"><span class="btn__label">View Ownership Certificate</span></button></li>';
+    var m = C.state.member, me = String(m.email).toLowerCase(), items = vaultItems(), all = C.reg.all();
+    var mine = Object.keys(all).map(function (k) { return all[k]; }).filter(function (e) { return e.buyer === me && !e.specimen; });
+    var awaiting = mine.filter(function (e) { return e.status === 'UNCLAIMED' && !e.gift; }), gifts = mine.filter(function (e) { return e.gift; });
+    var cta = '<a class="btn btn--solid btn--sm" href="/verify" data-verify-page><span class="btn__label">Register a New Piece</span></a>';
+    var owned = items.length ? '<ul class="acct-vault">' + items.map(function (e) {
+        var p = pieceOf(e), r = ui.passportRecord ? ui.passportRecord(e.id) : null;
+        return '<li class="acct-vcard' + (e.transfer ? ' is-pending' : '') + '"><div class="acct-vcard__thumb">' + (p ? C.plateHTML(p, 'form', 'thumb') : C.archivePlate()) + '</div>' +
+          '<div class="acct-vcard__info"><p class="acct-vcard__name">' + esc(p ? p.name : e.id) + '</p>' +
+          '<dl class="acct-vcard__meta"><div><dt>Size</dt><dd>' + esc(e.size || '') + '</dd></div><div><dt>Edition</dt><dd>' + esc((r && r.edition) || e.edition || C.editionLabel(p)) + '</dd></div>' +
+          '<div><dt>Passport ID</dt><dd class="acct-serial">' + esc(e.id) + '</dd></div><div><dt>Inscribed</dt><dd>' + esc(shortDate(e.inscribedAt)) + '</dd></div></dl>' +
+          '<p class="acct-verified">' + CHK + (e.transfer ? 'Transfer Pending' : 'Inscribed to ' + esc(C.formalName(e.owner, true))) + '</p></div>' +
+          '<div class="acct-vcard__acts"><button class="btn btn--solid acct-vcard__cta" type="button" data-cert="' + esc(e.id) + '"><span class="btn__label">View Ownership Certificate</span></button>' +
+            '<button class="acct-link" type="button" data-cert-pdf="' + esc(e.id) + '"><span class="cert__lbl">Download Certificate (PDF)</span></button>' +
+            (e.transfer ? '' : '<button class="acct-link acct-link--quiet" type="button" data-transfer="' + esc(e.id) + '" aria-expanded="' + (ui$.transfer === e.id) + '">Transfer Ownership</button>') + '</div>' +
+          transferPanel(e) + '</li>';
       }).join('') + '</ul>'
-        : empty('Your vault is waiting', 'Pieces you acquire are registered here with their Passport ID and ownership certificate.', '<button class="acct-link" type="button" data-cert-sample>See a sample certificate</button>'));
+      : empty('Your vault is waiting', 'When your piece arrives, inscribe it here with the Archive Serial and Vault Key of its Solid Metal Vault Card. Its ownership certificate is then issued in your name.', '<button class="acct-link" type="button" data-cert-sample>See a sample certificate</button>');
+    var wait = awaiting.length ? '<h2 class="acct-h2">Awaiting Your Inscription</h2><ul class="acct-await">' + awaiting.map(function (e) {
+        var p = pieceOf(e);
+        return '<li><span class="acct-await__n">' + esc(p ? p.short : e.id) + ' <small>Size ' + esc(e.size) + ' · ' + esc(e.id) + '</small></span><a class="acct-link" href="/verify?piece=' + esc(e.id) + '" data-verify-page="piece=' + esc(e.id) + '">Inscribe with Vault Card</a></li>';
+      }).join('') + '</ul><p class="acct-fine">Each piece is dispatched uninscribed. Its Solid Metal Vault Card, inside the Private Circle Presentation Case, registers it to you permanently.</p>' : '';
+    var gave = gifts.length ? '<h2 class="acct-h2">Pieces You Have Gifted</h2><ul class="acct-await">' + gifts.map(function (e) {
+        var p = pieceOf(e);
+        return '<li><span class="acct-await__n">' + esc(p ? p.short : e.id) + ' <small>Size ' + esc(e.size) + ' · ' + esc(e.id) + '</small></span><span class="acct-await__s">' + (e.status === 'CLAIMED' ? 'Inscribed by its new owner' : 'Awaiting the recipient’s inscription') + '</span></li>';
+      }).join('') + '</ul>' : '';
+    return head('Wardrobe &amp; Digital Vault', 'Every piece inscribed in your name, with its Digital Product Passport.' + C.dref(6), cta) + banner() + owned + wait + gave;
   }
 
   /* ---------- Tab 4: Saved Silhouettes ---------- */
@@ -259,7 +288,9 @@
     var phone = pr.phone || (orders()[0] && orders()[0].phone ? orders()[0].phone.replace(/^\+94\s?/, '') : '');
     var personal = '<section class="acct-sec" aria-labelledby="acctPersonal"><h2 class="acct-h2" id="acctPersonal">Personal Details</h2>' +
       '<form class="acct-form" id="profileForm" novalidate>' +
-      '<div class="row-2">' + field('pf-title', opt('Title'), select('pf-title', 'title', ['Mr.', 'Ms.', 'Mrs.', 'Miss', 'Dr.', 'Prof.', 'Mx.', 'Prefer not to say'], pr.title, 'class="acct-select"', 'Choose')) + field('pf-name', req('Full Name'), input('pf-name', 'name', 'autocomplete="name" required', m.name)) + '</div>' +
+      '<div class="cx-names">' + field('pf-title', opt('Title'), select('pf-title', 'title', C.TITLES, pr.title, 'class="acct-select" autocomplete="honorific-prefix"', 'Choose')) +
+        field('pf-first', req('First Name'), input('pf-first', 'first', 'autocomplete="given-name" required maxlength="60"', (C.person() || {}).first)) +
+        field('pf-last', req('Last Name'), input('pf-last', 'last', 'autocomplete="family-name" required maxlength="60"', (C.person() || {}).last)) + '</div>' +
       '<div class="field"><span class="field__label-static">Email Address</span><p class="field__static acct-email">' + esc(m.email) + '<span class="acct-badge">' + (m.provider === 'google' ? 'Signed in with Google' : 'Signed in with a private link') + '</span></p></div>' +
       '<div class="row-2"><div class="field field--phone"><label for="pf-phone">' + opt('Mobile Number (+94)') + '</label><div class="phone-wrap"><span class="phone-cc" aria-hidden="true">+94</span><input id="pf-phone" name="phone" type="tel" autocomplete="tel-national" inputmode="numeric" placeholder="77 123 4567" maxlength="13" value="' + esc(phone) + '" aria-describedby="pf-phone-e"></div><span class="field__error" id="pf-phone-e" role="alert"></span></div>' +
         field('pf-dob', opt('Date of Birth'), input('pf-dob', 'dob', 'type="text" inputmode="numeric" autocomplete="bday" placeholder="DD / MM / YYYY" maxlength="14" data-dob data-max="' + todayISO() + '"', dobShow(pr.dob)), 'For private Maison gestures only.') + '</div>' +
@@ -299,7 +330,8 @@
           '<div class="acct-addr__ctl"><button class="acct-link" type="button" data-resched="' + esc(c.id) + '">Reschedule</button><button class="acct-link acct-link--quiet" type="button" data-consult-cancel="' + esc(c.id) + '">Cancel</button></div></li>';
       }).join('') + '</ul>' : '<p class="acct-fine">No consultations booked. Request one and it appears here at once.</p>') + '</div>';
     var right = '<div class="acct-col"><form class="acct-form acct-book" id="bookForm" novalidate><h2 class="acct-h2">Request a Private Styling Consultation</h2>' +
-      '<div class="row-2">' + field('bk-name', req('Full Name'), input('bk-name', 'name', 'autocomplete="name" required', m.name)) + field('bk-email', req('Email Address'), input('bk-email', 'email', 'type="email" autocomplete="email" required', m.email)) + '</div>' +
+      '<div class="row-2">' + field('bk-first', req('First Name'), input('bk-first', 'first', 'autocomplete="given-name" required', (C.person() || {}).first)) + field('bk-last', req('Last Name'), input('bk-last', 'last', 'autocomplete="family-name" required', (C.person() || {}).last)) + '</div>' +
+      field('bk-email', req('Email Address'), input('bk-email', 'email', 'type="email" autocomplete="email" required', m.email)) +
       field('bk-format', req('Format'), select('bk-format', 'format', FORMATS, FORMATS[0], 'required')) +
       field('bk-topic', req('Topic'), select('bk-topic', 'topic', TOPICS, null, 'required', 'Choose a topic')) +
       '<div class="row-2">' + field('bk-date', req('Preferred Date'), input('bk-date', 'date', 'type="date" min="' + minS + '" required')) + field('bk-time', req('Time (IST)'), select('bk-time', 'time', TIMES, null, 'required', 'Choose')) + '</div>' +
@@ -370,9 +402,17 @@
       ui$.banner = 'Cancellation requested for ' + esc(oc.ref) + '. A confirmation has been sent to ' + esc(oc.email) + '. Demonstration storefront: no email is sent.';
       rerender('.acct-banner'); return;
     }
-    if (e.target.closest('[data-form-cancel]')) { ui$.form = null; ui$.editAddr = null; rerender(); return; }
+    if (e.target.closest('[data-form-cancel]')) { ui$.form = null; ui$.editAddr = null; ui$.transfer = null; rerender(); return; }
     if (e.target.closest('[data-verify-open]')) { ui$.verify = !ui$.verify; rerender(ui$.verify ? '#vf-code' : null); return; }
     if ((t = e.target.closest('[data-cert]'))) { ui.openPassport(null, t.getAttribute('data-cert')); return; }
+    if ((t = e.target.closest('[data-transfer]'))) { var tid = t.getAttribute('data-transfer'); ui$.transfer = ui$.transfer === tid ? null : tid; rerender(ui$.transfer ? '#xf-email' : '[data-transfer="' + tid + '"]'); return; }
+    if ((t = e.target.closest('[data-xfer-cancel]'))) { var cxid = t.getAttribute('data-xfer-cancel'); C.reg.cancelTransfer(cxid); ui$.banner = 'The transfer is cancelled. The piece remains inscribed to you.'; rerender('.acct-banner'); return; }
+    if ((t = e.target.closest('[data-xfer-copy]'))) {
+      var fld = t.parentNode.querySelector('[data-xfer-field]'), lbl = t.querySelector('.btn__label');
+      var done = function () { lbl.textContent = 'Link Copied'; setTimeout(function () { lbl.textContent = 'Copy Link'; }, 2000); };
+      if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(fld.value).then(done, function () { fld.select(); }); else { fld.select(); try { document.execCommand('copy'); done(); } catch (er) { /* ignore */ } }
+      return;
+    }
     if (e.target.closest('[data-cert-sample]')) { ui.openPassport(); return; }
     if ((t = e.target.closest('[data-unwish]'))) { M.shop.toggleWish(t.getAttribute('data-unwish'), true); ui$.banner = 'Removed from your Saved Silhouettes.'; rerender('.acct-banner'); return; }
     if ((t = e.target.closest('[data-svsize]'))) {
@@ -438,23 +478,32 @@
       ui$.banner = (kind === 'exchange' ? 'Size exchange requested for ' + esc(o.ref) + '. ' : 'Return requested for ' + esc(o.ref) + '. Your refund goes back to your original payment method. ') + (o.request.pickup ? 'A Maison courier will contact you to arrange the complimentary pickup.' : 'We will email the return instructions.');
       rerender('.acct-banner'); return;
     }
+    if (f.id === 'xferForm') {
+      need('email', C.validEmail, 'Enter the new custodian’s email address.');
+      need('word', function (v) { return v.trim().toUpperCase() === 'TRANSFER'; }, 'Type the word TRANSFER to confirm.');
+      if (!bad && f.elements.email.value.trim().toLowerCase() === String(m.email).toLowerCase()) { C.setError(f.elements.email, 'This piece is already inscribed to you. Enter the new custodian’s email.'); bad = f.elements.email; }
+      if (bad) { bad.focus(); return; }
+      var xid = f.getAttribute('data-id'); C.reg.startTransfer(xid, f.elements.email.value);
+      ui$.transfer = null; ui$.banner = 'Private Transfer Invitation created. Copy the link and share it with the new custodian; it is valid for 7 days.';
+      rerender('[data-xfer-copy="' + xid + '"]'); return;
+    }
     if (f.id === 'verifyForm') {
-      need('code', function (v) { return /^MNT-[A-Z0-9]{4,}$/i.test(v.trim()); }, 'Enter the Passport ID printed on your Verification Card, such as MNT-8L76T55.');
+      need('code', function (v) { return /^MNT-[A-Z0-9]{4,}$/i.test(v.trim()); }, 'Enter the Passport ID shown on your Digital Product Passport, such as MNT-8L76T55.');
       if (bad) { bad.focus(); return; }
       var code = f.elements.code.value.trim().toUpperCase(), hit = vaultItems().filter(function (x) { return x.it.passport === code; })[0];
       if (!hit) { C.setError(f.elements.code, 'We could not find that Passport ID. Check the serial, or message your stylist for help.'); f.elements.code.focus(); return; }
       ui.openPassport(null, code); return;
     }
     if (f.id === 'profileForm') {
-      need('name', function (v) { return v.trim().length > 1; }, 'Enter your full name.');
+      need('first', C.validName, 'Enter your first name, using letters only.');
+      need('last', C.validName, 'Enter your last name. Multi-word and hyphenated names are welcome, such as De Silva.');
       need('phone', function (v) { return !v.trim() || /^7\d{8}$/.test(v.replace(/\D/g, '').replace(/^(94|0)/, '')); }, 'Enter a Sri Lankan mobile number, such as 77 123 4567.');
       need('dob', function (v) { return !v.trim() || (dobISO(v) && dobISO(v) <= todayISO() && dobISO(v) >= '1900-01-01'); }, 'Enter your date of birth as DD / MM / YYYY, such as 14 / 02 / 1992.');
       if (bad) { bad.focus(); return; }
       var pr = C.state.profile || (C.state.profile = {});
       pr.title = f.elements.title.value; pr.phone = f.elements.phone.value.trim(); pr.dob = dobISO(f.elements.dob.value);
       var pref = $('[data-pref][aria-checked="true"]', f); C.state.fitSize = pref ? pref.getAttribute('data-pref') : '';
-      m.name = f.elements.name.value.trim();
-      var ac = C.state.accounts && C.state.accounts[String(m.email).toLowerCase()]; if (ac) ac.name = m.name;
+      C.setPerson({ title: f.elements.title.value, first: f.elements.first.value, last: f.elements.last.value });
       C.save(); C.emit('member'); ui$.saved = 'profile';
       acct.render(tab); var sn = $('.acct-saved-note'); if (sn) sn.setAttribute('tabindex', '-1'), sn.focus();
       setTimeout(function () { ui$.saved = ''; }, 100); return;
@@ -474,7 +523,8 @@
     if (f.id === 'bookForm' || f.id === 'reschedForm') {
       var minD = new Date(); minD.setDate(minD.getDate() + 1); var minS = minD.toISOString().slice(0, 10);
       if (f.id === 'bookForm') {
-        need('name', function (v) { return v.trim().length > 1; }, 'Enter your full name.');
+        need('first', C.validName, 'Enter your first name.');
+        need('last', C.validName, 'Enter your last name.');
         need('email', C.validEmail, 'Enter a valid email address.');
         need('topic', function (v) { return !!v; }, 'Choose a topic.');
       }
@@ -487,7 +537,7 @@
         if (c) { c.date = f.elements.date.value; c.time = f.elements.time.value; }
         ui$.form = null; ui$.banner = 'Rescheduled to ' + esc(C.fmtDay(new Date(c.date + 'T12:00:00'))) + ' at ' + esc(c.time) + ' IST.';
       } else {
-        var nc = { id: 'CN' + Date.now().toString(36), name: f.elements.name.value.trim(), email: f.elements.email.value.trim(), format: f.elements.format.value, topic: f.elements.topic.value, date: f.elements.date.value, time: f.elements.time.value, note: f.elements.note.value.trim() };
+        var nc = { id: 'CN' + Date.now().toString(36), name: C.formalName({ first: f.elements.first.value, last: f.elements.last.value }), email: f.elements.email.value.trim(), format: f.elements.format.value, topic: f.elements.topic.value, date: f.elements.date.value, time: f.elements.time.value, note: f.elements.note.value.trim() };
         list.push(nc);
         ui$.banner = 'Requested: ' + esc(nc.topic) + ', ' + esc(C.fmtDay(new Date(nc.date + 'T12:00:00'))) + ' at ' + esc(nc.time) + ' IST. Your stylist confirms by ' + (nc.format.indexOf('WhatsApp') > -1 ? 'WhatsApp' : 'email') + '.';
       }
@@ -502,9 +552,9 @@
   btn.setAttribute('aria-haspopup', 'true'); btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-controls', 'acctMenu');
   function ddHTML(m) {
     var primary = [['overview', 'Account Overview'], ['orders', 'Acquisitions &amp; Orders'], ['vault', 'Wardrobe &amp; Digital Vault'], ['saved', 'Saved Silhouettes']];
-    var secondary = [['profile', 'Profile, Addresses &amp; Security'], ['concierge', 'Private Concierge &amp; Care']];
-    function li(x, cls) { return '<li><a class="' + cls + '" href="/account' + (x[0] === 'overview' ? '' : '/' + x[0]) + '" data-dd="' + x[0] + '">' + x[1] + '</a></li>'; }
-    return '<div class="acct-dd__head"><p class="acct-dd__name">' + esc(m.name) + '</p><p class="acct-dd__id">Private Circle · ' + esc(m.id || '') + '</p></div>' +
+    var secondary = [['profile', 'Profile, Addresses &amp; Security'], ['concierge', 'Private Concierge &amp; Care'], ['verify', 'Verify a Piece']];
+    function li(x, cls) { return '<li><a class="' + cls + '" href="' + (x[0] === 'verify' ? '/verify' : '/account' + (x[0] === 'overview' ? '' : '/' + x[0])) + '" data-dd="' + x[0] + '">' + x[1] + '</a></li>'; }
+    return '<div class="acct-dd__head"><p class="acct-dd__name">' + esc(C.formalName(C.person() || {}) || m.name) + '</p><p class="acct-dd__id">Private Circle · ' + esc(m.id || '') + '</p></div>' +
       '<ul class="acct-dd__list">' + primary.map(function (x) { return li(x, 'acct-dd__p'); }).join('') + '</ul>' +
       '<ul class="acct-dd__list acct-dd__list--2">' + secondary.map(function (x) { return li(x, 'acct-dd__s'); }).join('') + '</ul>' +
       '<button class="acct-dd__out" type="button" data-dd-out>Sign out</button>';
@@ -520,7 +570,7 @@
   });
   dd.addEventListener('click', function (e) {
     var t = e.target.closest('[data-dd]');
-    if (t) { e.preventDefault(); ddClose(); go(t.getAttribute('data-dd')); return; }
+    if (t) { e.preventDefault(); ddClose(); if (t.getAttribute('data-dd') === 'verify') ui.route('verify'); else go(t.getAttribute('data-dd')); return; }
     if (e.target.closest('[data-dd-out]')) { ddClose(true); ui.signOut(); }
   });
   dd.addEventListener('keydown', function (e) {
